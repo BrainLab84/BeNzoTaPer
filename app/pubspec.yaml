@@ -1,0 +1,37 @@
+name: tapering_buddy
+description: BeNzoTaPer – native Android-App.
+publish_to: 'none'
+version: 0.2.1+121
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  tapering_core:
+    path: ../core
+  path_provider: ^2.1.4
+  share_plus: ^13.3.1
+  file_picker: ^13.4.0
+  url_launcher: ^6.3.1
+  read_pdf_text: ^0.3.1
+  archive: ^4.7.1
+  flutter_local_notifications: ^23.0.3
+  timezone: ^0.11.2
+  pdf: ^3.13.1
+
+# path_provider_android ab 2.3 holt den App-Ordner über JNI. Mit jni 1.2 findet es auf echten Geräten
+# die Klasse android.content.Context nicht → der Start bleibt am Logo hängen (19.11.2026 im Emulator
+# nachgestellt). 2.2.23 nutzt den bewährten Plattform-Kanal ohne JNI.
+dependency_overrides:
+  path_provider_android: 2.2.23
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.jpg

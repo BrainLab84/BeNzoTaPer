@@ -1,0 +1,15 @@
+{
+ 'U1 Plan-Karte Stufe falsch': ('app/lib/plan_reiter.dart', "Sub(tr('Stufe ${s.stage + 1} von ${s.plan.length}", "Sub(tr('Stufe ${s.stage + 2} von ${s.plan.length}"),
+ 'U2 Plan-Karte Enddatum 1 Tag später': ('app/lib/plan_reiter.dart', "status = voraussichtlichText(s, ende);", "status = voraussichtlichText(s, addD(ende, 1));"),
+ 'U3 Kalender-Ende falsch': ('app/lib/kalender.dart', "TextSpan(text: datum(ende),", "TextSpan(text: datum(addD(ende, 7)),"),
+ 'U4 Kalender-Vorschau verschoben': ('app/lib/kalender.dart', "      final p = pj.map[k];", "      final p = pj.map[addD(k, 1)];"),
+ 'U5 Fortschritt-Ziel falsch': ('app/lib/verlauf.dart', "(ende != null ? datum(ende) : '–')", "(ende != null ? datum(addD(ende, -1)) : '–')"),
+ 'U6 Fortschritt Heute-Linie falsch': ('app/lib/verlauf.dart', "final heuteIdx = v.tage.indexWhere((x) => x.tag == today);", "final heuteIdx = v.tage.length - 1;"),
+ 'U7 Fortschritt Stufe falsch': ('app/lib/verlauf.dart', "tr('${s.stage + 1} von ${s.plan.length}', '${s.stage + 1} of ${s.plan.length}')", "tr('${s.stage} von ${s.plan.length}', '${s.stage} of ${s.plan.length}')"),
+ 'U8 Halten ohne Hinweis „(Dosis wird gehalten)“': ('app/lib/plan_reiter.dart', "${s.hold ? ' (Dosis wird gehalten)' : ''}", ""),
+ 'U9 Heute: Halte-Ende einen Tag zu spät': ('app/lib/heute.dart', "addD(s.holdUntil!, -1)", "addD(s.holdUntil!, 0)"),
+ 'U10 Sicherung: kaputte Datei erst nach der Ersetzen-Frage': ('app/lib/sicherung.dart', "  if (vorab != null) {", "  if (vorab != null && false) {"),
+ 'U11 FileStore: Schreiben nicht nacheinander': ('app/lib/store.dart', "(_warteschlange[name] ?? Future<void>.value()).catchError((_) {}).then((_) => f())", "f()"),
+ 'U12 Vorrat-Hinweis: keine Nachfrage bei vorhandenem Vorrat': ('app/lib/app_state.dart', "if (_vpGefragt || !vorratPush", "if (true || _vpGefragt || !vorratPush"),
+ 'U13 Bericht: Datumsbeschriftungen überdecken sich': ('app/lib/bericht.dart', "final s = heute == null || !ueber(start, heute);", "final s = true;"),
+}

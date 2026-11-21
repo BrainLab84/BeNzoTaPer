@@ -1,0 +1,25 @@
+name: Dart-Kern prüfen
+on:
+  push:
+    paths: ['core/**', '.github/workflows/core.yml']
+  pull_request:
+    paths: ['core/**']
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub get
+      - run: dart analyze
+      - name: Tests (Zeitzone Berlin, mit Sommerzeit)
+        run: dart test
+        env: { TZ: Europe/Berlin }
+      - name: Tests (UTC)
+        run: dart test
+        env: { TZ: UTC }

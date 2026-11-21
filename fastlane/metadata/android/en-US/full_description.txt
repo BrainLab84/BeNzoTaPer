@@ -1,0 +1,27 @@
+Available in English and German – you choose the language when you first open the app, and can change it any time under More.
+
+BeNzoTaPer keeps you on track while tapering off benzodiazepines. It shows which dose is due each day, counts the days you have made it through, adjusts the plan when you hold a dose for longer, and warns you in time when your tablet supply runs low. It is made for people who taper without close medical support, and for anyone who simply wants a clear overview.
+
+<b>Important:</b> BeNzoTaPer is a tool for organising and documenting. It does not replace medical advice, does not diagnose, and does not decide on dose or pace. Never stop benzodiazepines abruptly after long-term use. In an emergency, call your local emergency number (112 in Europe).
+
+<b>Features</b>
+<ul>
+<li><b>Calendar</b> with a check mark for every day on plan, one-tap logging and the expected date you reach 0 mg</li>
+<li><b>Create a plan</b> in sections or <b>import</b> it from PDF, Word (.docx) or text</li>
+<li><b>Hold a dose</b> with or without an end date; the plan shifts automatically</li>
+<li><b>Tablet supply:</b> enter count × strength, the app calculates how long it lasts and notifies you at 14 and 7 days</li>
+<li><b>Progress</b> chart of your history, also as a PDF for your doctor</li>
+<li><b>SOS:</b> 15-minute timer, breathing circle, emergency number (112 in Europe, or your local one)</li>
+<li>Mood notes, notebook, weekly average</li>
+<li>PIN lock, optional reminder, encrypted backup</li>
+</ul>
+
+<b>The rules</b>
+<ul>
+<li>The app never guesses: a day without an entry stays a question mark, never "as planned" and never 0 mg.</li>
+<li>Tapering faster takes effect immediately. Going up or slowing down only after a 48-hour cooling-off period.</li>
+<li>No percentages, no points, no gamification.</li>
+</ul>
+
+<b>Privacy</b>
+Everything stays on your phone. No account, no cloud, no ads, no trackers, no internet permission. Backups can be encrypted with your own password (Argon2id + AES-256-GCM).

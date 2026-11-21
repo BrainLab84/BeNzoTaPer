@@ -1,0 +1,9 @@
+core/.dart_tool/
+core/pubspec.lock
+app/.dart_tool/
+app/build/
+
+# Signierschlüssel nie einchecken
+*.p12
+*.jks
+*.keystore

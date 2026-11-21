@@ -1,0 +1,76 @@
+name: Release-APK bauen (fester Schlüssel)
+# Nur von Hand starten (Actions → „Release-APK bauen“ → Run workflow).
+# Braucht die Secrets TB_KEYSTORE_B64, TB_KEYSTORE_PASSWORD, TB_KEY_ALIAS.
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional: Tag für einen GitHub-Release mit der APK (z. B. v0.1.0). Leer = nur Artefakt.'
+        required: false
+        default: ''
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: flutter pub get
+      - name: Version aus pubspec.yaml lesen
+        id: ver
+        env: { TAG: '${{ inputs.release_tag }}' }
+        run: |
+          V=$(sed -n 's/^version: *//p' pubspec.yaml)
+          NAME=${V%+*}; CODE=${V#*+}
+          echo "Version $NAME, versionCode $CODE"
+          # Android und F-Droid brauchen steigende Nummern; die letzte Workflow-Nummer war 110.
+          test "$CODE" -gt 110 || { echo "versionCode in pubspec.yaml muss > 110 sein"; exit 1; }
+          if [ -n "$TAG" ] && [ "$TAG" != "v$NAME" ]; then echo "Tag $TAG passt nicht zu Version $NAME"; exit 1; fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"; echo "code=$CODE" >> "$GITHUB_OUTPUT"
+      - name: Schlüssel aus dem Secret holen
+        env: { TB_KEYSTORE_B64: '${{ secrets.TB_KEYSTORE_B64 }}' }
+        run: |
+          test -n "$TB_KEYSTORE_B64" || { echo "Secret TB_KEYSTORE_B64 fehlt"; exit 1; }
+          echo "$TB_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/tb.p12"
+      - name: APK bauen (echte App, fest signiert)
+        env:
+          TB_KEYSTORE_PATH: '${{ runner.temp }}/tb.p12'
+          TB_KEYSTORE_PASSWORD: '${{ secrets.TB_KEYSTORE_PASSWORD }}'
+          TB_KEY_ALIAS: '${{ secrets.TB_KEY_ALIAS }}'
+        # Versionsname und versionCode kommen aus pubspec.yaml (F-Droid baut von dort).
+        # Getrennte APKs je Prozessor (kleiner): arm64 = fast alle Handys, armeabi-v7a = ältere.
+        # Flutter setzt dabei versionCode = 1000 × ABI + versionCode (armeabi-v7a 1…, arm64 2…).
+        run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64
+      - name: Schlüssel prüfen (bricht ab, wenn es nicht der feste Schlüssel ist)
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          for A in build/app/outputs/flutter-apk/app-*-release.apk; do
+            ls -la "$A"
+            $APKSIGNER verify --print-certs "$A" | grep -i "SHA-256" | tee "$RUNNER_TEMP/fp.txt"
+            grep -q 9d6fd371c9e3b85be9807f810557d449505da02b4b0e8b76718a8b626b0f2bc0 "$RUNNER_TEMP/fp.txt" || { echo "Falscher Schlüssel in $A"; exit 1; }
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benzotaper-release
+          path: app/build/app/outputs/flutter-apk/app-*-release.apk
+      - name: Release mit APK anlegen (nur mit release_tag)
+        if: ${{ inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: '${{ github.token }}'
+          GH_REPO: '${{ github.repository }}'
+          TAG: '${{ inputs.release_tag }}'
+        run: |
+          V="${{ steps.ver.outputs.name }}"
+          for ABI in arm64-v8a armeabi-v7a; do
+            cp "build/app/outputs/flutter-apk/app-$ABI-release.apk" "$RUNNER_TEMP/BeNzoTaPer_$V-$ABI.apk"
+          done
+          sed "s/{V}/$V/g" ../.github/release-notes.md > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" "$RUNNER_TEMP"/BeNzoTaPer_*.apk --target "${{ github.sha }}" \
+            --title "BeNzoTaPer ${TAG#v}" --notes-file "$RUNNER_TEMP/notes.md"

@@ -1,0 +1,5 @@
+First public version.
+
+• All dates now include the year (e.g. "until 03/01/2027"), also for supply, holding, next step, progress and the doctor PDF
+• Free licence: GPL-3.0
+• Imprint: "© 2026 Benzo Brain"

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Symbol der Erinnerung wird nur per Name aus Dart angesprochen: beim Verkleinern behalten -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_erinnerung" />

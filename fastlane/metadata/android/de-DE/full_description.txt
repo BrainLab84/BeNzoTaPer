@@ -1,0 +1,27 @@
+Auf Deutsch und Englisch – die Sprache wählst du beim ersten Start, später jederzeit unter „Mehr“.
+
+BeNzoTaPer hält dich beim Abdosieren von Benzodiazepinen auf Linie. Die App zeigt jeden Tag, welche Dosis dran ist, zählt die geschafften Tage, passt den Plan an, wenn du eine Dosis länger hältst, und sagt dir rechtzeitig, wann der Tablettenvorrat knapp wird. Gedacht ist sie für alle, die beim Abdosieren keine enge ärztliche Begleitung haben, und für alle, die einfach einen klaren Überblick wollen.
+
+<b>Wichtig:</b> BeNzoTaPer ist ein Werkzeug zum Organisieren und Dokumentieren. Die App ersetzt keine ärztliche Beratung, stellt keine Diagnosen und entscheidet nicht über Dosis oder Tempo. Benzodiazepine nach längerer Einnahme nie abrupt absetzen. Im Notfall: 112.
+
+<b>Funktionen</b>
+<ul>
+<li><b>Kalender</b> mit Häkchen für jeden Tag im Plan, „Heute eintragen“ mit einem Tipp und dem voraussichtlichen Datum, an dem du bei 0 mg bist</li>
+<li><b>Plan erstellen</b> in Abschnitten oder <b>importieren</b> aus PDF, Word (.docx) oder Text</li>
+<li><b>Dosis halten</b> mit oder ohne Enddatum, der Plan verschiebt sich automatisch</li>
+<li><b>Tablettenvorrat:</b> Anzahl × Stärke eintragen, die App rechnet aus, wie lange er reicht, und meldet sich bei 14 und 7 Tagen</li>
+<li><b>Fortschritt</b> mit Verlauf als Diagramm, auch als PDF für den Arzt</li>
+<li><b>SOS:</b> 15-Minuten-Timer, Atemkreis, Notruf und Telefonseelsorge</li>
+<li>Notizen zum Befinden, Notizbuch, Wochen-Durchschnitt</li>
+<li>PIN-Sperre, optionale Erinnerung, verschlüsselte Sicherung</li>
+</ul>
+
+<b>Die Regeln</b>
+<ul>
+<li>Die App rät nichts: Ein Tag ohne Eintrag bleibt ein Fragezeichen, nie „wie geplant“ und nie 0 mg.</li>
+<li>Schneller reduzieren geht sofort. Hochgehen oder langsamer werden geht erst nach 48 Stunden Bedenkzeit.</li>
+<li>Keine Prozente, keine Punkte, keine Belohnungsspielchen.</li>
+</ul>
+
+<b>Datenschutz</b>
+Alles bleibt auf dem Handy. Kein Konto, keine Cloud, keine Werbung, keine Tracker, keine Internet-Berechtigung. Sicherungen werden auf Wunsch mit einem eigenen Passwort verschlüsselt (Argon2id + AES-256-GCM).

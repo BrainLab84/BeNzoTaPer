@@ -1,0 +1,5 @@
+Erste öffentliche Version.
+
+• Alle Datumsangaben mit Jahr (z. B. „bis 03.01.2027“), auch bei Vorrat, Halten, nächster Stufe, Fortschritt und im Arzt-PDF
+• Freie Lizenz: GPL-3.0
+• Impressum: „© 2026 Benzo Brain“

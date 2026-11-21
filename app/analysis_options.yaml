@@ -1,0 +1,7 @@
+analyzer:
+  errors:
+    # Flutter 3.50 kündigt die Aufteilung von material.dart an; erst mit dem Umstieg anfassen.
+    deprecated_member_use: ignore
+  exclude:
+    - build/**
+    - android/**

@@ -1,0 +1,2 @@
+• Smaller downloads: separate APKs for modern (arm64) and older phones (armeabi-v7a)
+• Install and automatic updates via Obtainium (see README)
