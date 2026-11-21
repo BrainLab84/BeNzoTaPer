@@ -94,6 +94,9 @@ The rest of this README is in German. Code, tests and tools are documented in th
 
 Ohne eigenen Plan zeigt die App einen **Beispielplan**, damit man sieht, wie alles aussieht. Das Beispiel wird nie gespeichert.
 
+### Geplant
+- **Rückwirkende Eintragungen für bereits laufende Abdosierungen.** Wer schon mitten im Abdosieren ist (zum Beispiel mit einer Strichliste auf Papier), soll einen Plan mit Startdatum in der Vergangenheit anlegen und seinen bisherigen Verlauf nachträglich eintragen oder als Liste importieren können. Wochen-Durchschnitt und Verlauf werden dann automatisch nachberechnet. Nachgetragene Tage bekommen im Kalender ein kleines Symbol und zählen nicht für das Lob.
+
 ## Die Regeln, nach denen sie rechnet
 
 | Situation | Was passiert |
