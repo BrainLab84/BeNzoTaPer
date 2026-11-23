@@ -117,6 +117,31 @@ void main() {
     expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing);
   });
 
+  testWidgets('Stufenlinie: ein Strich pro Tag im aktuellen Abschnitt, vergangene hell, Marker wandert', (t) async {
+    // Stufe seit 05.03., heute 10.03. = Tag 6/14
+    final app = await starte(t, json: basis(start: '2026-03-05', log: {for (var d = 5; d <= 9; d++) '2026-03-0$d': eintrag(10, 10)}));
+    final karte = find.byKey(const Key('dosis')).evaluate().isNotEmpty;
+    expect(karte, isTrue);
+    Color farbe(int j) => ((t.widget<DecoratedBox>(find.descendant(
+                of: find.byKey(Key('strich$j')).first, matching: find.byType(DecoratedBox)))
+            .decoration) as BoxDecoration)
+        .color!;
+    expect(find.byKey(const Key('strich13')), findsWidgets, reason: '13 Striche für 14 Tage');
+    expect(find.byKey(const Key('strich14')), findsNothing);
+    expect(farbe(5), const Color(0xE6FFFFFF), reason: '5 Tage vorbei');
+    expect(farbe(6), const Color(0x99AFAADB), reason: 'heute und später noch offen');
+    expect(txt('Tag 6/14'), findsWidgets);
+    final vorher = t.getTopLeft(find.byKey(const Key('fortschrittBlase')).first).dx;
+    jetzt = DateTime.utc(2026, 3, 11, 12);
+    app.taper.addIntake(10, k: '2026-03-10', force: true);
+    app.auffrischen();
+    await t.pumpAndSettle();
+    expect(farbe(6), const Color(0xE6FFFFFF), reason: 'ein Tag weiter');
+    expect(t.getTopLeft(find.byKey(const Key('fortschrittBlase')).first).dx, greaterThan(vorher),
+        reason: 'Marker wandert mit');
+    expect(app.taper.st.stage, 0);
+  });
+
   testWidgets('Halten 7 Tage: angezeigtes „bis“ ist der letzte Haltetag (Audit 20.11.)', (t) async {
     final app = await starte(t);
     await tippe(t, find.byKey(const Key('halten')));

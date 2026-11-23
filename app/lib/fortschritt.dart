@@ -35,23 +35,43 @@ class _FortschrittState extends State<Fortschritt> {
     final last = s.stage >= n - 1;
     final done = last && (!(s.plan[n - 1] > 0) || sd >= ndy);
     final frac = last ? 1.0 : math.min((sd + 1) / ndy, 1.0);
-    final fill = math.min(1.0, (s.stage + frac) / (n - 1));
 
     // Look „Dämmerung“: erledigt grün, aktuelle Stufe dunkelgrün mit weißem Ring,
-    // kommende lavendel; darüber „Tag x/y“ als Pille.
+    // kommende lavendel; darüber „Tag x/y“ als Pille. Der Abschnitt zur nächsten Stufe ist breiter
+    // und hat einen Strich pro Tag, damit man den Fortschritt innerhalb der Stufe sieht.
     const linie = 66.0; // Mitte der Linie
+    const gewichtAktuell = 2.6;
     return LayoutBuilder(builder: (context, c) {
       final avail = c.maxWidth;
-      final inner = math.max(avail, (n - 1) * 70.0 + 88);
+      final segMin = last ? 0.0 : math.min(260.0, math.max(150.0, ndy * 9.0));
+      final inner = math.max(avail, (n - 2) * 70.0 + segMin + 88);
       final tw = inner - 88;
-      double x(int i) => 44 + tw * i / (n - 1);
+      // Breite je Abschnitt: der aktuelle zählt [gewichtAktuell]-fach, mindestens [segMin].
+      final summe = (n - 1) + (last ? 0 : gewichtAktuell - 1);
+      var einheit = tw / summe;
+      var segAkt = last ? 0.0 : einheit * gewichtAktuell;
+      if (!last && segAkt < segMin) {
+        segAkt = segMin;
+        einheit = (tw - segAkt) / math.max(1, n - 2);
+      }
+      double seg(int i) => (!last && i == s.stage) ? segAkt : einheit;
+      double x(int i) {
+        var p = 44.0;
+        for (var j = 0; j < i; j++) {
+          p += seg(j);
+        }
+        return p;
+      }
+
+      final fillPx = last ? tw : (x(s.stage) - 44) + frac * segAkt;
+      final fill = math.min(1.0, fillPx / tw);
 
       // So scrollen, dass die aktuelle Position mittig steht.
       if (_gescrolltBei != fill) {
         _gescrolltBei = fill;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!_scroll.hasClients) return;
-          final px = 44 + fill * tw;
+          final px = 44 + fillPx;
           _scroll.jumpTo((px - avail / 2).clamp(0, _scroll.position.maxScrollExtent));
         });
       }
@@ -72,7 +92,7 @@ class _FortschrittState extends State<Fortschritt> {
         Positioned(
           left: 44,
           top: linie - 4,
-          width: tw * fill,
+          width: fillPx,
           height: 8,
           child: Container(
             decoration: BoxDecoration(
@@ -83,6 +103,26 @@ class _FortschrittState extends State<Fortschritt> {
           ),
         ),
       ];
+      // Tagesstriche auf dem aktuellen Abschnitt (nur, wenn genug Platz ist).
+      if (!last && ndy > 1 && segAkt / ndy >= 6) {
+        for (var j = 1; j < ndy; j++) {
+          final px = x(s.stage) + segAkt * j / ndy;
+          final vorbei = j <= sd;
+          kinder.add(Positioned(
+            key: Key('strich$j'),
+            left: px - 1,
+            top: linie - 7,
+            width: 2,
+            height: 14,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: vorbei ? const Color(0xE6FFFFFF) : const Color(0x99AFAADB),
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+          ));
+        }
+      }
       for (var i = 0; i < n; i++) {
         final dn = i < s.stage || (i == n - 1 && s.stage == n - 1 && done);
         final cu = i == s.stage && !dn;
@@ -123,7 +163,7 @@ class _FortschrittState extends State<Fortschritt> {
       }
       if (!(s.stage == n - 1 && done)) {
         kinder.add(Positioned(
-          left: 44 + tw * fill,
+          left: 44 + fillPx,
           top: 0,
           child: FractionalTranslation(
             translation: Offset(-(0.15 + fill * 0.7), 0),
