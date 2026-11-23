@@ -87,7 +87,9 @@ void main() {
     await tippe(t, find.byKey(const Key('planWeiter')));
     await tippe(t, find.byKey(const Key('planWeiter')));
     await tippe(t, find.byKey(const Key('planLos')));
+    await tippe(t, find.text('Überspringen'));
     expect(app.taper.st.plan, [10, 8, 6, 4, 2, 0]);
+    await reiter(t, 'Plan');
     expect(imPlan(txt('Stufe 1 von 6')), findsOneWidget);
     await reiter(t, 'Fortschritt');
     expect(imWeg(find.text('1 von 6')), findsOneWidget);

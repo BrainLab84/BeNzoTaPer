@@ -462,8 +462,24 @@ class AppState extends ChangeNotifier {
     auffrischen();
   }
 
-  /// „PIN vergessen? → Alles löschen“: Stand weg, danach wieder das Beispiel.
+  /// „Zurücksetzen“ / „PIN vergessen? → Alles löschen“: Stand weg, danach wieder das Beispiel.
   void allesLoeschen() {
+    _allesWeg();
+    beispielLaden();
+    stand++;
+    notifyListeners();
+  }
+
+  /// „Neuen Plan erstellen“ bei bestehendem Plan: wie eine Neuinstallation – alles weg (Plan, Einnahmen,
+  /// Vorrat, Notizen, Notizbuch, PIN, Einstellungen). Bleiben nur Sprache und „Hinweise gelesen“.
+  /// Danach gibt es keinen Plan; der neue wird direkt danach angelegt.
+  void neustart() {
+    _allesWeg();
+    stand++;
+    notifyListeners();
+  }
+
+  void _allesWeg() {
     taper.wipe();
     gesperrt = false;
     _wortHash = null;
@@ -475,12 +491,10 @@ class AppState extends ChangeNotifier {
     vorratPush = true;
     _vpGefragt = false;
     lobWeg = null;
+    sperrMinuten = 2;
     _einstellungenSchreiben();
     notizbuch = [];
     store.writeNotizbuch('[]');
-    beispielLaden();
-    stand++;
-    notifyListeners();
   }
 
   /// Gibt es einen eigenen Plan? (Der Beispielplan zählt nicht.)

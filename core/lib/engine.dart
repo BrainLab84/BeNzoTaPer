@@ -635,7 +635,9 @@ class Taper {
     final mi = hm.length > 1 ? (jsParseInt(hm[1]) ?? 0) : 0;
     final noT = t == null || t.isEmpty;
     final zoneUtc = clock().isUtc;
-    var ts = (k == td && noT)
+    // Heute ohne oder mit der aktuellen Minute: genauer Zeitpunkt (sonst läge eine Einnahme direkt nach dem
+    // Zählen des Vorrats rechnerisch davor und würde nicht abgezogen).
+    var ts = (k == td && (noT || t == nowHM()))
         ? nowMs
         : (zoneUtc
                 ? DateTime.utc(int.parse(p[0]), int.parse(p[1]), int.parse(p[2]), hh, mi)

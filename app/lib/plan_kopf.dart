@@ -13,22 +13,24 @@ import 'sicherung.dart';
 /// Öffnet „Neuen Plan erstellen“ bzw. „Plan importieren“ und meldet das Ergebnis.
 Future<void> planNeuOeffnen(BuildContext context, AppState app, PlanArt art, {PlanEdit? vorgemerkt}) async {
   final messenger = ScaffoldMessenger.of(context);
-  // Es gibt schon einen eigenen Plan: erst „Bist du dir sicher?“.
+  // Es gibt schon einen eigenen Plan: neuer Plan = Neustart (alles weg). Erst „Bist du dir sicher?“.
+  // Gelöscht wird erst beim Speichern des neuen Plans; Abbrechen lässt alles, wie es war.
   final ersetzt = app.taper.s != null && !app.beispiel;
-  if (ersetzt && !await planSicherFragen(context)) return;
+  final neustart = ersetzt && vorgemerkt == null;
+  if (neustart && !await planSicherFragen(context)) return;
   if (!context.mounted) return;
   final warBeispiel = app.beispiel;
   app.beispielWeg();
   final r = await Navigator.of(context).push<PlanErgebnis>(
-      MaterialPageRoute(builder: (_) => PlanNeuSeite(app: app, art: art, vorgemerkt: vorgemerkt, bestaetigt: ersetzt)));
+      MaterialPageRoute(builder: (_) => PlanNeuSeite(app: app, art: art, vorgemerkt: vorgemerkt, neustart: neustart)));
   if (warBeispiel && app.taper.s == null) {
     app.beispielLaden();
     app.aenderung();
   }
   if (r == PlanErgebnis.uebernommen) {
     messenger.showSnackBar(SnackBar(content: Text(tr('Dein Plan ist gespeichert.', 'Your plan has been saved.'))));
-    // Erster eigener Plan: einmal PIN anbieten, überspringbar.
-    if (!ersetzt && !app.hatPin && context.mounted) {
+    // Erster eigener Plan (auch nach einem Neustart): einmal PIN anbieten, überspringbar.
+    if (vorgemerkt == null && !app.hatPin && context.mounted) {
       await Navigator.of(context)
           .push<bool>(MaterialPageRoute(builder: (_) => PinEinrichtenSeite(app: app, nachPlan: true)));
     }
@@ -40,8 +42,8 @@ Future<void> planNeuOeffnen(BuildContext context, AppState app, PlanArt art, {Pl
 
 /// Satz, der eingetippt werden muss (Groß-/Kleinschreibung, Komma und Leerzeichen egal).
 String get planSicherSatz => tr('Ja, ich bin mir sicher', 'Yes, I am sure');
-String get planBackupSatz => tr('Ich bestätige hiermit, dass ich ohne ein Backup den Plan nicht wiederherstellen kann.',
-    'I hereby confirm that without a backup I cannot restore the plan.');
+String get planBackupSatz => tr('Ich bestätige hiermit, dass ich ohne eine Sicherung nichts davon wiederherstellen kann.',
+    'I hereby confirm that without a backup I cannot restore any of it.');
 
 bool planSicherPasst(String s) =>
     const {'ja ich bin mir sicher', 'yes i am sure'}
@@ -122,7 +124,12 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
       title: Text(widget.titel ?? tr('Bist du dir sicher?', 'Are you sure?')),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.text ?? tr('Dein bisheriger Plan wird ersetzt.', 'Your current plan will be replaced.')),
+          Text(widget.text ??
+              tr('Ein neuer Plan ist ein Neustart – wie eine neu installierte App. Alles auf diesem Gerät wird gelöscht: '
+                  'Plan, Einnahmen, Vorrat, Notizen, Notizbuch, PIN und Einstellungen. Gelöscht wird erst, wenn du den '
+                  'neuen Plan speicherst.',
+                  'A new plan is a fresh start – like a newly installed app. Everything on this device will be deleted: '
+                      'plan, intakes, supply, notes, notebook, PIN and settings. Deletion happens only when you save the new plan.')),
           Feldname(tr('Bitte eintippen: $planSicherSatz', 'Please type: $planSicherSatz')),
           TextField(
             key: const Key('planSicherText'),

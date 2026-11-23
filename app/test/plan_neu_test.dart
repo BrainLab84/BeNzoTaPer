@@ -9,6 +9,7 @@ import 'package:tapering_buddy/pin.dart';
 import 'package:tapering_buddy/plan_kopf.dart';
 import 'package:tapering_buddy/plan_lesen.dart';
 import 'package:tapering_buddy/plan_neu.dart';
+import 'package:tapering_core/tapering_core.dart' show EditRow;
 import 'package:tapering_buddy/sicherung.dart';
 import 'package:tapering_buddy/store.dart';
 
@@ -239,13 +240,15 @@ void main() {
     await abschnitt(t, 0, '2', '14', '0');
     await weiter(t);
     await weiter(t);
-    expect(txt('Kalender und Tagebuch bleiben erhalten.'), findsOneWidget);
+    expect(txt('Kalender und Tagebuch bleiben erhalten.'), findsNothing, reason: 'Neustart: nichts bleibt');
     expect(find.byKey(const Key('planSicher')), findsNothing, reason: 'schon im Fenster bestätigt');
     await tippe(t, find.byKey(const Key('planLos')));
+    await tippe(t, find.text('Überspringen'));
     expect(app.taper.st.plan, [10, 8, 6, 4, 2, 0]);
     expect(app.taper.st.pend, isNull);
-    // Plan-Karte: Start bleibt, Änderungsdatum kommt dazu.
-    expect(find.text('Plan gestartet am 10.03.2026 · geändert am 10.03.2026'), findsOneWidget);
+    // Neustart: ein frischer Plan, kein „geändert am“.
+    await reiter(t, 'Plan');
+    expect(find.text('Plan gestartet am 10.03.2026'), findsOneWidget);
   });
 
   testWidgets('Plan-Karte: „Plan gestartet am …“ ohne Änderung', (t) async {
@@ -253,7 +256,7 @@ void main() {
     expect(find.text('Plan gestartet am 01.03.2026'), findsOneWidget);
   });
 
-  testWidgets('Langsamer: 48 h Bedenkzeit mit Grund, später übernehmen', (t) async {
+  testWidgets('Langsamerer neuer Plan: Neustart sofort, keine Bedenkzeit', (t) async {
     final app = await starte(t, aufReiter: 'Plan');
     await tippe(t, find.byKey(const Key('planErstellen')));
     await planSicherBestaetigen(t);
@@ -262,32 +265,39 @@ void main() {
     await weiter(t);
     await weiter(t);
     await tippe(t, find.byKey(const Key('planLos')));
-    expect(txt('48 Stunden Bedenkzeit'), findsOneWidget);
-    expect(find.text('In 48 h übernehmen'), findsOneWidget);
-    await t.enterText(find.byKey(const Key('planWarum')), 'x');
-    await tippe(t, find.byKey(const Key('planLos')));
-    expect(find.text('Bitte kurz begründen, warum.'), findsOneWidget);
-    await t.enterText(find.byKey(const Key('planWarum')), 'Zu schnell für mich');
-    await tippe(t, find.byKey(const Key('planLos')));
-    expect(app.taper.st.pend, isNotNull);
-    expect(app.taper.st.plan.length, 11, reason: 'alter Plan gilt weiter');
-    expect(find.text('Vorgemerkt – in 48 Stunden kannst du den neuen Plan übernehmen.'), findsOneWidget);
+    expect(txt('48 Stunden Bedenkzeit'), findsNothing);
+    await tippe(t, find.text('Überspringen'));
+    expect(app.taper.st.pend, isNull);
+    expect(app.taper.st.plan.length, 21);
+    expect(app.taper.need(0), 21);
+  });
 
-    // 49 Stunden später (mit Einträgen, damit nichts offen ist) auf Heute übernehmen.
+  testWidgets('Alte Vormerkung (frühere Version): nach 48 h auf Heute übernehmen', (t) async {
+    final app = await starte(t, aufReiter: 'Heute');
+    // So entstand eine Vormerkung bis v0.2.1: Plan über den bestehenden ersetzt, langsamer, mit Grund.
+    final e = app.taper.openEditor(neu: true)
+      ..rows = [for (var i = 0; i < 21; i++) EditRow(10 - i * 0.5, 21)]
+      ..conf = 'Ich bin mir sicher';
+    expect(app.taper.applyPlan(e).askWhy, isTrue);
+    e.why = 'Zu schnell für mich';
+    expect(app.taper.applyPlan(e).pended, isTrue);
+    app.aenderung();
+    await t.pumpAndSettle();
+    expect(app.taper.st.plan.length, 11, reason: 'alter Plan gilt weiter');
     app.taper.addIntake(10, k: '2026-03-10', force: true);
     jetzt = DateTime.utc(2026, 3, 12, 13);
     app.taper.addIntake(10, k: '2026-03-11');
     app.auffrischen();
     await t.pumpAndSettle();
-    await reiter(t, 'Heute');
     expect(txt('Die Bedenkzeit ist vorbei.'), findsOneWidget);
     await tippe(t, find.text('Übernehmen'));
-    await planSicherBestaetigen(t);
+    expect(find.byKey(const Key('planSicherDialog')), findsNothing, reason: 'Vormerkung ist kein Neustart');
     expect(find.text('Vorgemerkte Änderung – bitte prüfen und übernehmen.'), findsOneWidget);
+    await t.enterText(find.byKey(const Key('planSicher')), 'Ich bin mir sicher');
     await tippe(t, find.byKey(const Key('planLos')));
     expect(app.taper.st.pend, isNull);
     expect(app.taper.st.plan.length, 21);
-    expect(app.taper.need(0), 21);
+    expect(app.taper.st.log, isNotEmpty, reason: 'Vormerkung ändert den Plan, löscht nichts');
   });
 
   testWidgets('Importieren: Text einfügen, prüfen, „Ich bin gerade bei“', (t) async {

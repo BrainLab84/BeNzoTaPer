@@ -45,11 +45,12 @@ class _ZeileFelder {
 
 class PlanNeuSeite extends StatefulWidget {
   const PlanNeuSeite(
-      {super.key, required this.app, this.art = PlanArt.erstellen, this.vorgemerkt, this.pdf, this.bestaetigt = false});
+      {super.key, required this.app, this.art = PlanArt.erstellen, this.vorgemerkt, this.pdf, this.neustart = false});
   final AppState app;
 
-  /// Schon im Fenster „Bist du dir sicher?“ bestätigt (siehe `planSicherFragen`): kein Eintippfeld am Ende.
-  final bool bestaetigt;
+  /// Neuer Plan über einen bestehenden: Neustart. Schon im Fenster „Bist du dir sicher?“ bestätigt
+  /// (siehe `planSicherFragen`); beim Speichern wird zuerst alles gelöscht, dann wie ein erster Plan angelegt.
+  final bool neustart;
   final PlanArt art;
 
   /// Vorgemerkte Planänderung nach der Bedenkzeit: nur noch bestätigen.
@@ -69,7 +70,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
   final _abschnitte = <_AbschnittFelder>[];
   final _text = TextEditingController();
   final _zeilen = <_ZeileFelder>[];
-  late final _conf = TextEditingController(text: widget.bestaetigt ? tr('Ich bin mir sicher', 'I am sure') : '');
+  final _conf = TextEditingController();
   final _warum = TextEditingController();
   String _unit = 'mg';
   int _start = 0;
@@ -85,7 +86,8 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
 
   AppState get app => widget.app;
   Taper get ta => app.taper;
-  bool get _gibtPlan => ta.s != null;
+  /// Gilt ein bestehender Plan weiter (nur beim Übernehmen einer alten Vormerkung)? Beim Neustart nicht.
+  bool get _gibtPlan => ta.s != null && !widget.neustart;
 
   List<String> get _schritte => widget.vorgemerkt != null
       ? const ['los']
@@ -219,6 +221,19 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
 
   void _uebernehmen() {
     final v = widget.vorgemerkt;
+    if (widget.neustart && v == null) {
+      // Erst an einem leeren Kern prüfen, dann löschen – ein Fehler darf nie zu „alles weg, kein Plan“ führen.
+      final probe = Taper(clock: ta.clock);
+      final pr = probe.applyPlan(probe.openEditor(neu: true)
+        ..rows = _rows
+        ..start = _start
+        ..startDatum = _beginn);
+      if (pr.err != null) {
+        setState(() => _fehler = meldungText(pr.err!));
+        return;
+      }
+      app.neustart();
+    }
     final e = v ?? ta.openEditor(neu: true);
     if (v == null) {
       e
@@ -652,7 +667,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
     if (_gibtPlan) {
       w.add(Sub(tr('Kalender und Tagebuch bleiben erhalten.', 'Calendar and diary are kept.'), oben: 16));
     }
-    if (_gibtPlan && !widget.bestaetigt) {
+    if (_gibtPlan) {
       w.add(Feldname(tr('Zum Speichern bitte eintippen: Ich bin mir sicher', 'To save, please type: I am sure')));
       w.add(TextField(
         key: const Key('planSicher'),
