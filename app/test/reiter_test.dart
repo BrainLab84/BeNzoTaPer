@@ -8,12 +8,12 @@ import 'hilfen.dart';
 void main() {
   setUp(() => jetzt = DateTime.utc(2026, 3, 10, 12));
 
-  testWidgets('Reiter: Kalender · Heute · Plan · Fortschritt, Start in Heute', (t) async {
+  testWidgets('Reiter: Heute · Kalender · Plan · Fortschritt, Start in Heute', (t) async {
     await starte(t, aufReiter: null);
     final nav = find.byType(NavigationDestination);
     expect(nav, findsNWidgets(4));
     expect([for (final e in nav.evaluate()) (e.widget as NavigationDestination).label],
-        ['Kalender', 'Heute', 'Plan', 'Fortschritt']);
+        ['Heute', 'Kalender', 'Plan', 'Fortschritt']);
     expect(find.byKey(const Key('dosis')), findsOneWidget, reason: 'Start in Heute');
     expect(aktuellerReiter(t), 'Heute');
   });

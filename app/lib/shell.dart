@@ -20,7 +20,7 @@ import 'sos.dart';
 import 'start.dart';
 import 'verlauf.dart';
 
-/// Rahmen mit vier Reitern (Kalender, Heute, Plan, Fortschritt), Start im Kalender.
+/// Rahmen mit vier Reitern (Heute, Kalender, Plan, Fortschritt), Start in Heute.
 /// Wischen wechselt den Reiter; Zurück: Dialog → Seite → Kalender → Ende.
 class Shell extends StatefulWidget {
   const Shell({super.key, required this.app});
@@ -30,16 +30,16 @@ class Shell extends StatefulWidget {
 }
 
 class _ShellState extends State<Shell> with WidgetsBindingObserver {
-  // Kalender · Heute · Plan · Fortschritt, Start in Heute,
+  // Heute · Kalender · Plan · Fortschritt, Start in Heute,
   // oben ein runder Kalender-Knopf.
   static List<(IconData, IconData, String)> get reiter => [
-    (Icons.calendar_month_outlined, Icons.calendar_month_outlined, tr('Kalender', 'Calendar')),
     (Icons.event_available_outlined, Icons.event_available_outlined, tr('Heute', 'Today')),
+    (Icons.calendar_month_outlined, Icons.calendar_month_outlined, tr('Kalender', 'Calendar')),
     (Icons.route_outlined, Icons.route_outlined, tr('Plan', 'Plan')),
     (Icons.signal_cellular_alt_rounded, Icons.signal_cellular_alt_rounded, tr('Fortschritt', 'Progress')),
   ];
-  static const kalender = 0;
-  static const heute = 1;
+  static const heute = 0;
+  static const kalender = 1;
 
   final _seiten = PageController(initialPage: heute);
   int _i = heute;
@@ -159,7 +159,6 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
           controller: _seiten,
           onPageChanged: (i) => setState(() => _i = i),
           children: [
-            KalenderSeite(app: widget.app, wahl: _wahl),
             HeuteSeite(
               app: widget.app,
               tagOeffnen: (k) {
@@ -168,6 +167,7 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
               },
               planEditor: (e) => planNeuOeffnen(context, widget.app, PlanArt.erstellen, vorgemerkt: e),
             ),
+            KalenderSeite(app: widget.app, wahl: _wahl),
             PlanReiter(app: widget.app),
             VerlaufSeite(app: widget.app),
           ],
