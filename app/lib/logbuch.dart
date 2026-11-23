@@ -48,6 +48,7 @@ String? _ereignis(String t) {
   if (t.startsWith('Plan geändert') || t.startsWith('Vorgemerkte Änderung übernommen') || t.startsWith('Übernommen:')) {
     return tr('Plan geändert', 'Plan changed');
   }
+  if (t.startsWith('Plan angepasst')) return tr('Plan angepasst', 'Plan adjusted');
   final h = RegExp(r'^Stufe (\d+) gehalten(?: für (\d+) Tage?)?').firstMatch(t);
   if (h != null) {
     final n = h.group(2);

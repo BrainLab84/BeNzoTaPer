@@ -105,6 +105,8 @@ final erlaubtMuster = [
   RegExp(r'^Rest genommen \([\d,]+ \S+\)$'),
   RegExp(r'^(Weitere|Oder einzelne) Einnahme \(\S+ · Uhrzeit\)$'),
   RegExp(r'^\+$'),
+  // „Ändern“ ist „Plan anpassen“ gewichen (eigene Seite, gilt sofort).
+  RegExp(r'^Ändern$'),
 ];
 
 /// Was die neue App zusätzlich zeigen darf: Feldinhalte (Platzhalter, Uhrzeit, Auswahl),
@@ -122,6 +124,7 @@ final zusaetzlichErlaubt = [
   RegExp(r'^z\. b\. 4 kaffee, neues medikament$'),
   RegExp(r'^du kannst jederzeit nachtragen'),
   RegExp(r'^einnahme$'),
+  RegExp(r'^plan anpassen$'),
   RegExp(r'^notiz für heute gespeichert\. tipp auf den tag im kalender'),
   // Halten mit „voraussichtlich“ und mg
   RegExp(r'^dosis wird voraussichtlich gehalten bis \d+\.\d+\.\d{4} \(\d+ tage? noch\)\.$'),

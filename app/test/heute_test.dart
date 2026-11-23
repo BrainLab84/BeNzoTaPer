@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tapering_buddy/store.dart';
+import 'package:tapering_core/tapering_core.dart' show LeftResult;
 
 import 'hilfen.dart';
 
@@ -200,7 +201,7 @@ void main() {
     expect(app.taper.st.hold, isTrue);
     // letzter gehaltener Tag (10.–16.03. = 7 Tage); am 17.03. kommt die nächste Dosis.
     expect(txt('Dosis wird voraussichtlich gehalten bis 16.03.2026 (7 Tage noch).'), findsOneWidget);
-    expect(find.byKey(const Key('aendern')), findsNothing);
+    expect(find.byKey(const Key('anpassen')), findsOneWidget, reason: 'Plan anpassen geht auch beim Halten');
     expect(txt('Weiter abdosieren'), findsOneWidget);
     await tippe(t, find.byKey(const Key('halten')));
     expect(app.taper.st.hold, isFalse);
@@ -219,25 +220,18 @@ void main() {
     expect(txt('Dosis wird gehalten – so lange du brauchst.'), findsOneWidget);
   });
 
-  testWidgets('Ändern: kürzer sofort, länger nur mit Begründung → Vormerkung', (t) async {
+  testWidgets('Alte Vormerkung „Stufe verlängern“ (frühere Version): Anzeige und Übernahme nach 48 h', (t) async {
     final app = await starte(t);
     await nehme(t, '10');
-    await tippe(t, find.byKey(const Key('aendern')));
-    expect(txt('In wie vielen Tagen soll die nächste Stufe beginnen?'), findsOneWidget);
-    await t.enterText(find.byKey(const Key('linksTage')), '3');
-    await tippe(t, find.byKey(const Key('linksOk')));
+    expect(app.taper.saveLeft(3), LeftResult.applied);
+    app.aenderung();
+    await t.pumpAndSettle();
     expect(txt('Nächste Stufe in 3 Tagen (13.03.2026)'), findsOneWidget);
-    expect(app.taper.st.pend, isNull);
-
-    await tippe(t, find.byKey(const Key('aendern')));
-    await t.enterText(find.byKey(const Key('linksTage')), '20');
-    await tippe(t, find.byKey(const Key('linksOk')));
-    expect(txt('48 Stunden Bedenkzeit'), findsOneWidget);
-    await t.enterText(find.byKey(const Key('linksWarum')), 'ab');
-    await tippe(t, find.byKey(const Key('vormerken')));
-    expect(app.taper.st.pend, isNull, reason: 'Begründung zu kurz');
-    await t.enterText(find.byKey(const Key('linksWarum')), 'Arbeit stressig');
-    await tippe(t, find.byKey(const Key('vormerken')));
+    // So entstand eine Vormerkung bis v0.2.1 (länger nur mit Begründung, 48 h).
+    expect(app.taper.saveLeft(20, why: 'ab'), LeftResult.whyTooShort);
+    expect(app.taper.saveLeft(20, why: 'Arbeit stressig'), LeftResult.pended);
+    app.aenderung();
+    await t.pumpAndSettle();
     expect(app.taper.st.pend, isNotNull);
     expect(txt('Vorgemerkte Änderung'), findsOneWidget);
     expect(txt('Grund: Arbeit stressig'), findsOneWidget);
@@ -260,12 +254,15 @@ void main() {
     expect(txt('Nächste Stufe in 18 Tagen'), findsOneWidget);
   });
 
-  testWidgets('Ändern abbrechen', (t) async {
-    await starte(t);
-    await tippe(t, find.byKey(const Key('aendern')));
-    await tippe(t, find.byTooltip('Abbrechen'));
-    expect(find.byKey(const Key('linksTage')), findsNothing);
-    expect(find.byKey(const Key('aendern')), findsOneWidget);
+  testWidgets('Plan anpassen abbrechen: nichts ändert sich', (t) async {
+    final app = await starte(t);
+    final vorher = app.taper.st.toJson().toString();
+    await tippe(t, find.byKey(const Key('anpassen')));
+    await t.enterText(find.byKey(const Key('anpTage0')), '30');
+    await tippe(t, find.text('Abbrechen'));
+    expect(find.byKey(const Key('anpSpeichern')), findsNothing);
+    expect(find.byKey(const Key('anpassen')), findsOneWidget);
+    expect(app.taper.st.toJson().toString(), vorher);
   });
 
   testWidgets('Offene Tage: Anzeigen pausieren, nachtragen im Kalender', (t) async {

@@ -111,6 +111,7 @@ class PlanReiter extends StatelessWidget {
 /// Protokolleinträge, die den Plan selbst ändern (neuer Plan, Stufe vorgezogen, übernommene Vormerkung).
 const _planAenderung = [
   'Plan geändert:',
+  'Plan angepasst:',
   'Vorgemerkte Änderung übernommen:',
   'Übernommen:',
   'Nächste Stufe vorgezogen'

@@ -1,6 +1,8 @@
 // Rechenkern von BeNzoTaPer: reine Dart-Logik, keine Oberfläche.
 //
 // Die Oberfläche ruft nur diese Klasse auf und zeigt das Ergebnis an.
+import 'dart:convert';
+
 import 'meldung.dart';
 import 'plan_math.dart';
 import 'plan_parser.dart';
@@ -1149,6 +1151,93 @@ class Taper {
     e.err = null;
     _after();
     return const ApplyResult(applied: true);
+  }
+
+  // ===== Plan anpassen (ab heute; Verlauf, Einnahmen und Vorrat bleiben) =====
+
+  /// Stufen ab der aktuellen, wie „Plan anpassen“ sie vorbelegt: erste Zeile = Dosis jetzt und Tage ab heute
+  /// (inkl. heute), danach die weiteren Stufen; die letzte ist das Ziel.
+  List<EditRow> anpassenVorlage() {
+    final a = st;
+    final sd = stageDay();
+    return [
+      for (var i = a.stage; i < a.plan.length; i++)
+        EditRow(a.plan[i], i == a.stage ? (need(i) - sd < 1 ? 1 : need(i) - sd) : need(i)),
+    ];
+  }
+
+  /// Anpassung durchrechnen, ohne zu speichern: Fehler oder der neue Zustand (Kopie). [bremst] = die
+  /// Anpassung geht höher (jetzt oder beim Ziel) oder macht den Plan länger – dann „kurz innehalten“.
+  ({Meldung? err, TaperState? neu, bool bremst}) anpassenPruefen(List<EditRow> ab) {
+    final a = st;
+    ({Meldung? err, TaperState? neu, bool bremst}) fehler(Meldung m) => (err: m, neu: null, bremst: false);
+    if (ab.isEmpty) return fehler(const Meldung(MeldungCode.keineSchritte));
+    for (var i = 0; i < ab.length; i++) {
+      final d = ab[i].dose;
+      if (!(d != null && d >= 0 && d.isFinite)) return fehler(Meldung(MeldungCode.stufeDosisFehlt, [i + 1]));
+      final n = ab[i].days;
+      if ((i < ab.length - 1 || ab.length == 1) && !(n != null && n >= 1)) {
+        return fehler(Meldung(MeldungCode.stufeTageFehlen, [i + 1]));
+      }
+      if (n != null && n > maxStufenTage) return fehler(Meldung(MeldungCode.stufeMaxTage, [i + 1, maxStufenTage]));
+    }
+    final kopie = TaperState.fromJson(jsonDecode(jsonEncode(a.toJson())))!;
+    final t = Taper(s: kopie, clock: clock);
+    t._anpassen(ab);
+    final lang = planLaengeFehler([for (var i = 0; i < kopie.plan.length - 1; i++) t.need(i)]);
+    if (lang != null) return fehler(lang);
+    final altEnde = voraussichtlichesEnde(), neuEnde = t.voraussichtlichesEnde();
+    final bremst = ab.first.dose! > a.plan[a.stage] + 1e-9 ||
+        ab.last.dose! > a.plan.last + 1e-9 ||
+        (altEnde != null && neuEnde != null && neuEnde.compareTo(altEnde) > 0);
+    return (err: null, neu: kopie, bremst: bremst);
+  }
+
+  /// Plan ab heute anpassen. Gilt sofort. Ein laufendes Halten endet heute; eine alte Vormerkung entfällt.
+  ApplyResult planAnpassen(List<EditRow> ab) {
+    final p = anpassenPruefen(ab);
+    if (p.err != null) return ApplyResult(err: p.err);
+    final alt = planSum(st.plan, st.days, st.stage);
+    _anpassen(ab);
+    logChg('Plan angepasst: $alt → ${planSum(st.plan, st.days, st.stage)}');
+    _after();
+    return const ApplyResult(applied: true);
+  }
+
+  void _anpassen(List<EditRow> ab) {
+    final a = st;
+    final td = today;
+    if (a.hold) endHold(td, 'Halten beendet (Plan angepasst)');
+    autoAdvance();
+    final sg = a.stage;
+    final sd = stageDay(td);
+    final vorher = [for (var i = 0; i < sg; i++) a.plan[i]];
+    final vorherTage = [for (var i = 0; i < sg; i++) need(i)];
+    int tg(int i) => ab[i].days ?? a.target;
+    final d0 = ab.first.dose!;
+    if ((d0 - a.plan[sg]).abs() < 1e-9 || sd == 0) {
+      // Gleiche Dosis (oder die Stufe beginnt heute): die aktuelle Stufe läuft weiter, ab heute noch tg(0) Tage.
+      a.plan = [...vorher, for (final r in ab) r.dose!];
+      a.days = [...vorherTage, sd + tg(0), for (var i = 1; i < ab.length; i++) tg(i)];
+      a.stage = sg;
+    } else {
+      // Neue Dosis mitten in der Stufe: die bisherigen Tage bleiben als eigene Stufe, die neue beginnt heute.
+      a.plan = [...vorher, a.plan[sg], for (final r in ab) r.dose!];
+      a.days = [...vorherTage, sd, for (var i = 0; i < ab.length; i++) tg(i)];
+      a.stage = sg + 1;
+      a.stageStart = td;
+    }
+    a.adv = null;
+    if (a.pend != null) {
+      logChg('Vormerkung verworfen, weil der Plan angepasst wurde');
+      a.pend = null;
+    }
+    final e = a.log[td];
+    if (e != null) {
+      e.plan = a.plan[a.stage];
+      e.stage = a.stage;
+      fixDay(e);
+    }
   }
 
   static bool _listEq<T>(List<T> a, List<T> b) {

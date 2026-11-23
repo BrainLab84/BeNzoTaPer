@@ -13,6 +13,7 @@ import 'fortschritt.dart';
 import 'eintragen.dart';
 import 'kalender.dart';
 import 'lob.dart';
+import 'plan_anpassen.dart';
 import 'plan_kopf.dart';
 import 'sicherung.dart';
 import 'vorrat.dart';
@@ -31,13 +32,6 @@ class HeuteSeite extends StatefulWidget {
 }
 
 class _HeuteSeiteState extends State<HeuteSeite> {
-  // „Ändern“
-  bool _aendern = false;
-  bool _warumFragen = false;
-  final _links = TextEditingController();
-  final _warum = TextEditingController();
-  bool _linksFehler = false;
-  bool _warumFehler = false;
 
   // „Dosis halten“ (holdAsk)
   bool _halten = false;
@@ -58,7 +52,7 @@ class _HeuteSeiteState extends State<HeuteSeite> {
 
   @override
   void dispose() {
-    for (final c in [_links, _warum, _haltenTage]) {
+    for (final c in [_haltenTage]) {
       c.dispose();
     }
     super.dispose();
@@ -67,39 +61,6 @@ class _HeuteSeiteState extends State<HeuteSeite> {
   void _fertig() => app.aenderung();
 
   // ---------------------------------------------------------------- Aktionen
-
-  void _aendernSchliessen() => setState(() {
-        _aendern = false;
-        _warumFragen = false;
-        _linksFehler = false;
-        _warumFehler = false;
-        _warum.clear();
-      });
-
-  void _linksSpeichern() {
-    final n = ganzZahl(_links.text);
-    if (n == null || !(n >= 1 && n <= 365)) {
-      setState(() => _linksFehler = true);
-      return;
-    }
-    final r = ta.saveLeft(n, why: _warumFragen ? _warum.text : null);
-    switch (r) {
-      case LeftResult.invalid:
-        setState(() => _linksFehler = true);
-      case LeftResult.needsWhy:
-        setState(() {
-          _linksFehler = false;
-          _warumFragen = true;
-        });
-      case LeftResult.whyTooShort:
-        setState(() => _warumFehler = true);
-      case LeftResult.unchanged:
-      case LeftResult.pended:
-      case LeftResult.applied:
-        _aendernSchliessen();
-        _fertig();
-    }
-  }
 
   void _haltenStarten({required bool offen}) {
     int? n;
@@ -354,8 +315,6 @@ class _HeuteSeiteState extends State<HeuteSeite> {
           ' Der Plan verschiebt sich automatisch um die gehaltenen Tage nach hinten.', '${bis != null ? "After that it continues automatically. If you are ready earlier, tap Continue." : "When you are ready to keep tapering, tap Continue."} The plan shifts back automatically by the days held.'),
           oben: 4,
           mitte: true));
-    } else if (!last && _aendern) {
-      k.add(_aendernFormular());
     } else if (!last) {
       k.add(
           Sub(tr('Nächste Stufe ${nextIn == 1 ? 'morgen' : 'in $nextIn Tagen'} (${datum(nextKey)})', 'Next step ${nextIn == 1 ? "tomorrow" : "in $nextIn days"} (${datum(nextKey)})'), oben: 6, mitte: true));
@@ -365,26 +324,31 @@ class _HeuteSeiteState extends State<HeuteSeite> {
 
     if (!last && _halten && !s.hold) {
       k.add(_haltenFormular());
-    } else if (!last && !(_aendern && !s.hold)) {
+    } else if (!finished) {
+      // „Plan anpassen“: ab heute alles änderbar, gilt sofort (auch beim Halten und in der letzten Stufe).
       k.add(const SizedBox(height: 12));
-      final aendern = knopf(tr('Ändern', 'Change'), () {
-        _links.text = '$nextIn';
-        setState(() => _aendern = true);
-      }, icon: Icons.edit_outlined, key: const Key('aendern'));
-      final halten = knopf(s.hold ? tr('Weiter abdosieren', 'Continue tapering') : tr('Dosis halten', 'Hold dose'), _haltenUmschalten,
-          icon: s.hold ? Icons.play_arrow : Icons.pause, key: const Key('halten'));
+      final anpassen = knopf(tr('Plan anpassen', 'Adjust plan'), () {
+        Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => PlanAnpassenSeite(app: app)));
+      }, icon: Icons.tune, key: const Key('anpassen'));
+      final halten = last
+          ? null
+          : knopf(s.hold ? tr('Weiter abdosieren', 'Continue tapering') : tr('Dosis halten', 'Hold dose'), _haltenUmschalten,
+              icon: s.hold ? Icons.play_arrow : Icons.pause, key: const Key('halten'));
       k.add(LayoutBuilder(
-        builder: (context, c) => genugPlatz(context, c, 320) || s.hold
-            ? Row(children: [
-                if (!s.hold) ...[Expanded(child: aendern), const SizedBox(width: 8)],
-                Expanded(child: halten),
-                const HilfeKnopf('time'),
-              ])
-            : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                aendern,
-                const SizedBox(height: 8),
-                Row(children: [Expanded(child: halten), const HilfeKnopf('time')]),
-              ]),
+        builder: (context, c) => halten == null
+            ? Row(children: [Expanded(child: anpassen), const HilfeKnopf('time')])
+            : genugPlatz(context, c, 320)
+                ? Row(children: [
+                    Expanded(child: anpassen),
+                    const SizedBox(width: 8),
+                    Expanded(child: halten),
+                    const HilfeKnopf('time'),
+                  ])
+                : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    anpassen,
+                    const SizedBox(height: 8),
+                    Row(children: [Expanded(child: halten), const HilfeKnopf('time')]),
+                  ]),
       ));
     }
     return Karte(mitte: true, children: k);
@@ -418,49 +382,6 @@ class _HeuteSeiteState extends State<HeuteSeite> {
       ]),
     );
   }
-
-  // Formular „Ändern“ mit Begründung
-  Widget _aendernFormular() => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Feldname(tr('In wie vielen Tagen soll die nächste Stufe beginnen?', 'In how many days should the next step start?'), oben: 0),
-          Row(children: [
-            Expanded(
-              child: TextField(
-                key: const Key('linksTage'),
-                controller: _links,
-                keyboardType: TextInputType.number,
-                decoration: feldStil(fehler: _linksFehler),
-                onSubmitted: (_) => _linksSpeichern(),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(width: 80, child: hauptKnopf('OK', _linksSpeichern, key: const Key('linksOk'), blatt: false)),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 50,
-              child: IconButton(tooltip: tr('Abbrechen', 'Cancel'), icon: const Icon(Icons.close), onPressed: _aendernSchliessen),
-            ),
-          ]),
-          Sub(tr('1 = morgen. Kalender und Enddatum passen sich an.', '1 = tomorrow. Calendar and end date adjust.'), oben: 4),
-          if (_warumFragen) ...[
-            const SizedBox(height: 10),
-            IconText(Icons.hourglass_empty, tr('48 Stunden Bedenkzeit', '48-hour reflection period'), fett: true),
-            Sub(tr('Das verlängert die Stufe. Die Änderung wird erst nach 48 Stunden wirksam. „Dosis halten“ geht '
-                'sofort.', 'This extends the step. The change only takes effect after 48 hours. “Hold dose” works immediately.')),
-            Feldname(tr('Warum?', 'Why?')),
-            TextField(
-              key: const Key('linksWarum'),
-              controller: _warum,
-              minLines: 2,
-              maxLines: 4,
-              decoration: feldStil(fehler: _warumFehler),
-            ),
-            const SizedBox(height: 8),
-            hauptKnopf(tr('Vormerken', 'Schedule'), _linksSpeichern, key: const Key('vormerken')),
-          ],
-        ]),
-      );
 
   // Formular „Dosis halten“
   Widget _haltenFormular() => Padding(
