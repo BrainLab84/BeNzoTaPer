@@ -57,19 +57,39 @@ void main() {
     expect(find.text('PIN-Sperre ist an'), findsOneWidget, reason: 'wieder in „Mehr“, wo man war');
   });
 
-  testWidgets('Hintergrund: unter 1 Minute offen, darüber gesperrt', (t) async {
+  testWidgets('Hintergrund: Standard 2 Minuten, wählbar 2/5/10/30, bleibt gespeichert', (t) async {
     final app = await starte(t);
     await pinEinrichten(t, '2468', '2468');
-    app.hintergrund();
-    jetzt = jetzt.add(const Duration(seconds: 50));
-    app.vordergrund();
-    await t.pumpAndSettle();
-    expect(app.gesperrt, isFalse);
-    app.hintergrund();
-    jetzt = jetzt.add(const Duration(seconds: 61));
-    app.vordergrund();
-    await t.pumpAndSettle();
+    expect(app.sperrMinuten, 2);
+    Future<void> weg(Duration d) async {
+      app.hintergrund();
+      jetzt = jetzt.add(d);
+      app.vordergrund();
+      await t.pumpAndSettle();
+    }
+
+    await weg(const Duration(seconds: 119));
+    expect(app.gesperrt, isFalse, reason: 'unter 2 Minuten offen');
+    await weg(const Duration(seconds: 121));
     expect(find.byType(SperrSeite), findsOneWidget);
+    await t.enterText(find.byKey(const Key('pinEingabe')), '2468');
+    await tippe(t, find.byKey(const Key('entsperren')));
+
+    if (find.byTooltip('Mehr').evaluate().isNotEmpty) await tippe(t, find.byTooltip('Mehr'));
+    for (final m in [2, 5, 10, 30]) {
+      expect(find.byKey(Key('sperr$m')), findsOneWidget);
+    }
+    await tippe(t, find.byKey(const Key('sperr10')));
+    expect(app.sperrMinuten, 10);
+    await weg(const Duration(minutes: 9));
+    expect(app.gesperrt, isFalse, reason: '10 Minuten gewählt');
+    await weg(const Duration(minutes: 11));
+    expect(app.gesperrt, isTrue);
+
+    await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    final a2 = AppState(app.store, clock: () => jetzt);
+    await t.runAsync(a2.laden);
+    expect(a2.sperrMinuten, 10, reason: 'Einstellung überlebt Neustart');
   });
 
   testWidgets('Neustart: mit PIN gesperrt, ohne PIN nicht', (t) async {

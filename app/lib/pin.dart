@@ -1,5 +1,5 @@
 // PIN-Sperre: Sperrbildschirm, Einrichten, „PIN vergessen“.
-// Sperrt beim Öffnen und nach 1 Minute im Hintergrund. Die PIN (4–8 Ziffern) liegt gehasht im Stand (`pin`).
+// Sperrt beim Öffnen und nach der gewählten Zeit im Hintergrund (2/5/10/30 Minuten, Standard 2). Die PIN (4–8 Ziffern) liegt gehasht im Stand (`pin`).
 // nach dem ersten eigenen Plan einmal anbieten (überspringbar), sonst in „Mehr“.
 import 'i18n/txt.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ import 'plan_kopf.dart';
 import 'sos.dart';
 
 String get pinErklaerung =>
-    tr('Sperrt beim Öffnen und nach 1 Minute im Hintergrund. Schützt vor neugierigen Blicken, ist aber keine Verschlüsselung.', 'Locks on opening and after 1 minute in the background. Protects against prying eyes, but is not encryption.');
+    tr('Sperrt beim Öffnen und nach der gewählten Zeit im Hintergrund. Schützt vor neugierigen Blicken, ist aber keine Verschlüsselung.', 'Locks on opening and after the chosen time in the background. Protects against prying eyes, but is not encryption.');
 
 /// Sperrbildschirm (liegt über allem, solange [AppState.gesperrt]).
 class SperrSeite extends StatefulWidget {
@@ -208,7 +208,19 @@ class PinAbschnitt extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               IconText(Icons.lock, tr('PIN-Sperre ist an', 'PIN lock is on'), fett: true),
               Sub(pinErklaerung, oben: 4),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
+              Text(tr('Sperren nach', 'Lock after'), style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              Wrap(spacing: 8, runSpacing: 6, children: [
+                for (final m in AppState.sperrZeiten)
+                  ChoiceChip(
+                    key: Key('sperr$m'),
+                    label: Text(tr('$m Min.', '$m min')),
+                    selected: app.sperrMinuten == m,
+                    onSelected: (_) => app.sperrZeitSetzen(m),
+                  ),
+              ]),
+              const SizedBox(height: 10),
               Row(children: [
                 Expanded(child: knopf(tr('Jetzt sperren', 'Lock now'), app.sperren, icon: Icons.lock, key: const Key('jetztSperren'))),
                 const SizedBox(width: 8),

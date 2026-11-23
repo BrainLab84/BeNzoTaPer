@@ -103,6 +103,7 @@ class AppState extends ChangeNotifier {
         if (j is Map && (j['lang'] == 'de' || j['lang'] == 'en')) sprache = j['lang'] as String;
         if (j is Map && j['vp'] is bool) vorratPush = j['vp'] as bool;
         if (j is Map && j['vpq'] == true) _vpGefragt = true;
+        if (j is Map && sperrZeiten.contains(j['sperrMin'])) sperrMinuten = j['sperrMin'] as int;
       }
     } catch (_) {}
     try {
@@ -236,6 +237,7 @@ class AppState extends ChangeNotifier {
         if (_vpGefragt) 'vpq': true,
         if (lobWeg != null) 'lobWeg': lobWeg,
         if (sprache != null) 'lang': sprache,
+        'sperrMin': sperrMinuten,
       }));
 
   // ===== Lob beim Halten (lob.dart) =====
@@ -334,12 +336,25 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// App geht in den Hintergrund / kommt zurück: nach mehr als 1 Minute wieder sperren.
+  /// Wählbare Sperrzeiten in Minuten.
+  static const sperrZeiten = [2, 5, 10, 30];
+
+  /// Nach so vielen Minuten im Hintergrund wird wieder gesperrt (Einstellungen-Datei).
+  int sperrMinuten = 2;
+
+  Future<void> sperrZeitSetzen(int min) async {
+    if (!sperrZeiten.contains(min)) return;
+    sperrMinuten = min;
+    notifyListeners();
+    await _einstellungenSchreiben();
+  }
+
+  /// App geht in den Hintergrund / kommt zurück: nach mehr als [sperrMinuten] wieder sperren.
   void hintergrund() => _hintergrundSeit ??= taper.clock();
   void vordergrund() {
     final seit = _hintergrundSeit;
     _hintergrundSeit = null;
-    if (seit != null && hatPin && taper.clock().difference(seit) > const Duration(minutes: 1)) gesperrt = true;
+    if (seit != null && hatPin && taper.clock().difference(seit) > Duration(minutes: sperrMinuten)) gesperrt = true;
     auffrischen();
   }
 

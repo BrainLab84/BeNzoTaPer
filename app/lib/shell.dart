@@ -80,7 +80,7 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState s) {
-    // PIN-Sperre: nach mehr als 1 Minute im Hintergrund wieder sperren .
+    // PIN-Sperre: nach der gewählten Zeit im Hintergrund wieder sperren.
     if (s == AppLifecycleState.resumed) {
       widget.app.vordergrund();
     } else if (s == AppLifecycleState.paused || s == AppLifecycleState.hidden) {

@@ -163,10 +163,10 @@ void main() {
           jetzt = jetzt.add(const Duration(minutes: 1));
           merke('Nachkauf');
         }
-        // App 2 Minuten im Hintergrund → PIN-Sperre, entsperren
+        // App 3 Minuten im Hintergrund → PIN-Sperre (Standard 2 Minuten), entsperren
         if (r.nextDouble() < .08) {
           app.hintergrund();
-          jetzt = jetzt.add(const Duration(minutes: 2));
+          jetzt = jetzt.add(const Duration(minutes: 3));
           app.vordergrund();
           await t.pumpAndSettle();
           expect(find.byType(SperrSeite), findsOneWidget);
