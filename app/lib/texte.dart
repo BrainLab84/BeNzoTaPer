@@ -100,6 +100,8 @@ const anleitungDe = <Abschnitt>[
     Absatz(B.p,
         'Der Durchschnitt zeigt dir, wie wenig ein einmaliger Ausrutscher am Gesamtbild ändert: Ein Tag zählt nur ein Siebtel der Woche, und mit den nächsten Tagen im Plan bist du wieder auf Kurs.'),
     Absatz(B.p,
+        'Er rechnet nur mit eingetragenen Tagen. Ein Tag ohne Eintrag zählt nicht mit, auch nicht als 0 mg.'),
+    Absatz(B.p,
         'Vor allem Diazepam hat eine sehr lange Halbwertszeit. Der Wirkstoffspiegel im Körper ergibt sich deshalb eher aus dem Verlauf über viele Tage als aus einem einzelnen Tag. Bei kurz wirksamen Benzodiazepinen ist dieser Ausgleich weniger ausgeprägt.'),
     Absatz(B.p,
         'Entscheidend ist der Trend über Wochen, nicht der einzelne Tag. Am nächsten Tag gilt einfach wieder deine geplante Dosis.'),

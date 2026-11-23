@@ -1,4 +1,4 @@
-// „Heute eintragen“ steht direkt über dem Kalender: „Dosis genommen“ und eine abweichende Dosis sofort sichtbar.
+// „Heute eintragen“ (Reiter Heute): „Dosis genommen“ und eine abweichende Dosis sofort sichtbar.
 import 'i18n/txt.dart';
 import 'dart:math' as math;
 

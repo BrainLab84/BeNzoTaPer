@@ -186,6 +186,8 @@ void main() {
             await t.enterText(find.byKey(const Key('menge')), fmt(ta.st.plan[ta.st.stage] + 1));
             await _tap(t, find.byKey(const Key('plus')));
             await _tap(t, find.text('Eintragen'));
+            expect(find.byKey(const Key('mehrAlsGeplant')), findsOneWidget, reason: 'Fenster nach dem Eintragen');
+            await _tap(t, find.byKey(const Key('mehrAlsGeplantOk')));
             merke('Ausrutscher');
           } else {
             await _tap(t, find.byKey(const Key('wieGeplant')));

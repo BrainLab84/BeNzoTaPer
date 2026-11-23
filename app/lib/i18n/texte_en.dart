@@ -81,6 +81,8 @@ const anleitungEn = <Abschnitt>[
     Absatz(B.p,
         'The average shows you how little a single slip changes in the overall picture: one day counts only a seventh of the week, and with the next days on plan you are back on course.'),
     Absatz(B.p,
+        'It only counts logged days. A day without an entry is not counted, not even as 0 mg.'),
+    Absatz(B.p,
         'Diazepam in particular has a very long half-life. The level in your body therefore results more from the course over many days than from a single day. With short-acting benzodiazepines this balancing effect is less pronounced.'),
     Absatz(B.p,
         'What matters is the trend over weeks, not the single day. The next day your planned dose simply applies again.'),

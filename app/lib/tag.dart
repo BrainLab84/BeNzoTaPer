@@ -12,9 +12,12 @@ import 'sos.dart';
 /// Einnahme eintragen. Liegt sie heute über dem Plan, kommt erst „Kurz innehalten“.
 /// Gibt `true` zurück, wenn eingetragen wurde.
 Future<bool> einnahmeEintragen(BuildContext context, AppState app, double v, {String? t, String? k}) async {
+  final tag = k ?? app.taper.today;
+  final vorherDrueber = app.taper.st.log[tag]?.r == 'lapse';
   final r = app.taper.addIntake(v, t: t, k: k);
   if (r != IntakeResult.needsPause) {
     app.aenderung();
+    if (r == IntakeResult.added && context.mounted) await _mehrAlsGeplant(context, app, tag, vorherDrueber);
     return r == IntakeResult.added;
   }
   final wahl = await Navigator.of(context)
@@ -22,6 +25,7 @@ Future<bool> einnahmeEintragen(BuildContext context, AppState app, double v, {St
   if (wahl == Innehalten.eintragen) {
     app.taper.addIntake(v, t: t, k: k, force: true);
     app.aenderung();
+    if (context.mounted) await _mehrAlsGeplant(context, app, tag, vorherDrueber);
     return true;
   }
   if ((wahl == Innehalten.warten || wahl == Innehalten.sos) && context.mounted) {
@@ -29,6 +33,23 @@ Future<bool> einnahmeEintragen(BuildContext context, AppState app, double v, {St
         .push<void>(MaterialPageRoute(builder: (_) => SosSeite(app: app, timerSofort: wahl == Innehalten.warten)));
   }
   return false;
+}
+
+/// Nach dem Speichern: Rutscht der Tag dadurch über den Plan, einmal ein kurzes Fenster mit OK.
+Future<void> _mehrAlsGeplant(BuildContext context, AppState app, String tag, bool vorherDrueber) async {
+  if (vorherDrueber || app.taper.st.log[tag]?.r != 'lapse') return;
+  await showDialog<void>(
+    context: context,
+    builder: (c) => AlertDialog(
+      key: const Key('mehrAlsGeplant'),
+      content: Text(tr(
+          'Mehr als geplant – das kommt vor. Ein einzelner Tag macht nicht den ganzen Plan kaputt. Der Wochen-Ø zeigt: '
+              'Über die Woche fällt er oft weniger ins Gewicht, als es sich gerade anfühlt.',
+          "More than planned – that happens. One day doesn't undo the whole plan. The weekly average shows that over a "
+              'week it often weighs less than it feels right now.')),
+      actions: [FilledButton(key: const Key('mehrAlsGeplantOk'), onPressed: () => Navigator.pop(c), child: const Text('OK'))],
+    ),
+  );
 }
 
 /// Eine Zeile „Uhrzeit · Menge · ✕“ .

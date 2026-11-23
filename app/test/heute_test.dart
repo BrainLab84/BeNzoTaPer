@@ -71,8 +71,20 @@ void main() {
     await tippe(t, find.text('Eintragen'));
     expect(app.taper.st.log['2026-03-10']!.dose, 12);
     expect(app.taper.st.log['2026-03-10']!.r, 'lapse');
+    // Danach einmal das Fenster „Mehr als geplant“ mit OK.
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsOneWidget);
+    expect(txt('Mehr als geplant – das kommt vor.'), findsOneWidget);
+    await tippe(t, find.byKey(const Key('mehrAlsGeplantOk')));
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing);
     expect(txt('genommen statt 10.'), findsOneWidget);
     expect(txt('Morgen gilt wieder 10 mg. Ein Tag ändert den Wochen-Ø nur wenig.'), findsOneWidget);
+
+    // Weitere Einnahme am selben Tag: innehalten ja, das Fenster nicht nochmal.
+    await schreibe(t, find.byKey(const Key('menge')), '1');
+    await tippe(t, find.byKey(const Key('plus')));
+    await tippe(t, find.text('Eintragen'));
+    expect(app.taper.st.log['2026-03-10']!.dose, 13);
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing, reason: 'nur einmal pro Tag');
 
     await schreibe(t, find.byKey(const Key('menge')), '1');
     await tippe(t, find.byKey(const Key('plus')));
@@ -82,11 +94,27 @@ void main() {
     expect(txt('Noch durchhalten'), findsOneWidget);
     expect(find.byKey(const Key('sosRest')), findsOneWidget);
     expect((t.widget<Text>(find.byKey(const Key('sosRest'))).data)!, matches(RegExp(r'^1[45]:\d\d$')));
-    expect(app.taper.st.log['2026-03-10']!.dose, 12, reason: 'Warten trägt nichts ein');
+    expect(app.taper.st.log['2026-03-10']!.dose, 13, reason: 'Warten trägt nichts ein');
     await t.tap(find.text('Zurück'));
     await t.pump(const Duration(milliseconds: 500));
     await t.pump(const Duration(milliseconds: 500));
     expect(find.byKey(const Key('sosRest')), findsNothing);
+  });
+
+  testWidgets('Mehr als geplant beim Nachtragen: nur das Fenster, kein Innehalten; im Plan kein Fenster', (t) async {
+    final app = await starte(t, json: basis(log: {for (var d = 1; d <= 8; d++) '2026-03-0$d': eintrag(10, 10)}));
+    await tippe(t, find.byKey(const Key('streifen-2026-03-09')));
+    await t.enterText(find.byKey(const Key('nachMenge')), '9');
+    await tippe(t, find.byKey(const Key('nachPlus')));
+    expect(app.taper.st.log['2026-03-09']!.r, 'ok');
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing, reason: 'im Plan');
+    await t.enterText(find.byKey(const Key('nachMenge')), '3');
+    await tippe(t, find.byKey(const Key('nachPlus')));
+    expect(find.text('Kurz innehalten'), findsNothing, reason: 'Innehalten nur für heute');
+    expect(app.taper.st.log['2026-03-09']!.r, 'lapse');
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsOneWidget);
+    await tippe(t, find.byKey(const Key('mehrAlsGeplantOk')));
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing);
   });
 
   testWidgets('Halten 7 Tage: angezeigtes „bis“ ist der letzte Haltetag (Audit 20.11.)', (t) async {
