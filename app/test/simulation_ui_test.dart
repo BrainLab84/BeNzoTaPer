@@ -62,6 +62,7 @@ void main() {
       // Erinnerung an, PIN gesetzt (beides soll die Abläufe nicht stören).
       await t.runAsync(() => app.erinnerungSetzen(app.erinnerung.mit(an: true)));
       expect(app.pinSetzen('2468', '2468'), isNull);
+      expect(app.wortSetzen('Lavendel', 'Lavendel'), isNull);
       await t.pumpWidget(TaperingBuddy(app: app, splashDauer: const Duration(milliseconds: 10)));
       await t.pump(const Duration(milliseconds: 50));
       await t.pumpAndSettle();

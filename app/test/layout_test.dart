@@ -111,6 +111,8 @@ void main() {
           await zeige('PIN nach dem ersten Plan');
           await t.enterText(find.byKey(const Key('pinNeu1')), '1234');
           await t.enterText(find.byKey(const Key('pinNeu2')), '1234');
+          await t.enterText(find.byKey(const Key('wortNeu1')), 'Lavendel');
+          await t.enterText(find.byKey(const Key('wortNeu2')), 'Lavendel');
           await t.ensureVisible(find.byKey(const Key('pinSpeichern')));
           await t.tap(find.byKey(const Key('pinSpeichern')));
           await zeige('Kalender nach dem ersten Plan');

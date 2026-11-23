@@ -104,6 +104,8 @@ class AppState extends ChangeNotifier {
         if (j is Map && j['vp'] is bool) vorratPush = j['vp'] as bool;
         if (j is Map && j['vpq'] == true) _vpGefragt = true;
         if (j is Map && sperrZeiten.contains(j['sperrMin'])) sperrMinuten = j['sperrMin'] as int;
+        if (j is Map && j['pw'] is String) _wortHash = j['pw'] as String;
+        if (j is Map && j['pwq'] == true) _wortGefragt = true;
       }
     } catch (_) {}
     try {
@@ -238,6 +240,8 @@ class AppState extends ChangeNotifier {
         if (lobWeg != null) 'lobWeg': lobWeg,
         if (sprache != null) 'lang': sprache,
         'sperrMin': sperrMinuten,
+        if (_wortHash != null) 'pw': _wortHash,
+        if (_wortGefragt) 'pwq': true,
       }));
 
   // ===== Lob beim Halten (lob.dart) =====
@@ -322,8 +326,13 @@ class AppState extends ChangeNotifier {
   }
 
   /// Gibt einen Fehlertext zurück, sonst `null` (dann ist die PIN gespeichert).
-  String? pinSetzen(String a, String b) {
+  String? pinSetzen(String a, String b, {bool nurPruefen = false}) {
     if (!eingerichtet) return tr('Erst einen eigenen Plan anlegen.', 'Create your own plan first.');
+    if (nurPruefen) {
+      if (!RegExp(r'^\d{4,8}$').hasMatch(a)) return meldungText(const Meldung(MeldungCode.pinZiffern));
+      if (a != b) return meldungText(const Meldung(MeldungCode.pinUngleich));
+      return null;
+    }
     final f = taper.setPin(a, b);
     if (f == null) notifyListeners();
     return f == null ? null : meldungText(f);
@@ -332,8 +341,59 @@ class AppState extends ChangeNotifier {
   void pinAus() {
     if (!eingerichtet) return;
     taper.clearPin();
+    _wortHash = null;
+    _wortGefragt = false;
+    _einstellungenSchreiben();
     gesperrt = false;
     notifyListeners();
+  }
+
+  // ===== Schlüsselwort zum Zurücksetzen der PIN =====
+  // Nur als Hash in der Einstellungen-Datei, nie angezeigt. Groß/Klein und Leerzeichen am Rand egal.
+
+  String? _wortHash;
+  bool _wortGefragt = false;
+  bool get hatWort => _wortHash != null;
+
+  /// Wer schon eine PIN ohne Schlüsselwort hat, wird nach dem Entsperren einmal gefragt.
+  bool get wortFragen => hatPin && !hatWort && !_wortGefragt;
+
+  static String _wortNorm(String w) => w.trim().toLowerCase();
+  static String _wortHashVon(String w) => Taper.hashPin('wort|${_wortNorm(w)}');
+
+  /// Fehlertext oder `null`, ohne zu speichern.
+  String? wortFehler(String a, String b) {
+    if (_wortNorm(a).length < 3) return tr('Das Schlüsselwort braucht mindestens 3 Zeichen.', 'The keyword needs at least 3 characters.');
+    if (_wortNorm(a) != _wortNorm(b)) return tr('Die beiden Schlüsselwörter sind nicht gleich.', 'The two keywords do not match.');
+    return null;
+  }
+
+  /// Fehlertext oder `null` (gespeichert).
+  String? wortSetzen(String a, String b) {
+    final f = wortFehler(a, b);
+    if (f != null) return f;
+    _wortHash = _wortHashVon(a);
+    _wortGefragt = true;
+    _einstellungenSchreiben();
+    notifyListeners();
+    return null;
+  }
+
+  void wortGefragtMerken() {
+    _wortGefragt = true;
+    _einstellungenSchreiben();
+  }
+
+  bool wortPasst(String w) => _wortHash != null && _wortHashVon(w) == _wortHash;
+
+  /// PIN vergessen: mit dem Schlüsselwort eine neue PIN festlegen und entsperren. Fehlertext oder `null`.
+  String? pinMitWortNeu(String wort, String a, String b) {
+    if (!wortPasst(wort)) return tr('Schlüsselwort stimmt nicht.', 'Keyword is not correct.');
+    final f = pinSetzen(a, b);
+    if (f != null) return f;
+    gesperrt = false;
+    notifyListeners();
+    return null;
   }
 
   /// Wählbare Sperrzeiten in Minuten.
@@ -362,6 +422,8 @@ class AppState extends ChangeNotifier {
   void allesLoeschen() {
     taper.wipe();
     gesperrt = false;
+    _wortHash = null;
+    _wortGefragt = false;
     erinnerung = const ErinnerungEinstellung();
     vorratPush = true;
     _vpGefragt = false;

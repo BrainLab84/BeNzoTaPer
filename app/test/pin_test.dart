@@ -10,12 +10,19 @@ import 'package:tapering_buddy/store.dart';
 
 import 'hilfen.dart';
 
-Future<void> pinEinrichten(WidgetTester t, String a, String b) async {
+Future<void> pinEinrichten(WidgetTester t, String a, String b, {String wort = 'Lavendel'}) async {
   await tippe(t, find.byTooltip('Mehr'));
   await tippe(t, find.byKey(const Key('pinEinrichten')));
   await t.enterText(find.byKey(const Key('pinNeu1')), a);
   await t.enterText(find.byKey(const Key('pinNeu2')), b);
+  await t.enterText(find.byKey(const Key('wortNeu1')), wort);
+  await t.enterText(find.byKey(const Key('wortNeu2')), wort);
   await tippe(t, find.byKey(const Key('pinSpeichern')));
+}
+
+Future<void> sperrenUndVergessen(WidgetTester t) async {
+  await tippe(t, find.byKey(const Key('jetztSperren')));
+  await tippe(t, find.text('PIN vergessen?'));
 }
 
 void main() {
@@ -34,8 +41,19 @@ void main() {
     await tippe(t, find.byKey(const Key('pinSpeichern')));
     expect(find.text('Die beiden PINs stimmen nicht überein.'), findsOneWidget);
     await t.enterText(find.byKey(const Key('pinNeu2')), '1234');
+    await t.enterText(find.byKey(const Key('wortNeu2')), 'anders');
+    await tippe(t, find.byKey(const Key('pinSpeichern')));
+    expect(find.text('Die beiden Schlüsselwörter sind nicht gleich.'), findsOneWidget);
+    expect(app.hatPin, isFalse, reason: 'nie eine PIN ohne Schlüsselwort');
+    await t.enterText(find.byKey(const Key('wortNeu1')), 'ab');
+    await t.enterText(find.byKey(const Key('wortNeu2')), 'ab');
+    await tippe(t, find.byKey(const Key('pinSpeichern')));
+    expect(find.text('Das Schlüsselwort braucht mindestens 3 Zeichen.'), findsOneWidget);
+    await t.enterText(find.byKey(const Key('wortNeu1')), 'Lavendel');
+    await t.enterText(find.byKey(const Key('wortNeu2')), 'lavendel ');
     await tippe(t, find.byKey(const Key('pinSpeichern')));
     expect(app.hatPin, isTrue);
+    expect(app.hatWort, isTrue, reason: 'Groß/Klein und Leerzeichen am Rand egal');
     expect(find.text('PIN-Sperre ist an'), findsOneWidget);
     expect(app.gesperrt, isFalse, reason: 'nach dem Einrichten nicht gleich gesperrt');
   });
@@ -113,17 +131,90 @@ void main() {
         reason: 'SOS auch im Sperrbildschirm');
   });
 
-  testWidgets('PIN vergessen: Abbrechen oder alles löschen → Beispiel', (t) async {
+  testWidgets('PIN vergessen: Schlüsselwort → neue PIN; falsches Wort nicht', (t) async {
     final app = await starte(t);
     await pinEinrichten(t, '2468', '2468');
+    await sperrenUndVergessen(t);
+    expect(txt('offline und hat kein Konto'), findsOneWidget);
+    await t.enterText(find.byKey(const Key('wortEingabe')), 'Rose');
+    await t.enterText(find.byKey(const Key('pinNeu1')), '1357');
+    await t.enterText(find.byKey(const Key('pinNeu2')), '1357');
+    await tippe(t, find.byKey(const Key('pinZuruecksetzen')));
+    expect(find.text('Schlüsselwort stimmt nicht.'), findsOneWidget);
+    expect(app.gesperrt, isTrue);
+    expect(app.taper.checkPin('2468'), isTrue, reason: 'alte PIN unverändert');
+    await t.enterText(find.byKey(const Key('wortEingabe')), '  LAVENDEL ');
+    await tippe(t, find.byKey(const Key('pinZuruecksetzen')));
+    expect(app.gesperrt, isFalse);
+    expect(app.taper.checkPin('1357'), isTrue);
+    expect(app.beispiel, isFalse, reason: 'Daten bleiben');
+    // Neue PIN gilt.
     await tippe(t, find.byKey(const Key('jetztSperren')));
+    await t.enterText(find.byKey(const Key('pinEingabe')), '1357');
+    await tippe(t, find.byKey(const Key('entsperren')));
+    expect(app.gesperrt, isFalse);
+  });
+
+  testWidgets('Bestehende PIN ohne Schlüsselwort: einmal nachfragen, „Später“ fragt nicht wieder', (t) async {
+    final app = await starte(t);
+    expect(app.pinSetzen('2468', '2468'), isNull, reason: 'wie vor dem Update');
+    expect(app.hatWort, isFalse);
+    app.sperren();
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const Key('pinEingabe')), '2468');
+    await tippe(t, find.byKey(const Key('entsperren')));
+    expect(app.gesperrt, isTrue, reason: 'erst die Nachfrage');
+    expect(find.text('Neu: Lege ein Schlüsselwort fest.'), findsOneWidget);
+    await tippe(t, find.byKey(const Key('wortSpaeter')));
+    expect(app.gesperrt, isFalse);
+    app.sperren();
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const Key('pinEingabe')), '2468');
+    await tippe(t, find.byKey(const Key('entsperren')));
+    expect(app.gesperrt, isFalse, reason: 'nur einmal gefragt');
+    // Ohne Wort: „PIN vergessen“ bietet nur Zurücksetzen.
+    app.sperren();
+    await t.pumpAndSettle();
     await tippe(t, find.text('PIN vergessen?'));
-    expect(txt('Ohne PIN kommt niemand an die Daten'), findsOneWidget);
+    expect(find.byKey(const Key('wortEingabe')), findsNothing);
+    expect(txt('Ohne Schlüsselwort bleibt nur Zurücksetzen'), findsOneWidget);
+  });
+
+  testWidgets('Nachfrage beantwortet: Wort gespeichert, überlebt Neustart, hilft beim Vergessen', (t) async {
+    final app = await starte(t);
+    app.pinSetzen('2468', '2468');
+    app.sperren();
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const Key('pinEingabe')), '2468');
+    await tippe(t, find.byKey(const Key('entsperren')));
+    await t.enterText(find.byKey(const Key('wortNeu1')), 'Möwe');
+    await t.enterText(find.byKey(const Key('wortNeu2')), 'möwe');
+    await tippe(t, find.byKey(const Key('wortSpeichern')));
+    expect(app.gesperrt, isFalse);
+    expect(app.hatWort, isTrue);
+    await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    final a2 = AppState(app.store, clock: () => jetzt);
+    await t.runAsync(a2.laden);
+    expect(a2.hatWort, isTrue);
+    expect(a2.wortPasst('MÖWE'), isTrue);
+    expect(a2.wortPasst('Moewe'), isFalse);
+  });
+
+  testWidgets('PIN und Wort vergessen: Alles löschen nur mit Bestätigung → Beispiel', (t) async {
+    final app = await starte(t);
+    await pinEinrichten(t, '2468', '2468');
+    await sperrenUndVergessen(t);
     await tippe(t, find.text('Abbrechen'));
     expect(find.byKey(const Key('pinEingabe')), findsOneWidget);
     await tippe(t, find.text('PIN vergessen?'));
     await tippe(t, find.byKey(const Key('allesLoeschen')));
+    expect(find.byKey(const Key('resetSicherDialog')), findsOneWidget);
+    expect(app.beispiel, isFalse, reason: 'erst nach Bestätigung');
+    await t.enterText(find.byKey(const Key('planSicherText')), 'Ich bin mir sicher');
+    await tippe(t, find.byKey(const Key('planBackupHaken')));
+    await tippe(t, find.byKey(const Key('planSicherWeiter')));
     expect(app.gesperrt, isFalse);
+    expect(app.hatWort, isFalse);
     expect(app.beispiel, isTrue, reason: 'danach wieder das Beispiel');
     expect(app.hatPin, isFalse);
     await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
