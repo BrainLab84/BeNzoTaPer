@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tapering_buddy/app_state.dart';
 import 'package:tapering_buddy/bausteine.dart';
 import 'package:tapering_buddy/main.dart';
+import 'package:tapering_buddy/heute.dart';
 import 'package:tapering_buddy/store.dart';
 import 'package:tapering_buddy/verlauf.dart';
 import 'package:tapering_core/tapering_core.dart';
@@ -107,21 +108,7 @@ Future<String> _pruefeAlles(WidgetTester t, AppState app, String grund) async {
   } else if (soll.voraussichtlich() != null) {
     expect(plan, contains(soll.voraussichtlich()), reason: 'Plan-Karte Ende. $grund');
   }
-  final si = ta.stockInfo();
-  if (si != null) {
-    final z = _texte(find.byKey(const Key('vorratZeile'))).join();
-    final String erw;
-    if (si.days < 1) {
-      erw = 'Reicht nicht mehr für heute';
-    } else if (si.days.isFinite) {
-      erw = 'Reicht noch ca. ${tage(si.days.toInt())} (bis ${dmy(addD(ta.today, si.days.toInt() - 1))})';
-    } else {
-      erw = 'Reicht bis zum Ende des Plans';
-    }
-    expect(z, erw, reason: 'Vorrat-Zeile. $grund');
-  }
   schnapp.writeln('PLAN ${plan.join('|')}');
-  if (si != null) schnapp.writeln('VORRAT ${_texte(find.byKey(const Key('vorratKarte'))).take(4).join('|')}');
 
   // --- Kalender
   await reiter(t, 'Kalender');
@@ -171,6 +158,24 @@ Future<String> _pruefeAlles(WidgetTester t, AppState app, String grund) async {
     }
   }
   schnapp.writeln('HEUTE ${heute.join('|')}');
+
+  // --- Vorrat (unten in Heute)
+  await t.scrollUntilVisible(find.byKey(const Key('vorratKarte')), 300,
+      scrollable: find.descendant(of: find.byType(HeuteSeite), matching: find.byType(Scrollable)).first);
+  final si = ta.stockInfo();
+  if (si != null) {
+    final z = _texte(find.byKey(const Key('vorratZeile'))).join();
+    final String erw;
+    if (si.days < 1) {
+      erw = 'Reicht nicht mehr für heute';
+    } else if (si.days.isFinite) {
+      erw = 'Reicht noch ca. ${tage(si.days.toInt())} (bis ${dmy(addD(ta.today, si.days.toInt() - 1))})';
+    } else {
+      erw = 'Reicht bis zum Ende des Plans';
+    }
+    expect(z, erw, reason: 'Vorrat-Zeile. $grund');
+  }
+  if (si != null) schnapp.writeln('VORRAT ${_texte(find.byKey(const Key('vorratKarte'))).take(4).join('|')}');
 
   // --- Fortschritt
   await reiter(t, 'Fortschritt');

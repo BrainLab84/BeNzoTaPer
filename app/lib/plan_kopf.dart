@@ -155,7 +155,7 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
   }
 }
 
-/// Startkarte, solange es keinen Plan gibt (Kalender, Heute, Plan, Fortschritt):
+/// Startkarte, solange es keinen eigenen Plan gibt (oben in Heute):
 /// „Schön, dass du da bist“, „Neuen Plan erstellen“ / „Plan importieren“, „Sicherung laden“.
 class PlanKopf extends StatelessWidget {
   const PlanKopf({super.key, required this.app});
@@ -212,7 +212,7 @@ Widget planKnoepfe(BuildContext context, AppState app, {bool betont = false}) =>
       );
     });
 
-/// Begrüßung oben im Kalender, wenn ein Name eingetragen ist.
+/// Begrüßung oben in Heute, wenn ein Name eingetragen ist.
 class Begruessung extends StatelessWidget {
   const Begruessung({super.key, required this.name});
   final String name;
@@ -231,7 +231,7 @@ class Begruessung extends StatelessWidget {
 }
 
 /// Plan, Heute und Fortschritt, solange es noch keinen Plan gibt: nur ein kurzer Satz, was hier
-/// später steht. „Neuen Plan erstellen“ gibt es nur einmal – oben im Kalender.
+/// später steht. „Neuen Plan erstellen“ gibt es nur einmal – oben in Heute.
 class OhnePlanHinweis extends StatelessWidget {
   const OhnePlanHinweis(this.text, {super.key, required this.icon});
   final String text;
@@ -267,7 +267,7 @@ class BeispielHinweis extends StatelessWidget {
                 TextSpan(text: tr('Beispiel. ', 'Example. '), style: TextStyle(fontWeight: FontWeight.w700, color: F.tx)),
                 TextSpan(
                     text: tr('So sieht die App mit einem Plan aus. Hier wird nichts gespeichert – '
-                        'deinen eigenen Plan legst du oben im Kalender an.', 'This is what the app looks like with a plan. Nothing is saved here – you set up your own plan at the top of the calendar.')),
+                        'deinen eigenen Plan legst du oben im Reiter Heute an.', 'This is what the app looks like with a plan. Nothing is saved here – you set up your own plan at the top of the Today tab.')),
               ])),
             ),
           ]),

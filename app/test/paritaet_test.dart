@@ -31,11 +31,13 @@ String norm(String s) => s.replaceAll(' ', ' ').replaceAll(RegExp(r'\s+'), ' ')
 /// Texte unter [wurzel] – ohne die neue Startkarte oben (Begrüßung, Plan erstellen/importieren),
 /// die es in den Referenzdaten nicht gibt.
 List<String> texteIn(WidgetTester t, Finder wurzel, {List<String> auchOhne = const []}) {
-  // Neu gegenüber den Referenzdaten: Startkarte/Begrüßung, Vorrat-Warnung, Befinden-Text.
+  // Neu gegenüber den Referenzdaten: Startkarte/Begrüßung, Vorrat-Warnung, Vorrat-Karte (stand dort im
+  // Plan-Reiter, jetzt unten in Heute), Befinden-Text.
   final kopf = {
     for (final k in [
       'planKopf',
       'vorratWarnung',
+      'vorratKarte',
       'befindenText',
       'kalenderFortschritt',
       'beispielHinweis',
@@ -88,6 +90,9 @@ const erlaubt = <String>{
   'Laut Plan bei 8 mg ab',
   'Dosis wird gehalten bis 23.11. (4 Tage noch).',
   'Dosis wird gehalten bis 23.11. (7 Tage noch).',
+  // Gespeicherte Notiz unter dem Kalender nur noch vermerkt (lesbar über den Tag im Kalender).
+  'Viel Stress',
+  'Gespeichert',
 };
 
 /// Was die neue App zusätzlich zeigen darf: Feldinhalte (Platzhalter, Uhrzeit, Auswahl),
@@ -104,6 +109,7 @@ final zusaetzlichErlaubt = [
   RegExp(r'^(notiz|notiz nachtragen|einnahmen)$'),
   RegExp(r'^z\. b\. 4 kaffee, neues medikament$'),
   RegExp(r'^du kannst jederzeit nachtragen'),
+  RegExp(r'^notiz für heute gespeichert\. tipp auf den tag im kalender'),
   // Halten mit „voraussichtlich“ und mg
   RegExp(r'^dosis wird voraussichtlich gehalten bis \d+\.\d+\.\d{4} \(\d+ tage? noch\)\.$'),
   RegExp(r'^dosis [\d,]+ mg gehalten – plan pausiert\.$'),
@@ -153,6 +159,8 @@ void main() {
             if (f().evaluate().isNotEmpty) break;
             await zu(r);
           }
+          // Gespeicherte Notiz ist unter dem Kalender ausgeblendet: nichts mehr zu speichern.
+          if (a == 'text:Notiz speichern' && f().evaluate().isEmpty) continue;
           await t.ensureVisible(f().first);
           await t.tap(f().first);
           await t.pumpAndSettle();
@@ -163,7 +171,7 @@ void main() {
           // verschwinden beim Reiterwechsel – wie in der Referenz beim Neuzeichnen).
           final bereiche = {
             'Heute': [find.byType(HeuteSeite)],
-            'Kalender': [find.byKey(const Key('heuteEintragen')), find.byKey(const Key('tagebuchHeute'))],
+            'Kalender': [find.byKey(const Key('wochenKarte')), find.byKey(const Key('tagebuchHeute'))],
           };
           final jetztDa = aktuellerReiter(t);
           texte = [for (final b in bereiche[jetztDa]!) ...texteIn(t, b)];
@@ -185,7 +193,7 @@ void main() {
           // Tag-Karte steht im Fenster von unten (`tagFenster`) statt unter dem Monat.
           texte = [
             ...texteIn(t, find.byType(KalenderSeite),
-                auchOhne: ['heuteEintragen', 'tagebuchHeute', 'kalPlanDatum', 'notizenHinweis']),
+                auchOhne: ['wochenKarte', 'tagebuchHeute', 'kalPlanDatum', 'notizenHinweis']),
             if (find.byKey(const Key('tagFenster')).evaluate().isNotEmpty)
               ...texteIn(t, find.byKey(const Key('tagFenster'))),
           ];

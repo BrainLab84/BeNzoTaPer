@@ -30,7 +30,7 @@ class Shell extends StatefulWidget {
 }
 
 class _ShellState extends State<Shell> with WidgetsBindingObserver {
-  // Kalender · Heute · Plan · Fortschritt, Start im Kalender (Herzstück),
+  // Kalender · Heute · Plan · Fortschritt, Start in Heute,
   // oben ein runder Kalender-Knopf.
   static List<(IconData, IconData, String)> get reiter => [
     (Icons.calendar_month_outlined, Icons.calendar_month_outlined, tr('Kalender', 'Calendar')),
@@ -39,10 +39,10 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
     (Icons.signal_cellular_alt_rounded, Icons.signal_cellular_alt_rounded, tr('Fortschritt', 'Progress')),
   ];
   static const kalender = 0;
-  static const plan = 2;
+  static const heute = 1;
 
-  final _seiten = PageController(initialPage: kalender);
-  int _i = kalender;
+  final _seiten = PageController(initialPage: heute);
+  int _i = heute;
   Timer? _minute;
   String? _tag;
   final _wahl = TagWahl();
@@ -104,9 +104,9 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final schmal = MediaQuery.sizeOf(context).width < 360;
     return PopScope(
-      canPop: _i == kalender,
+      canPop: _i == heute,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _i != kalender) _gehe(kalender);
+        if (!didPop && _i != heute) _gehe(heute);
       },
       child: Scaffold(
         // Kopfzeile: links Notizbuch, Mitte SOS, rechts Kalender + Mehr.
@@ -166,7 +166,6 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
                 _wahl.waehle(k);
                 _gehe(kalender);
               },
-              vorratOeffnen: () => _gehe(plan),
               planEditor: (e) => planNeuOeffnen(context, widget.app, PlanArt.erstellen, vorgemerkt: e),
             ),
             PlanReiter(app: widget.app),
@@ -294,7 +293,7 @@ class MehrSeite extends StatelessWidget {
                   if (app.beispiel) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(
-                            tr('Das ist noch der Beispielplan. Leg zuerst oben im Kalender deinen eigenen Plan an.', 'This is still the example plan. First set up your own plan at the top of the calendar.'))));
+                            tr('Das ist noch der Beispielplan. Leg zuerst oben im Reiter Heute deinen eigenen Plan an.', 'This is still the example plan. First set up your own plan at the top of the Today tab.'))));
                     return;
                   }
                   final ok = await Navigator.of(context).push<bool>(

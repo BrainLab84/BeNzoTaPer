@@ -8,23 +8,25 @@ import 'hilfen.dart';
 void main() {
   setUp(() => jetzt = DateTime.utc(2026, 3, 10, 12));
 
-  testWidgets('Reiter: Kalender · Heute · Plan · Fortschritt, Start im Kalender', (t) async {
+  testWidgets('Reiter: Kalender · Heute · Plan · Fortschritt, Start in Heute', (t) async {
     await starte(t, aufReiter: null);
     final nav = find.byType(NavigationDestination);
     expect(nav, findsNWidgets(4));
     expect([for (final e in nav.evaluate()) (e.widget as NavigationDestination).label],
         ['Kalender', 'Heute', 'Plan', 'Fortschritt']);
-    expect(find.byKey(const Key('monat')), findsOneWidget, reason: 'Start im Kalender');
+    expect(find.byKey(const Key('dosis')), findsOneWidget, reason: 'Start in Heute');
+    expect(aktuellerReiter(t), 'Heute');
   });
 
-  testWidgets('Ordnung: Kalender → Einnehmen → Verlauf → Notizen für heute', (t) async {
-    await starte(t, aufReiter: null);
+  testWidgets('Ordnung: Kalender → Verlauf → Wochen-Ø → Notizen; Heute: Eintragen → Stufe → Vorrat', (t) async {
+    await starte(t, aufReiter: 'Kalender');
     final monat = t.getTopLeft(find.byKey(const Key('monat'))).dy;
-    final eintragen = t.getTopLeft(find.byKey(const Key('heuteEintragen'))).dy;
     final balken = t.getTopLeft(find.byKey(const Key('kalenderFortschritt'))).dy;
+    final woche = t.getTopLeft(find.byKey(const Key('wochenKarte'))).dy;
     final tagebuch = t.getTopLeft(find.byKey(const Key('tagebuchHeute'))).dy;
-    expect(monat < eintragen && eintragen < balken && balken < tagebuch, isTrue,
-        reason: 'Kalender ganz oben, darunter Einnehmen, Verlauf, Notizen');
+    expect(monat < balken && balken < woche && woche < tagebuch, isTrue,
+        reason: 'Kalender ganz oben, darunter Verlauf, Wochen-Ø, Notizen');
+    expect(find.byKey(const Key('heuteEintragen')), findsNothing, reason: 'Eintragen steht in Heute');
     expect(find.descendant(of: find.byKey(const Key('tagebuchHeute')), matching: find.text('Notizen für heute')),
         findsOneWidget);
     expect(txt('Du kannst jederzeit nachtragen, falls du etwas vergessen hast.'), findsOneWidget);
@@ -32,12 +34,15 @@ void main() {
     expect(find.descendant(of: find.byKey(const Key('tagebuchHeute')), matching: find.byKey(const Key('befindenText'))),
         findsOneWidget,
         reason: 'mit Befinden-Text und Links');
+    await reiter(t, 'Heute');
     expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
     expect(find.byKey(const Key('menge')), findsOneWidget, reason: 'abweichende Dosis direkt dabei');
-    await reiter(t, 'Heute');
-    expect(find.byKey(const Key('heuteEintragen')), findsNothing);
     expect(find.byKey(const Key('tagebuchHeute')), findsNothing);
-    expect(find.byKey(const Key('dosis')), findsOneWidget);
+    expect(find.byKey(const Key('wochenKarte')), findsNothing);
+    final ein = t.getTopLeft(find.byKey(const Key('heuteEintragen'))).dy;
+    final dosis = t.getTopLeft(find.byKey(const Key('dosis'))).dy;
+    final vorrat = t.getTopLeft(find.byKey(const Key('vorratKarte'))).dy;
+    expect(ein < dosis && dosis < vorrat, isTrue, reason: 'Eintragen → Stufen-Karte → Vorrat');
     await reiter(t, 'Fortschritt');
     expect(find.byKey(const Key('tagebuchHeute')), findsNothing, reason: 'nicht mehr im Fortschritt');
     expect(t.getSize(find.byKey(const Key('diagramm'))).height, greaterThan(340), reason: 'Diagramm größer');
@@ -95,15 +100,15 @@ void main() {
     expect(find.text('0'), findsOneWidget);
   });
 
-  testWidgets('Ohne eigenen Plan: Beispiel in allen Reitern, „Neuen Plan erstellen“ nur oben im Kalender', (t) async {
+  testWidgets('Ohne eigenen Plan: Beispiel in allen Reitern, „Neuen Plan erstellen“ nur oben in Heute', (t) async {
     final app = await starte(t, einrichten: false, aufReiter: null);
     expect(app.beispiel, isTrue);
     expect(app.eingerichtet, isFalse);
     expect(find.text('Schön, dass du da bist.'), findsOneWidget);
     expect(find.byKey(const Key('planErstellen')), findsOneWidget);
     expect(find.byKey(const Key('beispielHinweis')), findsOneWidget);
-    expect(find.byKey(const Key('kalenderFortschritt')), findsOneWidget, reason: 'Balken über dem Kalender');
-    for (final (r, inhalt) in [('Plan', 'planKarte'), ('Heute', 'dosis'), ('Fortschritt', 'diagramm')]) {
+    expect(find.byKey(const Key('dosis')), findsOneWidget);
+    for (final (r, inhalt) in [('Plan', 'planKarte'), ('Kalender', 'kalenderFortschritt'), ('Fortschritt', 'diagramm')]) {
       await reiter(t, r);
       expect(find.text('Schön, dass du da bist.'), findsNothing, reason: r);
       expect(find.byKey(const Key('planErstellen')), findsNothing, reason: r);
@@ -140,19 +145,21 @@ void main() {
     expect((app.store as MemStore).state, contains('"plan"'), reason: 'eigener Plan wird gespeichert');
   });
 
-  testWidgets('Kalender mit Plan: Begrüßung, darunter Kalender, darunter Fortschrittsbalken', (t) async {
+  testWidgets('Begrüßung oben in Heute; Kalender: Plandatum, darunter Kalender, darunter Fortschrittsbalken', (t) async {
     final app = await starte(t, aufReiter: null);
     app.taper.st.person = 'Alex';
     app.aenderung();
     await t.pumpAndSettle();
     final hallo = t.getTopLeft(find.byKey(const Key('begruessung'))).dy;
+    expect(hallo < t.getTopLeft(find.byKey(const Key('heuteEintragen'))).dy, isTrue, reason: 'ganz oben in Heute');
+    await reiter(t, 'Kalender');
+    expect(find.byKey(const Key('begruessung')), findsNothing);
     final balken = t.getTopLeft(find.byKey(const Key('kalenderFortschritt'))).dy;
     final monat = t.getTopLeft(find.byKey(const Key('monat'))).dy;
-    expect(hallo < monat && monat < balken, isTrue);
+    expect(monat < balken, isTrue);
     final datum = find.byKey(const Key('kalPlanDatum'));
     expect(find.descendant(of: datum, matching: find.text('Plan gestartet am 10.03.2026')), findsOneWidget);
-    expect(hallo < t.getTopLeft(datum).dy && t.getTopLeft(datum).dy < monat, isTrue,
-        reason: 'dezent über dem Kalender');
+    expect(t.getTopLeft(datum).dy < monat, isTrue, reason: 'dezent über dem Kalender');
     expect(t.getSize(datum).height, lessThan(30), reason: 'nimmt kaum Platz weg');
     expect(find.descendant(of: find.byKey(const Key('kalenderFortschritt')), matching: find.text('Tag 1/14')),
         findsOneWidget);

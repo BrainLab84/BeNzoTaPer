@@ -113,7 +113,6 @@ void main() {
     await t.pumpWidget(TaperingBuddy(app: app, splashDauer: const Duration(milliseconds: 10)));
     await t.pump(const Duration(milliseconds: 50));
     await t.pumpAndSettle();
-    await reiter(t, 'Plan');
     if (find.byKey(const Key('staerke0')).evaluate().isEmpty) await tippe(t, find.text('VORRAT EINTRAGEN'));
     expect(t.widget<TextField>(find.byKey(const Key('staerke0'))).controller!.text, '5');
 
@@ -127,9 +126,10 @@ void main() {
     expect(app.taper.st.plan.first, 20);
     await t.pageBack();
     await t.pumpAndSettle();
-    expect(find.byKey(const Key('monat')), findsOneWidget, reason: 'nach dem Laden frisch im Kalender');
+    expect(find.byKey(const Key('dosis')), findsOneWidget, reason: 'nach dem Laden frisch in Heute');
     await reiter(t, 'Plan');
     expect(imPlan(txt('20 → 0 mg')), findsOneWidget);
+    await reiter(t, 'Heute');
     if (find.byKey(const Key('staerke0')).evaluate().isEmpty) await tippe(t, find.text('VORRAT EINTRAGEN'));
     expect(t.widget<TextField>(find.byKey(const Key('staerke0'))).controller!.text, '10',
         reason: 'Felder dürfen nicht den alten Stand zeigen');

@@ -69,7 +69,7 @@ void main() {
       final t0 = ta.today;
       String? geaendertAm;
       // Vorrat über die Oberfläche: 20 × 2 mg = 40 mg. Unabhängig mitgezählt in [vorratSoll].
-      await reiter(t, 'Plan');
+      await reiter(t, 'Heute');
       await t.enterText(find.byKey(const Key('anzahl0')), '20');
       await t.enterText(find.byKey(const Key('staerke0')), '2');
       await _tap(t, find.byKey(const Key('vorratSpeichern')));
@@ -152,7 +152,7 @@ void main() {
         }
         // Nachkauf über die Vorrat-Karte
         if (r.nextDouble() < .12) {
-          await reiter(t, 'Plan');
+          await reiter(t, 'Heute');
           final vorher = ta.stockInfo()!.rem;
           if (find.byKey(const Key('anzahl0')).evaluate().isEmpty) await _tap(t, find.text('VORRAT ÄNDERN'));
           await t.enterText(find.byKey(const Key('anzahl0')), '10');
@@ -177,8 +177,8 @@ void main() {
         }
         final heute = ta.today;
         final y = r.nextDouble();
-        // „Dosis genommen“ steht über dem Kalender.
-        await reiter(t, 'Kalender');
+        // „Dosis genommen“ steht in Heute.
+        await reiter(t, 'Heute');
         if (ta.st.log[heute] == null && find.byKey(const Key('wieGeplant')).evaluate().isNotEmpty) {
           if (y < .1) {
             merke('vergessen');
@@ -225,8 +225,6 @@ void main() {
         vorherEingenommen = jetztEingenommen;
         final si = ta.stockInfo()!;
         expect(si.rem, closeTo(vorratSoll, 1e-9), reason: 'Vorrat-Rest $grund');
-        expect(t.widget<Text>(find.byKey(const Key('vorratZeile'))).data, _vorratZeile(si.days, heute),
-            reason: 'Vorrat-Zeile $grund');
 
         await reiter(t, 'Kalender');
         if (normal && n > 1) {
@@ -247,6 +245,8 @@ void main() {
         expect(find.byKey(const Key('tagebuchHeute')), a.frz == null ? findsOneWidget : findsNothing, reason: grund);
 
         await reiter(t, 'Heute');
+        expect(t.widget<Text>(find.byKey(const Key('vorratZeile'))).data, _vorratZeile(si.days, heute),
+            reason: 'Vorrat-Zeile (unten in Heute) $grund');
         expect(find.byKey(const Key('vorratWarnung')), si.days <= 14 ? findsOneWidget : findsNothing,
             reason: 'Vorrat-Warnung bei ${si.days} Tagen. $grund');
         // Erinnerung: heute 20:00 nur ohne Eintrag (und wenn noch nicht vorbei), sonst ab morgen

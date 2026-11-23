@@ -11,13 +11,13 @@ void main() {
 
   testWidgets('Erster Tag: Karten, wie geplant eintragen', (t) async {
     final app = await starte(t);
-    expect(txt('Trag zuerst ein, was du gerade da hast'), findsNothing, reason: 'Vorrat ist im Plan-Reiter');
+    expect(txt('Trag zuerst ein, was du gerade da hast'), findsOneWidget, reason: 'Vorrat steht unten in Heute');
     expect(txt('Stufe 1 von'), findsOneWidget);
     expect(find.byKey(const Key('dosis')), findsOneWidget);
     expect(txt('Nächste Stufe in 14 Tagen (24.03.2026)'), findsOneWidget);
-    expect(txt('Noch keine Einträge in den letzten 7 Tagen.'), findsOneWidget);
+    expect(find.byKey(const Key('wochenKarte')), findsNothing, reason: 'Wochen-Ø steht im Kalender');
     expect(txt('Tagebuch heute'), findsNothing, reason: 'steht jetzt im Fortschritt');
-    expect(titel('Heute eintragen'), findsNothing, reason: 'steht jetzt über dem Kalender');
+    expect(titel('Heute eintragen'), findsOneWidget, reason: 'Eintragen steht in Heute');
     expect(find.byKey(const Key('fortschrittBlase')), findsOneWidget);
     expect(txt('Tag 1/14'), findsOneWidget);
 
@@ -26,7 +26,7 @@ void main() {
     expect(txt('Tagesdosis komplett – im Plan.'), findsOneWidget);
     expect(txt('Weitere Einnahme (mg · Uhrzeit)'), findsOneWidget);
     // Heutiger Tag zählt erst mit, wenn er komplett ist – ist er: 10 mg.
-    await reiter(t, 'Heute');
+    await reiter(t, 'Kalender');
     expect(find.byKey(const Key('wochenschnitt')), findsOneWidget);
     expect(txt('Ø 10'), findsOneWidget);
   });
@@ -195,13 +195,13 @@ void main() {
     expect(app.taper.st.frz, isNotNull);
     expect(txt('3 Tage ohne Eintrag.'), findsOneWidget);
     expect(find.byKey(const Key('dosis')), findsNothing, reason: 'Dosis-Karte weg');
-    expect(titel('Auswertung pausiert'), findsOneWidget);
     expect(titel('Heute eintragen'), findsNothing);
     expect(txt('Nachtragen: 07.03.2026 (+2 weitere)'), findsOneWidget);
 
     // Springt in den Kalender und öffnet den Tag im Fenster von unten.
     await tippe(t, find.byKey(const Key('nachtragenOffen')));
     expect(find.byKey(const Key('monat')), findsOneWidget);
+    expect(titel('Auswertung pausiert'), findsOneWidget, reason: 'Wochen-Ø im Kalender pausiert');
     expect(find.byKey(const Key('tagFenster')), findsOneWidget);
     expect(find.text('07.03.2026'), findsOneWidget, reason: 'Kopf des Tag-Fensters');
     expect(txt('Nichts eingetragen.'), findsOneWidget);
@@ -233,7 +233,6 @@ void main() {
     await reiter(t, 'Heute');
     expect(find.byKey(const Key('dosis')), findsOneWidget);
     expect(titel('Offene Tage'), findsNothing);
-    await reiter(t, 'Kalender');
     expect(titel('Heute eintragen'), findsOneWidget, reason: 'nach dem Nachtragen wieder eintragbar');
   });
 
@@ -255,12 +254,16 @@ void main() {
     expect(app.taper.st.unk.length, 5);
     expect(app.taper.st.frz, isNull);
     expect(find.byKey(const Key('dosis')), findsOneWidget);
+    await reiter(t, 'Kalender');
     expect(txt('Ø der eingetragenen Tage'), findsOneWidget);
   });
 
-  testWidgets('Vorrat im Plan-Reiter: Anzahl × Stärke, sofort ausgerechnet, Nachkauf; Warnung auf Heute', (t) async {
-    final app = await starte(t, aufReiter: 'Plan');
+  testWidgets('Vorrat unten in Heute: Anzahl × Stärke, sofort ausgerechnet, Nachkauf; Warnung oben', (t) async {
+    final app = await starte(t);
     expect(txt('Trag zuerst ein, was du gerade da hast'), findsOneWidget);
+    await reiter(t, 'Plan');
+    expect(find.byKey(const Key('vorratKarte')), findsNothing, reason: 'nicht mehr im Plan-Reiter');
+    await reiter(t, 'Heute');
     await t.enterText(find.byKey(const Key('anzahl0')), '20');
     await t.enterText(find.byKey(const Key('staerke0')), '5');
     await t.pumpAndSettle();
@@ -275,16 +278,15 @@ void main() {
     expect(app.taper.st.tabs!.str, [5, 2.5], reason: 'Stärken nur einmal eingegeben, mitgespeichert');
     expect(app.taper.st.stock!.mg, 100);
     // 100 mg: 14 Tage à 10 = 140 > 100 → 10 Tage (heute bis 19.03.).
-    expect(txt('Reicht noch ca. 10 Tage (bis 19.03.2026)'), findsOneWidget);
+    expect(find.text('Reicht noch ca. 10 Tage (bis 19.03.2026)'), findsNWidgets(2), reason: 'Karte + Warnung oben');
     expect(txt('Rest: 100 mg (≈ 20 Tbl à 5)'), findsOneWidget);
 
-    // Heute: nur die Warnung (≤ 14 Tage), mit Tablettenkombination auf der Dosis-Karte.
-    await reiter(t, 'Heute');
+    // Oben die Warnung (≤ 14 Tage), mit Tablettenkombination auf der Dosis-Karte.
     expect(find.byKey(const Key('vorratWarnung')), findsOneWidget);
-    expect(txt('Reicht noch ca. 10 Tage (bis 19.03.2026)'), findsOneWidget);
+    expect(find.text('Reicht noch ca. 10 Tage (bis 19.03.2026)'), findsNWidgets(2), reason: 'Warnung + Karte');
     expect(txt('2 × 5 mg'), findsOneWidget, reason: 'Tablettenkombination für 10 mg');
     await tippe(t, find.byKey(const Key('vorratWarnung')));
-    expect(find.byKey(const Key('planKarte')), findsOneWidget, reason: 'Warnung öffnet den Plan-Reiter');
+    expect(find.byKey(const Key('vorratKarte')), findsOneWidget, reason: 'Warnung scrollt zur Vorrat-Karte');
 
     await tippe(t, find.text('VORRAT ÄNDERN'));
     await t.enterText(find.byKey(const Key('anzahl0')), '20');
@@ -292,12 +294,10 @@ void main() {
     expect(txt('Als Nachkauf dazu: reicht ca. 20 Tage'), findsOneWidget);
     await tippe(t, find.byKey(const Key('nachkauf')));
     expect(app.taper.st.stock!.mg, 200);
-    await reiter(t, 'Heute');
     expect(find.byKey(const Key('vorratWarnung')), findsNothing, reason: 'reicht jetzt über 14 Tage');
 
     jetzt = DateTime.utc(2026, 3, 10, 12, 1); // Einnahme nach dem Zählen
     await tippe(t, find.byKey(const Key('wieGeplant')));
-    await reiter(t, 'Plan');
     expect(txt('Rest: 190 mg'), findsOneWidget, reason: 'Einnahme wird abgezogen');
   });
 
@@ -351,10 +351,8 @@ void main() {
     expect(app.taper.st.stage, 1);
     expect(txt('Neue Stufe ab heute:'), findsOneWidget);
     expect(txt('9 mg pro Tag'), findsOneWidget);
-    await reiter(t, 'Kalender');
     expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
     expect(txt('9 mg wie geplant genommen'), findsOneWidget);
-    await reiter(t, 'Heute');
     jetzt = DateTime.utc(2026, 3, 12, 9);
     app.auffrischen();
     await t.pumpAndSettle();

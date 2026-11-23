@@ -86,7 +86,7 @@ void main() {
           await t.pumpWidget(TaperingBuddy(app: app, splashDauer: const Duration(milliseconds: 10)));
           await t.pump(const Duration(milliseconds: 50));
           await zeige('Start ohne Plan');
-          for (final r in ['Plan', 'Heute', 'Fortschritt', 'Kalender']) {
+          for (final r in ['Plan', 'Kalender', 'Fortschritt', 'Heute']) {
             await reiter(r);
           }
           await t.tap(find.byKey(const Key('planErstellen')).first);
@@ -140,8 +140,8 @@ void main() {
           await t.pumpWidget(const SizedBox());
           await t.pumpWidget(TaperingBuddy(app: app, splashDauer: const Duration(milliseconds: 10)));
           await t.pump(const Duration(milliseconds: 50));
-          await zeige('$name: Kalender');
-          for (final r in ['Plan', 'Heute', 'Fortschritt']) {
+          await zeige('$name: Heute');
+          for (final r in ['Plan', 'Kalender', 'Fortschritt']) {
             await reiter(r);
           }
           // Verlauf für den Arzt: Lesen-Seite
@@ -155,8 +155,8 @@ void main() {
           await zeige('$name: Bericht lesen');
           await t.pageBack();
           await zeige('$name: zurück vom Bericht');
-          // Vorrat-Karte aufgeklappt
-          await reiter('Plan');
+          // Vorrat-Karte aufgeklappt (unten in Heute)
+          await reiter('Heute');
           final auf = find.textContaining('VORRAT');
           if (auf.evaluate().isNotEmpty) {
             await t.tap(auf.first);

@@ -46,32 +46,31 @@ void main() {
     await t.tap(find.widgetWithText(FilledButton, 'Weiter'));
     await t.pumpAndSettle();
     expect(st.disc, isTrue);
-    // Kein Zwang: direkt der Kalender mit Startkarte, ohne Plan.
-    expect(find.text('Kalender'), findsWidgets);
+    // Kein Zwang: direkt Heute mit Startkarte, ohne Plan.
     expect(find.text('Schön, dass du da bist.'), findsOneWidget);
     expect(find.byKey(const Key('planErstellen')), findsOneWidget);
     expect(find.byKey(const Key('planImportieren')), findsOneWidget);
-    expect(find.byKey(const Key('monat')), findsOneWidget);
-    // Heute ohne Plan: keine zweite Startkarte.
-    await t.tap(find.byKey(const ValueKey('reiter-Heute')));
+    expect(find.byKey(const Key('beispielHinweis')), findsOneWidget, reason: 'Beispiel zum Umschauen');
+    // Kalender ohne eigenen Plan: keine zweite Startkarte.
+    await t.tap(find.byKey(const ValueKey('reiter-Kalender')));
     await t.pumpAndSettle();
+    expect(find.byKey(const Key('monat')), findsOneWidget);
     expect(find.text('Schön, dass du da bist.'), findsNothing);
     expect(find.byKey(const Key('planErstellen')), findsNothing);
-    expect(find.byKey(const Key('beispielHinweis')), findsOneWidget, reason: 'Beispiel zum Umschauen');
     expect(st.state, isNull, reason: 'nichts gespeichert, solange es keinen Plan gibt');
   });
 
-  testWidgets('Zurück-Taste: Reiter -> Kalender', (t) async {
+  testWidgets('Zurück-Taste: Reiter -> Heute', (t) async {
     final st = MemStore()..disc = true;
     final app = await start(t, st);
     app.taper.setup(dose: 10, step: 0.5, minStep: 0.25, days: 14, goal: 0);
     app.aenderung();
     await t.pumpAndSettle();
-    await t.tap(find.byKey(const ValueKey('reiter-Heute')));
+    await t.tap(find.byKey(const ValueKey('reiter-Plan')));
     await t.pumpAndSettle();
-    expect(find.byKey(const Key('dosis')), findsOneWidget, reason: 'Heute-Reiter');
+    expect(find.byKey(const Key('planKarte')), findsOneWidget, reason: 'Plan-Reiter');
     await t.binding.handlePopRoute();
     await t.pumpAndSettle();
-    expect(find.byKey(const Key('monat')), findsOneWidget, reason: 'Zurück → Kalender');
+    expect(find.byKey(const Key('dosis')), findsOneWidget, reason: 'Zurück → Heute');
   });
 }

@@ -18,7 +18,7 @@ Map<String, dynamic> eintrag(double v, double plan, {int stage = 0}) => {
       'r': v > plan + 1e-9 ? 'lapse' : 'ok',
     };
 
-/// Startet die App. Sie öffnet im Kalender; [aufReiter] wechselt danach (Standard: Heute).
+/// Startet die App. Sie öffnet in Heute; [aufReiter] wechselt danach (Standard: Heute).
 Future<AppState> starte(WidgetTester t,
     {Map<String, dynamic>? json, bool einrichten = true, String? aufReiter = 'Heute'}) async {
   t.view.physicalSize = const Size(1000, 7000);
@@ -35,7 +35,7 @@ Future<AppState> starte(WidgetTester t,
   await t.pumpWidget(TaperingBuddy(app: app, splashDauer: const Duration(milliseconds: 10)));
   await t.pump(const Duration(milliseconds: 50));
   await t.pumpAndSettle();
-  if (aufReiter != null && aufReiter != 'Kalender') await reiter(t, aufReiter);
+  if (aufReiter != null && aufReiter != 'Heute') await reiter(t, aufReiter);
   return app;
 }
 

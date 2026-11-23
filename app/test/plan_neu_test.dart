@@ -95,6 +95,7 @@ void main() {
     expect(app.taper.st.pin, isNull);
     expect(find.text('Hallo Alex'), findsOneWidget);
     expect(find.text('Dein Plan ist gespeichert.'), findsOneWidget);
+    await reiter(t, 'Kalender');
     expect(txt('Voraussichtlich bei 0 mg: 01.12.2026'), findsOneWidget, reason: 'Kalender rechnet gleich');
     await reiter(t, 'Plan');
     expect(find.text('Diazepam · 20 → 0 mg'), findsOneWidget);

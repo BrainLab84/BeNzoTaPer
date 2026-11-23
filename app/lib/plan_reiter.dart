@@ -7,7 +7,6 @@ import 'package:tapering_core/tapering_core.dart';
 import 'app_state.dart';
 import 'bausteine.dart';
 import 'plan_kopf.dart';
-import 'vorrat.dart';
 
 class PlanReiter extends StatelessWidget {
   const PlanReiter({super.key, required this.app});
@@ -17,13 +16,12 @@ class PlanReiter extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = app.taper.s;
     if (s == null) {
-      return OhnePlanHinweis(tr('Hier stehen deine Stufen und dein Tablettenvorrat, sobald dein Plan angelegt ist.', 'Your steps and your tablet supply appear here once your plan is set up.'),
+      return OhnePlanHinweis(tr('Hier stehen deine Stufen, sobald dein Plan angelegt ist.', 'Your steps appear here once your plan is set up.'),
           icon: Icons.route_outlined);
     }
     return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [
       if (app.beispiel) const BeispielHinweis(),
       _planKarte(context),
-      VorratKarte(app: app),
       _stufen(),
     ]);
   }

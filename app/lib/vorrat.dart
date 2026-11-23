@@ -1,5 +1,5 @@
 // Tablettenvorrat: eintragen, Nachkauf, Reichweite.
-// Steht im Plan-Reiter; Heute zeigt nur eine Warnung, wenn er für 14 Tage oder weniger reicht.
+// Steht unten im Reiter Heute; oben dort zusätzlich eine Warnung, wenn er für 14 Tage oder weniger reicht.
 import 'i18n/txt.dart';
 import 'dart:math' as math;
 
@@ -10,8 +10,11 @@ import 'app_state.dart';
 import 'bausteine.dart';
 
 class VorratKarte extends StatefulWidget {
-  const VorratKarte({super.key, required this.app});
+  const VorratKarte({super.key, required this.app, this.gross = false});
   final AppState app;
+
+  /// Auffälliger (Reiter Heute): größere Reichweite, farbiger Rand.
+  final bool gross;
   @override
   State<VorratKarte> createState() => _VorratKarteState();
 }
@@ -140,7 +143,7 @@ class _VorratKarteState extends State<VorratKarte> {
       }
       kinder.add(Text(zeile,
           key: const Key('vorratZeile'),
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: warn ? F.warn : F.ok)));
+          style: TextStyle(fontSize: widget.gross ? 23 : 19, fontWeight: FontWeight.w700, color: warn ? F.warn : F.ok)));
       final rest = math.max(0.0, si.rem);
       final hatT = t != null && t.str.isNotEmpty;
       kinder.add(Sub(
@@ -293,12 +296,15 @@ class _VorratKarteState extends State<VorratKarte> {
           tr('Zähl einfach, was gerade da ist. Ab dann rechnet die App jede Einnahme automatisch ab – auch Nachträge.', 'Just count what is on hand. From then on the app deducts every intake automatically – also entries added later.'),
           oben: 6));
     }
-    return Karte(key: const Key('vorratKarte'), children: kinder);
+    return Karte(
+        key: const Key('vorratKarte'),
+        rand: widget.gross ? (si != null && si.days <= 14 ? F.warn : F.acRand) : null,
+        children: kinder);
   }
 }
 
 /// Kurze Warnung auf Heute: nur wenn der Vorrat für 14 Tage oder weniger reicht.
-/// Texte wie in der Vorrat-Karte. Antippen öffnet den Plan-Reiter.
+/// Texte wie in der Vorrat-Karte. Antippen scrollt zur Vorrat-Karte.
 class VorratWarnung extends StatelessWidget {
   const VorratWarnung({super.key, required this.si, required this.unit, required this.heute, this.oeffnen});
   final StockInfo si;

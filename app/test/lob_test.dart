@@ -46,7 +46,7 @@ void main() {
   }
 
   testWidgets('Ohne Enddatum: Lob genau an den Lob-Tagen, über „Heute eintragen“, Texte im Wechsel', (t) async {
-    final app = await starte(t, aufReiter: 'Kalender');
+    final app = await starte(t);
     app.taper.startHold(null);
     app.aenderung();
     await t.pumpAndSettle();
@@ -73,7 +73,7 @@ void main() {
   });
 
   testWidgets('Mit Enddatum: nie am oder nach dem Ende (dann ist die nächste Dosis dran)', (t) async {
-    final app = await starte(t, aufReiter: 'Kalender');
+    final app = await starte(t);
     for (final dauer in [3, 4, 5, 7, 9]) {
       app.taper.startHold(dauer);
       app.aenderung();
@@ -93,7 +93,7 @@ void main() {
   });
 
   testWidgets('Neue Halten-Phase (neue Dosis) zählt neu ab Tag 0', (t) async {
-    final app = await starte(t, aufReiter: 'Kalender');
+    final app = await starte(t);
     app.taper.startHold(null);
     for (var i = 0; i < 20; i++) {
       app.taper.addIntake(app.taper.st.plan[app.taper.st.stage]);
@@ -156,7 +156,7 @@ void main() {
 
   testWidgets('Lob gilt den abgeschlossenen Tagen: Ausrutscher bis gestern streicht es, heute zählt fürs nächste',
       (t) async {
-    final app = await starte(t, aufReiter: 'Kalender');
+    final app = await starte(t);
     app.taper.startHold(null);
     final tage = lobTage(app.taper.st.holdSince!, bis: 40);
     final dosis = app.taper.st.plan[app.taper.st.stage];
@@ -196,7 +196,7 @@ void main() {
   });
 
   testWidgets('Ausrutscher am Tag, an dem das Halten beginnt, zählt nicht gegen das erste Lob', (t) async {
-    final app = await starte(t, aufReiter: 'Kalender');
+    final app = await starte(t);
     final dosis = app.taper.st.plan[app.taper.st.stage];
     app.taper.addIntake(dosis + 2, force: true);
     app.taper.startHold(null);
@@ -212,13 +212,13 @@ void main() {
   });
 
   testWidgets('Ohne Halten und im Beispiel kein Lob', (t) async {
-    final app = await starte(t, aufReiter: 'Kalender');
+    final app = await starte(t);
     for (var d = 0; d < 20; d++) {
       expect(find.byKey(const Key('haltenLob')), findsNothing);
       app.taper.addIntake(app.taper.st.plan[app.taper.st.stage]);
       await naechsterTag(t, app);
     }
-    final b = await starte(t, einrichten: false, aufReiter: 'Kalender');
+    final b = await starte(t, einrichten: false);
     expect(b.beispiel, isTrue);
     expect(find.byKey(const Key('haltenLob')), findsNothing);
   });

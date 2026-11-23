@@ -156,6 +156,7 @@ void main() {
     }
 
     // Kalender: Tag öffnen (fehlender Tag, Tag mit Eintrag), Notizbuch
+    await reiterEn(t, 'Calendar');
     await t.tap(find.byKey(const Key('tag-2026-03-06')));
     await t.pumpAndSettle();
     keinDeutsch(t, 'Tagfenster');
@@ -182,12 +183,14 @@ void main() {
       await t.pumpAndSettle();
     }
 
-    // Plan: Vorrat, Plan-Assistent
+    // Heute: Vorrat; Plan: Plan-Assistent
+    await reiterEn(t, 'Today');
+    if (find.text('ENTER SUPPLY').evaluate().isNotEmpty) {
+      await besuche(find.text('ENTER SUPPLY'), 'Vorrat eintragen', zu: false);
+    }
+    expect(find.byKey(const Key('anzahl0')), findsOneWidget, reason: 'Vorrat-Eingabe in Heute');
     await reiterEn(t, 'Plan');
     keinDeutsch(t, 'Plan-Reiter');
-    if (find.text('Enter supply').evaluate().isNotEmpty) {
-      await besuche(find.text('Enter supply'), 'Vorrat eintragen', zu: false);
-    }
     await reiterEn(t, 'Plan');
     await t.ensureVisible(find.byKey(const Key('planErstellen')));
     await t.tap(find.byKey(const Key('planErstellen')));

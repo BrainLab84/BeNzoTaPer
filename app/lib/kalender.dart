@@ -6,12 +6,11 @@ import 'package:tapering_core/tapering_core.dart';
 import 'app_state.dart';
 import 'bausteine.dart';
 import 'deko.dart';
-import 'lob.dart';
-import 'eintragen.dart';
 import 'fortschritt.dart';
 import 'plan_kopf.dart';
 import 'plan_reiter.dart';
 import 'tag.dart';
+import 'wochenschnitt.dart';
 
 /// Welcher Tag im Kalender geöffnet werden soll (aus Heute: Wochenstreifen, „Nachtragen“).
 class TagWahl extends ChangeNotifier {
@@ -181,12 +180,9 @@ class _KalenderSeiteState extends State<KalenderSeite> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [PlanKopf(app: app), _kalender(today)]);
     }
     final frozen = s.frz != null;
-    final lob = lobHeute(app);
     // Reihenfolge von oben nach unten:
-    // (Startkarte) → Kalender → Einnehmen → Verlauf (Stufenbalken) → Notizen für heute.
+    // Kalender → Verlauf (Stufenbalken) → Wochen-Ø → Notizen für heute. Eintragen steht in Heute.
     final w = <Widget>[
-      if (app.beispiel) PlanKopf(app: app),
-      if (s.person != null) Begruessung(name: s.person!),
       // Dezent über dem Kalender: wann der Plan gestartet/zuletzt geändert wurde.
       Padding(
         key: const Key('kalPlanDatum'),
@@ -197,9 +193,6 @@ class _KalenderSeiteState extends State<KalenderSeite> {
       if (app.beispiel) const BeispielHinweis(),
       // Bei offenen Tagen erst nachtragen sonst „Dosis genommen“ / abweichende Dosis.
       if (frozen) OffeneTageKarte(app: app, nachtragen: _oeffnen),
-      // Lob beim Halten: über „Heute eintragen“, den ganzen Lob-Tag, mit X weg.
-      if (!frozen && lob != null) LobKarte(app: app, text: lob.text, schluessel: lob.schluessel),
-      if (!frozen) HeuteEintragen(key: ValueKey('eintragen-$today'), app: app),
       // Verlauf: Stufenbalken. Bei offenen Tagen ausgegraut („Anzeigen pausieren“).
       if (s.plan.length >= 2)
         Opacity(
@@ -212,6 +205,7 @@ class _KalenderSeiteState extends State<KalenderSeite> {
             children: [Fortschritt(taper: ta)],
           ),
         ),
+      WochenschnittKarte(app: app),
       // „Notizen für heute“ (Befinden-Text, Links, Smileys, Notiz). Bei offenen Tagen ausgeblendet.
       if (!frozen)
         Karte(key: const Key('tagebuchHeute'), children: [

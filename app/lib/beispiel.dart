@@ -1,6 +1,6 @@
 // Beispielplan zum Umschauen: Solange es keinen eigenen Plan gibt,
 // zeigt die App ein deutlich markiertes Beispiel, damit man sieht, wie alles aussieht.
-// Das Beispiel wird nie gespeichert; „Neuen Plan erstellen“ oben im Kalender ersetzt es.
+// Das Beispiel wird nie gespeichert; „Neuen Plan erstellen“ oben in Heute ersetzt es.
 import 'package:tapering_core/tapering_core.dart';
 
 import 'i18n/txt.dart';
