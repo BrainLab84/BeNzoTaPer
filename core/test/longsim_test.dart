@@ -157,6 +157,8 @@ void runSeed(int seed, int days, String profile, List<String> bad) {
         final a = jsonDecodeRound(dump) as Map, b = jsonDecodeRound(e.exportJson()) as Map;
         a.remove('frzFloor');
         b.remove('frzFloor');
+        // Planverlauf wird beim Laden ergänzt, wenn er fehlt (gewollt, wie frzFloor).
+        if (a['ph'] == null) b.remove('ph');
         final dd = diff(a, b);
         if (dd != null) flag('Import verändert Daten', dd);
       }

@@ -47,6 +47,14 @@ class Sim {
     return k;
   }
 
+  /// Beim Halten: um wie viele Tage die Stufe beim Halte-Beginn schon überfällig war (Plan währenddessen
+  /// schneller gemacht). Sie endet trotzdem erst am Halte-Ende – das Ende rückt um so viel mehr.
+  int ueberfaellig() {
+    if (!s.hold || s.holdSince == null || s.stage >= s.plan.length - 1) return 0;
+    final u = dBetween(t.stageStart, s.holdSince!) - t.need(s.stage);
+    return u > 0 ? u : 0;
+  }
+
   List<int> tageListe() => [for (var i = 0; i < s.plan.length; i++) t.need(i)];
 
   void start() {
@@ -67,16 +75,21 @@ class Sim {
     final x = r.nextDouble();
     final frei = s.frz == null;
     // Plan-Aktionen (selten)
-    if (!s.hold && r.nextDouble() < .03) {
+    if (!s.hold && !frei && r.nextDouble() < .03) {
+      // Bei offenen Tagen lässt sich nicht halten (erst eintragen).
+      expect(t.startHold(1 + r.nextInt(20)), isFalse);
+      merke('Halten abgelehnt (offene Tage)');
+    } else if (!s.hold && frei && r.nextDouble() < .03) {
       final n = r.nextDouble() < .3 ? null : 1 + r.nextInt(20);
       expect(t.startHold(n), isTrue);
       haltenSeit = heute;
       merke('Halten ${n ?? 'ohne Ende'}');
     } else if (s.hold && r.nextDouble() < .1) {
       final seit = s.holdSince!;
+      final ueber = ueberfaellig();
       t.stopHold();
-      // Der Plan verschiebt sich um genau die gehaltenen Tage.
-      if (!neuSync) erwEnde = addD(erwEnde, dBetween(seit, heute));
+      // Der Plan verschiebt sich um genau die gehaltenen Tage (plus Überfälliges, s. [ueberfaellig]).
+      if (!neuSync) erwEnde = addD(erwEnde, dBetween(seit, heute) + ueber);
       merke('Halten beendet nach ${dBetween(seit, heute)} Tagen');
     } else if (!s.hold && frei && s.stage < s.plan.length - 1 && r.nextDouble() < .03) {
       _stufeAendern();
@@ -218,10 +231,11 @@ class Sim {
     final warHalten = s.hold;
     final seit = s.holdSince;
     final bis = s.holdUntil;
+    final ueber = warHalten ? ueberfaellig() : 0;
     t.refresh();
     if (warHalten && !s.hold) {
       // automatisch beendet
-      if (!neuSync) erwEnde = addD(erwEnde, dBetween(seit!, bis!));
+      if (!neuSync) erwEnde = addD(erwEnde, dBetween(seit!, bis!) + ueber);
       merke('Halten automatisch beendet');
     }
   }
@@ -243,6 +257,9 @@ class Sim {
     if (a.hold && !neuSync && a.frz == null && a.plan.length > 1) {
       final d = dBetween(a.holdSince!, a.holdUntil ?? heute);
       var soll = addD(erwEnde, d < 0 ? 0 : d);
+      // War die Stufe beim Halten schon um (Plan währenddessen schneller), endet sie erst am Halte-Ende:
+      // um so viele Tage später, wie sie beim Halte-Beginn überfällig war.
+      soll = addD(soll, ueberfaellig());
       // Frühestens am Halte-Ende bzw. heute (Halten auf einer überfälligen Stufe)
       final frueh = a.holdUntil ?? heute;
       if (soll.compareTo(frueh) < 0) soll = frueh;

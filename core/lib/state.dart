@@ -108,6 +108,16 @@ class Pend {
       };
 }
 
+/// Planverlauf: ab [tag] galt Stufe [stufe] mit [dosis] (bis zum nächsten Eintrag). Wird bei jedem echten
+/// Dosiswechsel festgehalten, damit vergangene Tage (auch gehaltene) ihre damalige Dosis behalten.
+class PlanAb {
+  final String tag;
+  final int stufe;
+  final double dosis;
+  const PlanAb(this.tag, this.stufe, this.dosis);
+  List<Object> toJson() => [tag, stufe, dosis];
+}
+
 class TaperState {
   String name;
   String unit;
@@ -134,6 +144,9 @@ class TaperState {
   int sosN;
   String? pin;
   List<Chg> chg;
+
+  /// Planverlauf (ältester zuerst). Fehlt in Ständen vor v0.2.2.
+  List<PlanAb> ph;
   Pend? pend;
   String? wkSeen;
 
@@ -166,6 +179,7 @@ class TaperState {
     this.sosN = 0,
     this.pin,
     List<Chg>? chg,
+    List<PlanAb>? ph,
     this.pend,
     this.wkSeen,
     this.person,
@@ -173,7 +187,8 @@ class TaperState {
         log = log ?? {},
         notes = notes ?? {},
         good = good ?? {},
-        chg = chg ?? [];
+        chg = chg ?? [],
+        ph = ph ?? [];
 
   Map<String, dynamic> toJson() => {
         'v': dataVersion,
@@ -202,6 +217,7 @@ class TaperState {
         'sosN': sosN,
         'pin': pin,
         'chg': chg.map((c) => c.toJson()).toList(),
+        if (ph.isNotEmpty) 'ph': [for (final x in ph) x.toJson()],
         'pend': pend?.toJson(),
         'wkSeen': wkSeen,
         if (person != null) 'person': person,
@@ -340,6 +356,16 @@ class TaperState {
         s.chg.add(Chg(
             _int(c['ts']) ?? 0, c['d'] is String ? c['d'] as String : '', c['t'] is String ? c['t'] as String : ''));
       }
+    }
+    final ph = o['ph'];
+    if (ph is List) {
+      for (final x in ph) {
+        if (x is! List || x.length != 3 || !isDateKey(x[0])) continue;
+        final st = _int(x[1]), d = _num(x[2]);
+        if (st == null || d == null || !d.isFinite || d < 0) continue;
+        s.ph.add(PlanAb(x[0] as String, st, d));
+      }
+      s.ph.sort((a, b) => a.tag.compareTo(b.tag));
     }
     final pe = o['pend'];
     if (pe is Map) s.pend = _pend(pe, plan.length);

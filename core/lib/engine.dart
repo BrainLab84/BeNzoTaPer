@@ -193,6 +193,11 @@ class Taper {
       ensureStart();
       a.frzFloor = a.stageStart ?? a.t0;
     }
+    // Stände ohne Planverlauf (vor v0.2.2): ab dem aktuellen Stufenbeginn festhalten.
+    if (a.ph.isEmpty) {
+      ensureStart();
+      _phMerken(a.stageStart!, a.stage);
+    }
   }
 
   // ===== Grundrechnung =====
@@ -380,7 +385,7 @@ class Taper {
     while (k.compareTo(bis) <= 0 && tage.length < max) {
       if (k.compareTo(td) <= 0) {
         final e = a.log[k];
-        final pl = e?.plan ?? (k == td ? a.plan[a.stage] : planFor(k).plan);
+        final pl = e?.plan ?? planAm(k).plan;
         tage.add(VerlaufTag(k, pl, avg7(k), e?.dose, false));
       } else {
         tage.add(VerlaufTag(k, pj.map[k]?.v, null, null, true));
@@ -462,10 +467,63 @@ class Taper {
   }
 
   /// Geplante Dosis an einem vergangenen oder heutigen Tag [k], so wie der Plan wirklich läuft.
-  double sollAm(String k) {
+  double sollAm(String k) => planAm(k).plan;
+
+  /// Welche Dosis und Stufe an [k] galt bzw. gilt: ab dem aktuellen Stufenbeginn die echte Planposition,
+  /// davor – und vor dem letzten Eintrag im Planverlauf (z. B. einer Planänderung) – der festgehaltene
+  /// Planverlauf (kennt Halten und Anpassungen); nur ohne Verlauf (alte Stände) die Rückrechnung [planFor].
+  PlanForResult planAm(String k) {
     final a = st;
-    if (k.compareTo(stageStart) < 0) return planFor(k).plan;
-    return a.plan[planPos(k).$1];
+    final festBis = a.ph.isEmpty ? null : a.ph.last.tag;
+    if (k.compareTo(stageStart) >= 0 && (festBis == null || festBis.compareTo(k) <= 0)) {
+      final p = planPos(k);
+      return PlanForResult(a.plan[p.$1], p.$1);
+    }
+    PlanAb? h;
+    for (final x in a.ph) {
+      if (x.tag.compareTo(k) > 0) break;
+      h = x;
+    }
+    return h != null ? PlanForResult(h.dosis, h.stufe) : planFor(k);
+  }
+
+  /// Planverlauf: ab [tag] gilt Stufe [stufe] (mit ihrer Dosis). Gleiche Stufe und Dosis wie zuletzt:
+  /// nichts Neues – außer [fest] (Planänderung: alles davor bleibt, wie es war). Nie vor dem letzten Eintrag.
+  void _phMerken(String tag, int stufe, {bool fest = false}) {
+    final a = st;
+    if (stufe < 0 || stufe >= a.plan.length) return;
+    final d = a.plan[stufe];
+    final ph = a.ph;
+    if (ph.isNotEmpty) {
+      final l = ph.last;
+      if (tag.compareTo(l.tag) < 0) tag = l.tag;
+      if (l.tag == tag) {
+        ph.removeLast();
+      } else if (!fest && l.stufe == stufe && (l.dosis - d).abs() < 1e-9) {
+        return;
+      }
+    }
+    ph.add(PlanAb(tag, stufe, d));
+  }
+
+  /// Nach einer Planänderung: ab heute (bzw. ab Planbeginn) gilt die echte Planposition – bei offenen Tagen
+  /// steht nur die Anzeige still, der Plan nicht. Alles davor bleibt, wie es war.
+  void _abHeuteFest(String td) {
+    final ab = st.stageStart!.compareTo(td) > 0 ? st.stageStart! : td;
+    _phMerken(ab, planPos(ab).$1, fest: true);
+  }
+
+  /// Vor einer Planänderung: wo der bisherige Plan an den vergangenen Tagen seit dem letzten Eintrag im
+  /// Planverlauf wirklich stand (auch über offene Tage hinweg), festhalten – eine Änderung gilt nie rückwirkend.
+  void _vergangenesFesthalten(String td) {
+    final a = st;
+    if (a.stageStart == null) return;
+    var k = stageStart;
+    if (a.ph.isNotEmpty && a.ph.last.tag.compareTo(k) >= 0) k = addD(a.ph.last.tag, 1);
+    while (k.compareTo(td) < 0) {
+      _phMerken(k, planPos(k).$1);
+      k = addD(k, 1);
+    }
   }
 
   /// Wie viele Tage (inkl. heute) reichen [mg] beim aktuellen Plan? Rechnet mit Stufenwechseln und
@@ -506,7 +564,7 @@ class Taper {
     } else {
       left--;
     }
-    for (var i = 0; i < 3000; i++) {
+    for (var i = 0; i < 36500; i++) {
       if (haltRest <= 0 && left <= 0 && sg < a.plan.length - 1) {
         sg++;
         left = need(sg);
@@ -620,12 +678,12 @@ class Taper {
     if (!(v >= 0) || !v.isFinite) return IntakeResult.ignored; // Oberfläche prüft schon; doppelt hält besser
     if (k == td && !force) {
       final pe0 = a.log[k];
-      final pl0 = (pe0 != null && pe0.plan != null) ? pe0.plan! : a.plan[a.stage];
+      final pl0 = (pe0 != null && pe0.plan != null) ? pe0.plan! : planAm(td).plan;
       if ((pe0?.dose ?? 0) + v > pl0 + 1e-9) return IntakeResult.needsPause;
     }
     var e = a.log[k];
     if (e == null) {
-      final pf = k == td ? PlanForResult(a.plan[a.stage], a.stage) : planFor(k);
+      final pf = planAm(k);
       e = a.log[k] = DayEntry(plan: pf.plan, stage: pf.stage);
     }
     if (e.it.isEmpty) {
@@ -756,6 +814,7 @@ class Taper {
       a.stageStart = addD(a.stageStart!, need(a.stage));
       a.stage++;
       a.adv = a.stageStart;
+      _phMerken(a.stageStart!, a.stage);
       ch = true;
     }
     // Nach einem Stufenwechsel offene Tage neu bewerten (z. B. letzte Stufe 0 mg: nichts mehr zu pausieren).
@@ -770,6 +829,9 @@ class Taper {
     final t = today;
     ensureStart();
     if (days != null && !(days >= 1 && days <= 365)) return false;
+    // Nicht vor dem Planstart, nicht doppelt, nicht bei offenen Tagen (erst nachtragen – sonst würde die
+    // eingefrorene, womöglich höhere Stufe gehalten).
+    if (vorStart || a.hold || a.frz != null) return false;
     a.hold = true;
     a.holdSince = t;
     a.frz = null;
@@ -794,6 +856,11 @@ class Taper {
     if (a.holdSince != null) {
       final d = dBetween(a.holdSince!, t);
       a.stageStart = addD(stageStart, d < 0 ? 0 : d);
+      // War die Stufe beim Halten schon um (Plan währenddessen gekürzt), endet sie frühestens jetzt –
+      // gehaltene Tage bleiben gehalten.
+      if (a.stage < a.plan.length - 1 && addD(a.stageStart!, need(a.stage)).compareTo(t) < 0) {
+        a.stageStart = addD(t, -need(a.stage));
+      }
     }
     a.hold = false;
     a.holdSince = null;
@@ -827,14 +894,13 @@ class Taper {
       final d = dBetween(a.holdSince!, a.holdUntil ?? today);
       k = addD(k, d < 0 ? 0 : d);
     }
+    // Beim Halten kann es frühestens am Halte-Ende (bzw. ab heute) weitergehen (wie [endHold]).
+    final frueh = a.hold ? (a.holdUntil ?? today) : null;
     for (var i = a.stage; i < last; i++) {
       k = addD(k, need(i));
+      if (i == a.stage && frueh != null && k < frueh) k = frueh;
     }
-    // Beim Halten kann es frühestens am Halte-Ende (bzw. ab heute) weitergehen.
-    if (a.hold) {
-      final frueh = a.holdUntil ?? today;
-      if (k < frueh) k = frueh;
-    }
+    if (frueh != null && k < frueh) k = frueh;
     return k;
   }
 
@@ -902,8 +968,11 @@ class Taper {
       ensureStart();
       final nd = (p.nd != null && p.nd! > 0) ? p.nd! : dBetween(a.stageStart!, p.next!);
       if (p.stage == a.stage && nd > need(a.stage)) {
+        final td = today;
+        _vergangenesFesthalten(td);
         a.days ??= a.plan.map((_) => a.target).toList();
         a.days![a.stage] = nd;
+        _abHeuteFest(td);
         logChg('Übernommen: ${p.txt}');
       }
       a.pend = null;
@@ -944,8 +1013,11 @@ class Taper {
       _after();
       return LeftResult.pended;
     }
+    final td = today;
+    _vergangenesFesthalten(td);
     a.days ??= a.plan.map((_) => a.target).toList();
     a.days![a.stage] = nd;
+    _abHeuteFest(td);
     logChg('Nächste Stufe vorgezogen auf ${dmy(nk)}');
     _after();
     return LeftResult.applied;
@@ -985,6 +1057,7 @@ class Taper {
       t0: td,
       days: plan.map((_) => days).toList(),
     );
+    _phMerken(td, 0);
     _after();
     return null;
   }
@@ -1126,6 +1199,7 @@ class Taper {
       final same = _listEq(plan, a.plan) && sg == a.stage;
       final keep = (plan[sg] - a.plan[a.stage]).abs() < 1e-9;
       final old = a.stage;
+      _vergangenesFesthalten(td);
       if (!same) {
         for (final en in a.log.values) {
           en.stage = (keep && en.stage == old) ? sg : -1;
@@ -1147,6 +1221,11 @@ class Taper {
         logChg('Vormerkung verworfen, weil der Plan inzwischen geändert wurde');
         a.pend = null;
       }
+    }
+    if (a != null) {
+      _abHeuteFest(td);
+    } else {
+      _phMerken(st.stageStart!, st.stage);
     }
     e.err = null;
     _after();
@@ -1209,8 +1288,11 @@ class Taper {
     final td = today;
     if (a.hold) endHold(td, 'Halten beendet (Plan angepasst)');
     autoAdvance();
-    final sg = a.stage;
-    final sd = stageDay(td);
+    _vergangenesFesthalten(td);
+    // Echte Planposition heute (bei offenen Tagen läuft der Plan weiter, nur die Anzeige steht).
+    final pos = planPos(td);
+    final sg = pos.$1;
+    final sd = pos.$2;
     final vorher = [for (var i = 0; i < sg; i++) a.plan[i]];
     final vorherTage = [for (var i = 0; i < sg; i++) need(i)];
     int tg(int i) => ab[i].days ?? a.target;
@@ -1220,6 +1302,7 @@ class Taper {
       a.plan = [...vorher, for (final r in ab) r.dose!];
       a.days = [...vorherTage, sd + tg(0), for (var i = 1; i < ab.length; i++) tg(i)];
       a.stage = sg;
+      a.stageStart = addD(td, -sd);
     } else {
       // Neue Dosis mitten in der Stufe: die bisherigen Tage bleiben als eigene Stufe, die neue beginnt heute.
       a.plan = [...vorher, a.plan[sg], for (final r in ab) r.dose!];
@@ -1228,6 +1311,7 @@ class Taper {
       a.stageStart = td;
     }
     a.adv = null;
+    _abHeuteFest(td);
     if (a.pend != null) {
       logChg('Vormerkung verworfen, weil der Plan angepasst wurde');
       a.pend = null;

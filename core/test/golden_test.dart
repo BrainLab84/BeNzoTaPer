@@ -9,6 +9,12 @@ import 'sim.dart';
 
 double _d(Object? x) => (x as num).toDouble();
 
+/// Tage, deren Eintrag angelegt wurde, während ein älterer Tag offen war (Anzeigen pausiert). Die Referenz
+/// speicherte dafür die eingefrorene Stufe; seit v0.2.2 speichert der Kern die echte Planposition (Prüfer-
+/// befund: sonst fehlt „Kurz innehalten“ und die Reichweite ist falsch). Für diese Tage werden Plan, Stufe
+/// und Bewertung nicht mit der Referenz verglichen; eigene Prüfung: vorrat_test, pruefer_befunde_test.
+final eingefroren = <String>{};
+
 void exec(Sim w, List op, List<Map<String, dynamic>> snaps, int Function() nextSnap,
     void Function(Map<String, dynamic>) check) {
   final e = w.e;
@@ -26,8 +32,10 @@ void exec(Sim w, List op, List<Map<String, dynamic>> snaps, int Function() nextS
     case 'day':
       w.day(op[1] as int, op[2] as int);
     case 'take':
+      if (w.st.frz != null) eingefroren.add((op[3] as String).isEmpty ? w.today : op[3] as String);
       w.take(_d(op[1]), op[2] as String, op[3] as String);
     case 'takeP':
+      if (w.st.frz != null) eingefroren.add(w.today);
       final t = (op[2] as String).isEmpty ? null : op[2] as String;
       if (e.addIntake(_d(op[1]), t: t) == IntakeResult.needsPause) {
         e.addIntake(_d(op[1]), t: t, force: true);
@@ -239,6 +247,7 @@ void main() {
       final g = jsonDecode(utf8.decode(gzip.decode(f.readAsBytesSync()))) as Map<String, dynamic>;
       final snaps = (g['snaps'] as List).cast<Map<String, dynamic>>();
       final w = Sim(start: '2026-11-16T07:00:00');
+      eingefroren.clear();
       var si = 0;
       var n = 0;
       for (final op in g['ops'] as List) {
@@ -261,6 +270,15 @@ void main() {
             (want['stock'] as List)[1] = null;
             (got['stock'] as List)[1] = null;
           }
+          final ll = [want['lastLog'] as List, got['lastLog'] as List];
+          for (var i = 0; i < ll[0].length && i < ll[1].length; i++) {
+            if (eingefroren.contains((ll[0][i] as List)[0])) {
+              for (final l in ll) {
+                (l[i] as List)[2] = (l[i] as List)[3] = (l[i] as List)[4] = null;
+              }
+            }
+          }
+          if (eingefroren.contains(want['today'])) want['wk'] = got['wk'] = null;
           final d = diff(want, got);
           if (d != null) {
             fail(
@@ -270,10 +288,21 @@ void main() {
         });
       }
       expect(n, snaps.length);
-      final fin = diff(
-        finalView(g['final'] as Map<String, dynamic>),
-        finalView(jsonDecode(jsonEncode(w.e.exportJson())) as Map<String, dynamic>),
-      );
+      final soll = finalView(g['final'] as Map<String, dynamic>);
+      final ist = finalView(jsonDecode(jsonEncode(w.e.exportJson())) as Map<String, dynamic>);
+      for (final v in [soll, ist]) {
+        final log = v['log'] as Map?;
+        if (log == null) continue;
+        for (final k in eingefroren) {
+          final x = log[k];
+          if (x is Map) {
+            x.remove('plan');
+            x.remove('stage');
+            x.remove('r');
+          }
+        }
+      }
+      final fin = diff(soll, ist);
       expect(fin, isNull, reason: 'Endzustand');
     });
   }

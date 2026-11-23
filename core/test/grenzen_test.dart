@@ -26,8 +26,14 @@ void main() {
       // Stufentag 5 von 7, 3 Tage halten (bis 13.1.): danach noch 2 Tage 10 mg, ab 15.1. 9 mg.
       t.startHold(3);
       final pm = t.projMap('2026-01-20');
-      expect([for (final k in ['2026-01-11', '2026-01-12', '2026-01-13', '2026-01-14']) pm.map[k]!.v],
-          [10, 10, 10, 10]);
+      expect([
+        for (final k in ['2026-01-11', '2026-01-12', '2026-01-13', '2026-01-14']) pm.map[k]!.v
+      ], [
+        10,
+        10,
+        10,
+        10
+      ]);
       expect(pm.map['2026-01-15']!.v, 9);
       expect(pm.map['2026-01-15']!.ch, isTrue, reason: 'Stufenwechsel-Markierung im Kalender');
       // So kommt es dann auch tatsächlich:
@@ -85,8 +91,7 @@ void main() {
       final t = neu();
       expect(t.setup(dose: 10, step: 1, minStep: .5, days: 5000, goal: 0), isNotNull);
       expect(t.setup(dose: double.infinity, step: 1, minStep: .5, days: 14, goal: 0), isNotNull);
-      expect(planAusAbschnitten(10, [const Abschnitt(1, 4000, 0)]).fehler?.werte,
-          [0, 3650]);
+      expect(planAusAbschnitten(10, [const Abschnitt(1, 4000, 0)]).fehler?.werte, [0, 3650]);
       expect(planAusAbschnitten(10, [const Abschnitt(0.01, 3650, 0)]).fehler, isNotNull,
           reason: '1000 Stufen × 10 Jahre');
       final e = t.openEditor(neu: true);
@@ -142,13 +147,22 @@ void main() {
     test('Reichweite rechnet mit dem Stufenwechsel direkt am Halte-Ende', () {
       final t = neu();
       t.setup(dose: 10, step: 5, minStep: .5, days: 3, goal: 0); // 10 (3 T) → 5 (3 T) → 0
-      tag(t, 3); // 3 Tage vergessen → Stillstand, Stufe bleibt 10 mg (überfällig)
+      tag(t, 3); // 3 Tage vergessen → Anzeigen pausieren, Stufe bleibt 10 mg stehen (überfällig)
       expect(t.st.stage, 0);
-      t.startHold(2); // Halten löst den Stillstand; Stufentag 3 von 3
-      // heute 10 + morgen 10 (gehalten), am Halte-Ende sofort 5 mg
-      expect(t.reichweite(25), 3);
-      expect(t.projMap(addD(t.today, 3)).map[addD(t.today, 2)]!.v, 5);
-      expect(t.voraussichtlichesEnde(), addD(t.today, 5));
+      // Seit v0.2.2: bei offenen Tagen erst nachtragen – sonst würde die eingefrorene, höhere Dosis gehalten.
+      expect(t.startHold(2), isFalse);
+      expect(t.st.hold, isFalse);
+      // Reichweite rechnet trotzdem mit der echten Planposition: heute ist schon 5 mg dran.
+      expect(t.reichweite(12), 2, reason: '5 + 5, Rest 2');
+      // Nachgetragen: Stufe zieht nach, dann geht Halten (hält 5 mg).
+      for (var i = 3; i >= 1; i--) {
+        t.addIntake(10, k: addD(t.today, -i), t: '20:00');
+      }
+      t.refresh();
+      expect(t.st.stage, 1);
+      expect(t.startHold(2), isTrue);
+      expect(t.reichweite(12), 2, reason: '5 mg gehalten: 5 + 5, Rest 2');
+      expect(t.st.plan[t.st.stage], 5);
     });
   });
 

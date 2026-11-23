@@ -75,6 +75,8 @@ class Audit {
     if (s.hold) {
       if (s.holdUntil == null || k.compareTo(s.holdUntil!) < 0) return s.plan[sg];
       start = addD(start, dBetween(s.holdSince!, s.holdUntil!));
+      // Eine beim Halten schon abgelaufene Stufe endet frühestens am Halte-Ende.
+      if (sg < last && addD(start, need(sg)).compareTo(s.holdUntil!) < 0) start = addD(s.holdUntil!, -need(sg));
     }
     while (sg < last && k.compareTo(addD(start, need(sg))) >= 0) {
       start = addD(start, need(sg));
@@ -92,6 +94,7 @@ class Audit {
     if (s.hold) k = addD(k, max(0, dBetween(s.holdSince!, s.holdUntil ?? heute)));
     for (var i = s.stage; i < last; i++) {
       k = addD(k, need(i));
+      if (i == s.stage && s.hold && k.compareTo(s.holdUntil ?? heute) < 0) k = s.holdUntil ?? heute;
     }
     if (s.hold && k.compareTo(s.holdUntil ?? heute) < 0) k = s.holdUntil ?? heute;
     return k;
@@ -110,9 +113,13 @@ class Audit {
     return n == 0 ? double.nan : sum / n;
   }
 
-  /// Geplante Dosis eines vergangenen Tages ohne Eintrag (für den Vorrat).
+  /// Gedächtnis: welche Dosis an einem Tag laut Plan galt – gemerkt, während der Tag lief (eigenes Modell).
+  final gesehen = <String, double>{};
+
+  /// Geplante Dosis eines vergangenen Tages ohne Eintrag (für den Vorrat): so, wie sie an dem Tag galt.
   double sollVergangen(String k) =>
-      k.compareTo(s.stageStart!) < 0 ? t.planFor(k).plan : (s.hold ? s.plan[s.stage] : soll(k, trotzOffen: true)!);
+      gesehen[k] ??
+      (k.compareTo(s.stageStart!) < 0 ? t.planFor(k).plan : (s.hold ? s.plan[s.stage] : soll(k, trotzOffen: true)!));
 
   /// Reichweite unabhängig: heutiger Rest zuerst, dann Tag für Tag laut Prognose.
   double reichweite(double mg) {
@@ -189,7 +196,10 @@ class Audit {
       if (t.voraussichtlichesEnde() != e) fehler('Voraussichtlich ${t.voraussichtlichesEnde()} ≠ $e');
       if (!s.hold && t.planEndNow() != (last > 0 ? e : t.planEndNow())) fehler('planEndNow ≠ Ende');
       // Wechsel auf die letzte Stufe in der Prognose genau am Ende (wenn im Fenster)
-      if (e != null && s.stage < last && e.compareTo(heute) > 0 && e.compareTo(bis) <= 0 &&
+      if (e != null &&
+          s.stage < last &&
+          e.compareTo(heute) > 0 &&
+          e.compareTo(bis) <= 0 &&
           !(s.hold && s.holdUntil == null)) {
         if (soll(e) != s.plan[last] || soll(addD(e, -1)) == s.plan[last] && s.plan[last] != s.plan[last - 1]) {
           fehler('Ende $e passt nicht zum Stufenwechsel in der Prognose');
@@ -249,7 +259,15 @@ class Audit {
         }
       }
       final rem = round3(sk.mg - used);
-      if ((si!.rem - rem).abs() > 1e-6) fehler('Vorrat-Rest ${si.rem} ≠ $rem');
+      if ((si!.rem - rem).abs() > 1e-6) {
+        // Welche Tage ohne Eintrag anders geschätzt werden (eigenes Modell gegen Kern).
+        final ab = [
+          for (var k = sk.day.compareTo(s.t0!) > 0 ? sk.day : s.t0!; k.compareTo(heute) < 0; k = addD(k, 1))
+            if (s.log[k] == null && (sollVergangen(k) - t.sollAm(k)).abs() > 1e-9)
+              '$k: ${sollVergangen(k)} ≠ Kern ${t.sollAm(k)}'
+        ];
+        fehler('Vorrat-Rest ${si.rem} ≠ $rem  $ab');
+      }
       if (si.geschaetzt != ohne) fehler('Vorrat: ${si.geschaetzt} geschätzte Tage ≠ $ohne');
       {
         final w = reichweite(si.rem);
@@ -276,7 +294,8 @@ class Audit {
     String? eff(String? x, String start) => x == null ? null : (x.compareTo(start) < 0 ? start : x);
     if (eff(t2.st.frz, t2.st.stageStart!) != eff(s.frz, s.stageStart!) ||
         eff(t2.firstFrz(heute), t2.st.stageStart!) != eff(t.firstFrz(heute), s.stageStart!)) {
-      fehler('Neustart: andere offene Tage/frz: frz ${s.frz}→${t2.st.frz}, first ${t.firstFrz(heute)}→${t2.firstFrz(heute)}, '
+      fehler(
+          'Neustart: andere offene Tage/frz: frz ${s.frz}→${t2.st.frz}, first ${t.firstFrz(heute)}→${t2.firstFrz(heute)}, '
           'floor ${s.frzFloor}→${t2.st.frzFloor}, Stufe ${s.stage}/${s.plan.length}, Start ${s.stageStart}, '
           'offen ${t.openDays().where((k) => k.compareTo(addD(heute, -20)) > 0).toList()}');
     }
@@ -297,6 +316,11 @@ class Audit {
   int nextIn() => max(1, need(s.stage) - t.stageDay());
 
   void tag([int n = 1]) {
+    // Die übersprungenen Tage laufen mit dem jetzigen Plan (offene Tage verschieben ihn nicht).
+    for (var i = 0; i < n; i++) {
+      final k = addD(heute, i);
+      gesehen[k] = soll(k, trotzOffen: true)!;
+    }
     final h = [0, 1, 7, 9, 12, 18, 23][r.nextInt(7)];
     final m = h == 23 ? 59 : (h == 0 ? 1 : r.nextInt(60));
     jetzt = DateTime.utc(jetzt.year, jetzt.month, jetzt.day + n, h, m);
@@ -473,12 +497,14 @@ class Audit {
     final d = mo == 2 ? 20 + r.nextInt(9) : 1 + r.nextInt(28);
     jetzt = DateTime.utc(y, mo, d, 9);
     t = Taper(clock: () => jetzt);
+    gesehen.clear();
     final art = r.nextInt(10);
     if (art < 5) {
       final dose = [10.0, 20.0, 6.0, 30.0, 2.5][r.nextInt(5)];
       final step = [0.5, 1.0, 2.0, 2.5, 0.125][r.nextInt(5)];
       final goal = r.nextInt(4) == 0 ? round3(dose / 2) : 0.0;
-      final err = t.setup(dose: dose, step: step, minStep: step < 0.25 ? 0.125 : 0.25, days: 3 + r.nextInt(12), goal: goal);
+      final err =
+          t.setup(dose: dose, step: step, minStep: step < 0.25 ? 0.125 : 0.25, days: 3 + r.nextInt(12), goal: goal);
       if (err != null) fehler('setup: $err');
       merke('Setup $dose step $step goal $goal');
     } else {
@@ -524,8 +550,25 @@ void main() {
       a.zaehler.forEach((k, v) => gesamt[k] = (gesamt[k] ?? 0) + v);
     }
     print('Audit: $pruef Zustände geprüft · Aktionen: $gesamt');
-    for (final w in ['Einnahme', 'Nachtragen', 'Löschen', 'WeißNicht', 'Lücken', 'Halten', 'Weiter', 'Kürzer', 'Länger',
-      'Vormerkung', 'Plan', 'Vorrat', 'Neustart', 'SicherungLaden', 'Tag', 'Import', 'Setup']) {
+    for (final w in [
+      'Einnahme',
+      'Nachtragen',
+      'Löschen',
+      'WeißNicht',
+      'Lücken',
+      'Halten',
+      'Weiter',
+      'Kürzer',
+      'Länger',
+      'Vormerkung',
+      'Plan',
+      'Vorrat',
+      'Neustart',
+      'SicherungLaden',
+      'Tag',
+      'Import',
+      'Setup'
+    ]) {
       expect(gesamt[w] ?? 0, greaterThan(0), reason: '„$w“ kam nie vor');
     }
   });
