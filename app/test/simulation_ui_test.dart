@@ -231,7 +231,18 @@ void main() {
         vorratSoll -= jetztEingenommen - vorherEingenommen;
         vorherEingenommen = jetztEingenommen;
         final si = ta.stockInfo()!;
-        expect(si.rem, closeTo(vorratSoll, 1e-9), reason: 'Vorrat-Rest $grund');
+        // Tage ohne Eintrag seit dem Zähltag zählen mit der geplanten Dosis (unabhängig nachgezählt).
+        var ohne = 0;
+        var geschaetztMg = 0.0;
+        final sk = ta.st.stock!;
+        for (var k = sk.day.compareTo(ta.st.t0!) > 0 ? sk.day : ta.st.t0!; k.compareTo(heute) < 0; k = addD(k, 1)) {
+          if (ta.st.log[k] == null) {
+            ohne++;
+            geschaetztMg += ta.sollAm(k);
+          }
+        }
+        expect(si.geschaetzt, ohne, reason: 'Vorrat: geschätzte Tage $grund');
+        expect(si.rem, closeTo(vorratSoll - geschaetztMg, 1e-9), reason: 'Vorrat-Rest $grund');
 
         await reiter(t, 'Kalender');
         if (normal && n > 1) {

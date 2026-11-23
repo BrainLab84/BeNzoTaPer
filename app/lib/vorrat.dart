@@ -149,6 +149,15 @@ class _VorratKarteState extends State<VorratKarte> {
       kinder.add(Sub(
           tr('Rest: ${fz(rest)} ${s.unit}${hatT ? ' (≈ ${fz(jsRound(rest / t.str[0] * 4) / 4)} Tbl à ${fz(t.str[0])})' : ''}', 'Remaining: ${fz(rest)} ${s.unit}${hatT ? " (≈ ${fz(jsRound(rest / t.str[0] * 4) / 4)} tabs of ${fz(t.str[0])})" : ""}'),
           oben: 2));
+      if (si.geschaetzt > 0) {
+        kinder.add(Sub(
+            tr('Darin ${si.geschaetzt == 1 ? '1 Tag' : '${si.geschaetzt} Tage'} ohne Eintrag, mit der geplanten Dosis gerechnet. '
+                'Nachtragen macht es genauer.',
+                'Includes ${si.geschaetzt == 1 ? '1 day' : '${si.geschaetzt} days'} without an entry, counted with the planned dose. '
+                    'Filling them in makes it more accurate.'),
+            key: const Key('vorratGeschaetzt'),
+            oben: 2));
+      }
       kinder.add(Sub(tr('Keine exakte Angabe garantiert – zu viele Variablen, aber ziemlich genau.', 'No exact figure guaranteed – too many variables, but fairly accurate.'),
           key: Key('vorratHinweis'), oben: 2));
       if (warn) {

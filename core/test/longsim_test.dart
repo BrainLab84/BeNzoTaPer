@@ -39,6 +39,7 @@ void runSeed(int seed, int days, String profile, List<String> bad) {
   w.st.stock = Stock(400, w.now.millisecondsSinceEpoch, w.today);
   var stockIn = 400.0;
   final stockTs = w.st.stock!.ts;
+  final stockTag = w.st.stock!.day;
   var lastEnd = w.planEndNowOrNull();
   String? refEnd, pauseFrom, prevHU;
   var wasPaused = false;
@@ -212,8 +213,18 @@ void runSeed(int seed, int days, String profile, List<String> bad) {
           if (x.ts > stockTs) used += x.v;
         }
       }
-      final rem = e.stockInfo()!.rem;
-      if ((rem - (stockIn - used)).abs() > 1e-6) flag('Vorrat falsch', '$rem vs ${stockIn - used}');
+      // Tage ohne Eintrag seit dem Zähltag (ab Planstart, bis gestern) unabhängig nachzählen: die werden mit der
+      // geplanten Dosis abgezogen. Ohne solche Tage gilt Rest = gezählt − eingetragen exakt.
+      var ohne = 0;
+      final t0 = S.t0 ?? today;
+      for (var k = stockTag.compareTo(t0) > 0 ? stockTag : t0; k.compareTo(today) < 0; k = addD(k, 1)) {
+        if (S.log[k] == null) ohne++;
+      }
+      final info = e.stockInfo()!;
+      final rem = info.rem;
+      if (info.geschaetzt != ohne) flag('Vorrat: geschätzte Tage', '${info.geschaetzt} vs $ohne');
+      if (ohne == 0 && (rem - (stockIn - used)).abs() > 1e-6) flag('Vorrat falsch', '$rem vs ${stockIn - used}');
+      if (rem > stockIn - used + 1e-6) flag('Vorrat zu hoch', '$rem vs ${stockIn - used}');
     }
     // Enddatum-Konsistenz
     final paused = S.hold;

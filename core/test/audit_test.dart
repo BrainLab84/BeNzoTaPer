@@ -65,9 +65,10 @@ class Audit {
     return (d != null && i < d.length && d[i] > 0) ? d[i] : s.target;
   }
 
-  /// Plan-Dosis für einen künftigen Tag k (> heute). null bei offenen Tagen.
-  double? soll(String k) {
-    if (s.frz != null) return null;
+  /// Plan-Dosis für einen künftigen Tag k (> heute). null bei offenen Tagen (außer [trotzOffen]: offene Tage
+  /// verschieben den Plan nicht, der Vorrat rechnet darum mit der echten Planposition).
+  double? soll(String k, {bool trotzOffen = false}) {
+    if (s.frz != null && !trotzOffen) return null;
     final last = s.plan.length - 1;
     var sg = s.stage;
     var start = s.stageStart!;
@@ -109,10 +110,15 @@ class Audit {
     return n == 0 ? double.nan : sum / n;
   }
 
+  /// Geplante Dosis eines vergangenen Tages ohne Eintrag (für den Vorrat).
+  double sollVergangen(String k) =>
+      k.compareTo(s.stageStart!) < 0 ? t.planFor(k).plan : (s.hold ? s.plan[s.stage] : soll(k, trotzOffen: true)!);
+
   /// Reichweite unabhängig: heutiger Rest zuerst, dann Tag für Tag laut Prognose.
   double reichweite(double mg) {
     var rr = mg;
-    final rest = s.plan[s.stage] - (s.log[heute]?.dose ?? 0);
+    final he = s.log[heute];
+    final rest = (he?.plan ?? (s.hold ? s.plan[s.stage] : soll(heute, trotzOffen: true)!)) - (he?.dose ?? 0);
     if (rest > 0) {
       rr -= rest;
       if (rr < -1e-9) return 0;
@@ -121,7 +127,7 @@ class Audit {
     var k = heute;
     for (var i = 0; i < 3000; i++) {
       k = addD(k, 1);
-      final d = soll(k)!;
+      final d = soll(k, trotzOffen: true)!;
       if (!(d > 0)) return double.infinity;
       if (rr < d - 1e-9) break;
       rr -= d;
@@ -234,9 +240,18 @@ class Audit {
           if (x.ts > sk.ts) used += x.v;
         }
       });
+      // Tage ohne Eintrag seit dem Zähltag (ab Planstart, bis gestern): geplante Dosis.
+      var ohne = 0;
+      for (var k = sk.day.compareTo(s.t0!) > 0 ? sk.day : s.t0!; k.compareTo(heute) < 0; k = addD(k, 1)) {
+        if (s.log[k] == null) {
+          used += sollVergangen(k);
+          ohne++;
+        }
+      }
       final rem = round3(sk.mg - used);
       if ((si!.rem - rem).abs() > 1e-6) fehler('Vorrat-Rest ${si.rem} ≠ $rem');
-      if (s.frz == null) {
+      if (si.geschaetzt != ohne) fehler('Vorrat: ${si.geschaetzt} geschätzte Tage ≠ $ohne');
+      {
         final w = reichweite(si.rem);
         if (si.days != w) {
           fehler('Vorrat-Reichweite ${si.days} ≠ $w (Rest ${si.rem}, Stufe ${s.stage} ${s.plan}, '

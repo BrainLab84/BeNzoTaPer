@@ -252,6 +252,15 @@ void main() {
             // Ebenso: Kalender-Prognose läuft nach dem Halte-Ende laut Plan weiter.
             want['proj'] = got['proj'] = null;
           }
+          // Bewusst anders seit v0.2.2 (Doc 28/29): Tage ohne Eintrag ziehen die geplante Dosis vom Vorrat ab,
+          // und die Reichweite rechnet mit der echten Planposition, auch wenn offene Tage die Anzeigen pausieren.
+          // Die Referenz kannte beides nicht. Eigene Prüfung: vorrat_test, longsim_test.
+          if ((w.e.stockInfo()?.geschaetzt ?? 0) > 0) {
+            want['stock'] = got['stock'] = null;
+          } else if (got['frz'] != null && got['stock'] is List) {
+            (want['stock'] as List)[1] = null;
+            (got['stock'] as List)[1] = null;
+          }
           final d = diff(want, got);
           if (d != null) {
             fail(

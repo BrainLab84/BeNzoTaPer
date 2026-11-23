@@ -354,7 +354,17 @@ class Sim {
           used += e.dose;
         }
       });
+      // Tage ohne Eintrag seit dem Zähltag (ab Planstart, bis gestern) zählen mit der geplanten Dosis.
+      var ohne = 0;
+      final heute = t.today;
+      for (var k = sk.day.compareTo(a.t0!) > 0 ? sk.day : a.t0!; k.compareTo(heute) < 0; k = addD(k, 1)) {
+        if (a.log[k] == null) {
+          used += t.sollAm(k);
+          ohne++;
+        }
+      }
       final si = t.stockInfo()!;
+      if (si.geschaetzt != ohne) fehler('Vorrat: ${si.geschaetzt} geschätzte Tage ≠ $ohne');
       if ((si.rem - (sk.mg - used)).abs() > 1e-6) fehler('Vorrat-Rest ${si.rem} ≠ ${sk.mg - used}');
     }
   }

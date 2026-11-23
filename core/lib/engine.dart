@@ -36,7 +36,10 @@ class StockInfo {
 
   /// Tage, die der Vorrat noch reicht (inkl. heute). `double.infinity` = bis Planende.
   final double days;
-  const StockInfo(this.rem, this.days);
+
+  /// Vergangene Tage ohne Eintrag seit dem Zählen, die mit der geplanten Dosis abgezogen wurden.
+  final int geschaetzt;
+  const StockInfo(this.rem, this.days, [this.geschaetzt = 0]);
 }
 
 class Proj {
@@ -402,10 +405,15 @@ class Taper {
   }
 
   /// Vorrat: Rest und Reichweite in Tagen (inkl. heute).
+  ///
+  /// Rest = gezählter Vorrat − eingetragene Einnahmen nach dem Zählen − geplante Dosis jedes vergangenen
+  /// Tages ohne Eintrag (seit dem Zähltag, ab Planstart; auch „weiß ich nicht mehr“). So wird nie mehr
+  /// Vorrat angenommen, als da sein kann; wer nachträgt, ersetzt die Schätzung durch die echte Menge.
   StockInfo? stockInfo([DateTime? nowDt]) {
     final a = st;
     final sk = a.stock;
     if (sk == null) return null;
+    final td = ymd(nowDt ?? clock());
     var used = 0.0;
     a.log.forEach((k, e) {
       if (e.it.isNotEmpty) {
@@ -416,8 +424,46 @@ class Taper {
         used += e.dose;
       }
     });
+    var geschaetzt = 0;
+    final t0 = t0Of();
+    if (t0 != null) {
+      var k = sk.day.compareTo(t0) > 0 ? sk.day : t0;
+      for (var n = 0; k.compareTo(td) < 0 && n < 4000; n++) {
+        if (a.log[k] == null) {
+          used += sollAm(k);
+          geschaetzt++;
+        }
+        k = addD(k, 1);
+      }
+    }
     final rem = round3(sk.mg - used);
-    return StockInfo(rem, reichweite(rem, nowDt));
+    return StockInfo(rem, reichweite(rem, nowDt), geschaetzt);
+  }
+
+  /// Wo der Plan an [k] wirklich steht (Stufe, Tag in der Stufe). Offene Tage verschieben den Plan nicht,
+  /// darum ohne den Stillstand der Anzeigen; beim Halten steht der Stufentag ab dem Halte-Beginn still.
+  (int, int) planPos(String k) {
+    final a = st;
+    var sg = a.stage;
+    var start = stageStart;
+    if (a.hold) {
+      final t = (a.holdSince != null && a.holdSince!.compareTo(k) < 0) ? a.holdSince! : k;
+      final d = dBetween(start, t);
+      return (sg, d < 0 ? 0 : d);
+    }
+    while (sg < a.plan.length - 1 && k.compareTo(addD(start, need(sg))) >= 0) {
+      start = addD(start, need(sg));
+      sg++;
+    }
+    final d = dBetween(start, k);
+    return (sg, d < 0 ? 0 : d);
+  }
+
+  /// Geplante Dosis an einem vergangenen oder heutigen Tag [k], so wie der Plan wirklich läuft.
+  double sollAm(String k) {
+    final a = st;
+    if (k.compareTo(stageStart) < 0) return planFor(k).plan;
+    return a.plan[planPos(k).$1];
   }
 
   /// Wie viele Tage (inkl. heute) reichen [mg] beim aktuellen Plan? Rechnet mit Stufenwechseln und
@@ -433,11 +479,13 @@ class Taper {
       return ab.isInfinite ? ab : ab + dBetween(todayKey, beginn);
     }
     var r = mg;
-    var sg = a.stage;
+    // Echte Planposition heute (offene Tage verschieben den Plan nicht).
+    final pos = planPos(todayKey);
+    var sg = pos.$1;
     final te = a.log[todayKey];
-    var left = need(sg) - stageDay(todayKey);
+    var left = need(sg) - pos.$2;
     var days = 0;
-    final rest = a.plan[sg] - (te?.dose ?? 0);
+    final rest = (te?.plan ?? a.plan[sg]) - (te?.dose ?? 0);
     // „Reicht nicht für heute“ nur, wenn heute noch etwas offen ist. Ist heute schon alles genommen, zählt
     // ein überzogener Vorrat (mehr genommen als gezählt) als leer – sonst warnt die App auch bei 0 mg.
     if (rest > 0) {

@@ -412,7 +412,10 @@ void main() {
     final k3 = addD(w.today, -3);
     final wkBefore = w.e.weekAvgs(w.now, 1)[0].n;
     w.e.delIntake(0, k3);
-    expect(w.e.stockInfo()!.rem, before + 10);
+    // Seit v0.2.2: ein Tag ohne Eintrag zählt mit der geplanten Dosis (10) – der Rest bleibt gleich,
+    // statt fälschlich um 10 mg zu steigen. Nachtragen ersetzt die Schätzung durch die echte Menge.
+    expect(w.e.stockInfo()!.rem, before);
+    expect(w.e.stockInfo()!.geschaetzt, 1);
     expect(w.e.weekAvgs(w.now, 1)[0].n, wkBefore - 1);
     expect(w.st.frz, isNotNull, reason: 'Lücke löst Stillstand aus');
     expect(w.endCalc(), isNull);
