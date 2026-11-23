@@ -98,7 +98,7 @@ void main() {
 
   testWidgets('Sicherung laden: offene Vorrat-Karte zeigt danach die neuen Stärken', (t) async {
     final d = FakeDateien();
-    final quelle = AppState(MemStore(), dateien: d);
+    final quelle = AppState(MemStore(), dateien: d, clock: () => jetzt);
     await t.runAsync(quelle.laden);
     quelle.taper.setup(dose: 20, step: 1, minStep: 0.5, days: 7, goal: 0);
     quelle.taper.saveTabs([10, 2], 0.5, null);

@@ -173,6 +173,9 @@ List<DateTime> erinnerungZeiten(AppState app, ErinnerungEinstellung e) {
     final z = DateTime(jetzt.year, jetzt.month, jetzt.day + i, e.stunde, e.minute);
     if (!z.isAfter(jetzt)) continue;
     if (i == 0 && (ta.st.log[ta.today]?.it.isNotEmpty ?? false)) continue;
+    // Plan beginnt erst später: vor dem Starttag keine Erinnerung.
+    final beginn = ta.st.t0;
+    if (beginn != null && addD(ta.today, i).compareTo(beginn) < 0) continue;
     out.add(z);
   }
   return out;

@@ -73,6 +73,10 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
   final _warum = TextEditingController();
   String _unit = 'mg';
   int _start = 0;
+
+  /// Startdatum (JJJJ-MM-TT) des ersten eigenen Plans; `null` = heute.
+  String? _beginn;
+  String get _beginnTag => _beginn ?? ta.today;
   String? _fehler;
   String? _meldung;
   bool _warumFragen = false;
@@ -207,6 +211,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
         ..addAll(e.rows.map(_ZeileFelder.new));
       _unit = e.unit;
       _start = 0;
+      if (e.startDatum != null) _beginn = e.startDatum;
       _fehler = null;
       _meldung = e.msg == null ? null : meldungText(e.msg!);
     });
@@ -220,7 +225,8 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
         ..name = _med.text.trim().isEmpty ? tr('Medikament', 'Medication') : _med.text
         ..unit = _unit
         ..rows = _rows
-        ..start = _start;
+        ..start = _start
+        ..startDatum = _gibtPlan ? null : _beginn;
     }
     e
       ..conf = _conf.text
@@ -357,6 +363,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
         decoration: feldStil(hinweis: tr('z. B. 10', 'e.g. 10')),
         onChanged: (_) => setState(() {}),
       ),
+      ..._startFeld(),
     ];
     for (var i = 0; i < _abschnitte.length; i++) {
       final a = _abschnitte[i];
@@ -413,7 +420,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
     final r = _ausAbschnitten();
     if (r.fehler == null) {
       final gesamt = r.days.take(r.days.length - 1).fold<int>(0, (a, b) => a + b);
-      final ende = addD(ta.today, gesamt);
+      final ende = addD(_gibtPlan ? ta.today : _beginnTag, gesamt);
       w.add(const SizedBox(height: 14));
       w.add(Karte(rand: F.acRand, children: [
         Text(tr('${r.plan.length} Stufen · ${fz(r.plan.first)} → ${fz(r.plan.last)} $_unit', '${r.plan.length} steps · ${fz(r.plan.first)} → ${fz(r.plan.last)} $_unit'),
@@ -570,8 +577,50 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
       ));
       k.add(Sub(tr('Die Tage pro Stufe zählen ab Beginn der Stufe.', 'The days per step count from the start of the step.'), oben: 10));
       w.add(Karte(children: k));
+      w.addAll(_startFeld());
     }
     return w;
+  }
+
+  /// Startdatum: vorausgewählt heute, Kalender nur heute oder später. Nur beim ersten eigenen Plan.
+  List<Widget> _startFeld() {
+    if (_gibtPlan) return const [];
+    final heute = ta.today;
+    return [
+      Feldname(tr('Startdatum', 'Start date')),
+      InkWell(
+        key: const Key('planStart'),
+        borderRadius: BorderRadius.circular(14),
+        onTap: () async {
+          DateTime tagDatum(String k) => DateTime.parse('${k}T12:00:00');
+          final h = tagDatum(heute);
+          final w = await showDatePicker(
+            context: context,
+            initialDate: tagDatum(_beginnTag),
+            firstDate: h,
+            lastDate: h.add(const Duration(days: 365)),
+          );
+          if (w != null) {
+            final k = ymd(w);
+            setState(() => _beginn = k.compareTo(heute) > 0 ? k : null);
+          }
+        },
+        child: InputDecorator(
+          decoration: feldStil(),
+          child: Row(children: [
+            const Icon(Icons.event_outlined, size: 20, color: F.ac2),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                  _beginnTag == heute ? tr('Heute (${datum(heute)})', 'Today (${datum(heute)})') : datum(_beginnTag),
+                  key: const Key('planStartText')),
+            ),
+          ]),
+        ),
+      ),
+      Sub(tr('Schon mitten im Abdosieren? Fang einfach mit deiner aktuellen Dosis an.',
+          'Already in the middle of tapering? Just start with your current dose.'), oben: 6),
+    ];
   }
 
   List<Widget> _arztSeite() => [

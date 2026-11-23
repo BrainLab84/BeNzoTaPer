@@ -58,6 +58,59 @@ List<int> docx(String text) {
 void main() {
   setUp(() => jetzt = DateTime.utc(2026, 3, 10, 12));
 
+  testWidgets('Startdatum in 5 Tagen: Heute ruhig, Kalender leer bis zum Start, dann normal', (t) async {
+    final app = await ohnePlan(t);
+    await tippe(t, find.byKey(const Key('planErstellen')));
+    await weiter(t);
+    expect(find.text('Heute (10.03.2026)'), findsOneWidget, reason: 'vorausgewählt heute');
+    expect(txt('Schon mitten im Abdosieren? Fang einfach mit deiner aktuellen Dosis an.'), findsOneWidget);
+    await t.enterText(find.byKey(const Key('planDosis')), '10');
+    await abschnitt(t, 0, '1', '14', '0');
+    // 10 Stufenwechsel à 14 = 140 Tage ab heute → 28.07.2026
+    expect(txt('Voraussichtlich bei 0 mg: 28.07.2026'), findsOneWidget);
+    await tippe(t, find.byKey(const Key('planStart')));
+    await tippe(t, find.text('15'));
+    await tippe(t, find.text('OK'));
+    expect(find.text('15.03.2026'), findsOneWidget);
+    expect(txt('Voraussichtlich bei 0 mg: 02.08.2026'), findsOneWidget, reason: 'Vorschau ab Startdatum');
+    await weiter(t);
+    await weiter(t);
+    await tippe(t, find.text("Los geht's"));
+    await tippe(t, find.text('Überspringen'));
+
+    final s = app.taper.st;
+    expect(s.t0, '2026-03-15');
+    expect(app.taper.vorStart, isTrue);
+    await reiter(t, 'Heute');
+    expect(find.byKey(const Key('vorStart')), findsOneWidget);
+    expect(txt('Plan startet am 15.03.2026'), findsOneWidget);
+    expect(txt('Startdosis: 10 mg pro Tag'), findsOneWidget);
+    expect(find.byKey(const Key('wieGeplant')), findsNothing, reason: 'nichts zum Eintragen');
+    expect(find.byKey(const Key('dosis')), findsNothing);
+    expect(find.byKey(const Key('vorratKarte')), findsOneWidget, reason: 'Vorrat kann man schon eintragen');
+    await reiter(t, 'Kalender');
+    expect(txt('Plan startet am 15.03.2026'), findsOneWidget);
+    expect(txt('Voraussichtlich bei 0 mg: 02.08.2026'), findsOneWidget);
+    String zelle(String k) => [
+          for (final e in find.descendant(of: find.byKey(Key('tag-$k')), matching: find.byType(Text)).evaluate())
+            (e.widget as Text).data ?? ''
+        ].join('|');
+    expect(zelle('2026-03-12'), isNot(contains('10')), reason: 'vor dem Start keine Dosis');
+    expect(zelle('2026-03-15'), contains('10'), reason: 'ab Start die Startdosis');
+
+    // Starttag: alles wie gewohnt.
+    jetzt = DateTime.utc(2026, 3, 15, 9);
+    app.auffrischen();
+    await t.pumpAndSettle();
+    await reiter(t, 'Heute');
+    expect(app.taper.vorStart, isFalse);
+    expect(find.byKey(const Key('vorStart')), findsNothing);
+    expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
+    expect(app.taper.st.frz, isNull, reason: 'Vorlauftage sind keine offenen Tage');
+    await tippe(t, find.byKey(const Key('wieGeplant')));
+    expect(app.taper.st.log['2026-03-15']!.dose, 10);
+  });
+
   testWidgets('Erster Plan: Name, zwei Abschnitte, Arzt, „passt sich an“ → Begrüßung', (t) async {
     final app = await ohnePlan(t);
     await tippe(t, find.byKey(const Key('planErstellen')));

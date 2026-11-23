@@ -187,6 +187,13 @@ class _HeuteSeiteState extends State<HeuteSeite> {
         ));
       }
     }
+    // Plan beginnt erst später: nur eine ruhige Karte mit Starttag und Startdosis, dazu der Vorrat.
+    if (ta.vorStart) {
+      w.add(_vorStartKarte());
+      w.add(VorratKarte(key: _vorratKey, app: app, gross: true));
+      if (s.person != null) w.insert(0, Begruessung(name: s.person!));
+      return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: w);
+    }
     // Reihenfolge: Lob → Heute eintragen → Stufen-Karte → Wochenstreifen → Vorrat.
     final lob = frozen ? null : lobHeute(app);
     if (lob != null) w.add(LobKarte(app: app, text: lob.text, schluessel: lob.schluessel));
@@ -198,6 +205,19 @@ class _HeuteSeiteState extends State<HeuteSeite> {
     if (app.beispiel) w.insertAll(0, [PlanKopf(app: app), const BeispielHinweis()]);
     if (s.person != null && !app.beispiel) w.insert(0, Begruessung(name: s.person!));
     return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: w);
+  }
+
+  // Vor dem Start: Starttag und Startdosis, nichts zum Eintragen.
+  Widget _vorStartKarte() {
+    final s = ta.st;
+    return Karte(key: const Key('vorStart'), rand: F.acRand, mitte: true, children: [
+      const Icon(Icons.event_outlined, color: F.ac2, size: 30),
+      const SizedBox(height: 8),
+      Text(tr('Plan startet am ${datum(s.t0!)}', 'Plan starts on ${datum(s.t0!)}'),
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+      Sub(tr('Startdosis: ${fz(s.plan[s.stage])} ${s.unit} pro Tag', 'Starting dose: ${fz(s.plan[s.stage])} ${s.unit} per day'),
+          oben: 6, mitte: true),
+    ]);
   }
 
   // Vorgemerkte Änderung

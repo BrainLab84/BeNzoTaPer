@@ -12,7 +12,10 @@ class ParsedRow {
 class ParsedPlan {
   final List<ParsedRow> rows;
   final String unit;
-  const ParsedPlan(this.rows, this.unit);
+
+  /// Erstes erkanntes Datum (JJJJ-MM-TT) der ersten Stufe, sonst `null`.
+  final String? startDatum;
+  const ParsedPlan(this.rows, this.unit, [this.startDatum]);
 }
 
 const _num = r'(?:\d+\s*[½¼¾]|[½¼¾]|\d+\/\d+|\d+(?:[.,]\d+)?)';
@@ -263,7 +266,9 @@ ParsedPlan parsePlanText(String text, [int defDays = 14, DateTime? now, bool eng
       unit = k;
     }
   });
-  return ParsedPlan(out.map((o) => ParsedRow(o.dose, o.days, o.guess)).toList(), unit);
+  final ts0 = work.isNotEmpty ? work.first.ts : null;
+  final start = ts0 == null ? null : ymd(DateTime.fromMillisecondsSinceEpoch(ts0, isUtc: true));
+  return ParsedPlan(out.map((o) => ParsedRow(o.dose, o.days, o.guess)).toList(), unit, start);
 }
 
 class _Out {

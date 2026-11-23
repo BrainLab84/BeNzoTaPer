@@ -127,6 +127,7 @@ String planDatumZeile(Taper ta) {
       break;
     }
   }
+  if (ta.vorStart) return tr('Plan startet am ${datum(start)}', 'Plan starts on ${datum(start)}');
   return tr('Plan gestartet am ${datum(start)}${geaendert != null ? ' · geändert am ${datum(geaendert)}' : ''}', 'Plan started on ${datum(start)}${geaendert != null ? " · changed on ${datum(geaendert)}" : ""}');
 }
 

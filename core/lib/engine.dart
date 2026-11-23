@@ -103,6 +103,10 @@ class PlanEdit {
   bool pendOk;
   Meldung? msg;
   Meldung? err;
+
+  /// Startdatum (JJJJ-MM-TT) für einen neuen Plan, wenn es noch keinen gibt. Nur heute oder später;
+  /// `null` oder älter = heute. Bei einem bestehenden Plan ohne Wirkung.
+  String? startDatum;
   PlanEdit({
     required this.name,
     required this.unit,
@@ -114,6 +118,7 @@ class PlanEdit {
     this.pendOk = false,
     this.msg,
     this.err,
+    this.startDatum,
   });
 }
 
@@ -212,6 +217,13 @@ class Taper {
     if (a.frz != null && a.frz! < t) t = a.frz!;
     final d = dBetween(stageStart, t);
     return d < 0 ? 0 : d;
+  }
+
+  /// Der Plan beginnt erst an einem späteren Tag (Startdatum in der Zukunft).
+  bool get vorStart {
+    final a = s;
+    final b = a?.t0;
+    return a != null && b != null && b.compareTo(today) > 0;
   }
 
   /// Erster Tag des Protokolls.
@@ -398,6 +410,12 @@ class Taper {
   double reichweite(double mg, [DateTime? nowDt]) {
     final a = st;
     final todayKey = ymd(nowDt ?? clock());
+    // Plan beginnt erst später: bis dahin kein Verbrauch, danach wie ab dem ersten Plantag.
+    final beginn = a.t0;
+    if (beginn != null && todayKey.compareTo(beginn) < 0 && beginn == stageStart) {
+      final ab = reichweite(mg, DateTime.parse('${beginn}T00:00:00Z'));
+      return ab.isInfinite ? ab : ab + dBetween(todayKey, beginn);
+    }
     var r = mg;
     var sg = a.stage;
     final te = a.log[todayKey];
@@ -504,7 +522,7 @@ class Taper {
           if (k == start) map[k] = Proj(a.plan[sg], ch: true);
         }
       }
-      map[k] ??= Proj(a.plan[sg]);
+      if (k.compareTo(stageStart) >= 0) map[k] ??= Proj(a.plan[sg]);
       k = addD(k, 1);
       n++;
     }
@@ -532,6 +550,7 @@ class Taper {
     final td = today;
     k ??= td;
     if (k > td || (k < td && daysAgo(k) > 7)) return IntakeResult.ignored;
+    if (vorStart) return IntakeResult.ignored; // Plan beginnt erst später: noch nichts einzutragen
     if (!(v >= 0) || !v.isFinite) return IntakeResult.ignored; // Oberfläche prüft schon; doppelt hält besser
     if (k == td && !force) {
       final pe0 = a.log[k];
@@ -949,6 +968,9 @@ class Taper {
     e.rows = r.rows.map((x) => EditRow(x.dose, x.days, guess: x.guess)).toList();
     e.unit = r.unit;
     e.start = 0;
+    // Erkanntes Datum nur als Vorschlag und nur, wenn es nicht in der Vergangenheit liegt.
+    final sd = r.startDatum;
+    e.startDatum = (sd != null && sd.compareTo(today) >= 0) ? sd : null;
     e.err = null;
     final g = r.rows.where((x) => x.guess).length;
     e.msg = Meldung(MeldungCode.schritteErkannt, [r.rows.length, g]);
@@ -1020,6 +1042,8 @@ class Taper {
       if (e.pendOk) a.pend = null;
     }
     if (a == null) {
+      final sd = e.startDatum;
+      final beginn = (sd != null && isDateKey(sd) && sd.compareTo(td) > 0) ? sd : td;
       s = TaperState(
         name: name,
         unit: unit,
@@ -1027,8 +1051,8 @@ class Taper {
         plan: plan,
         days: days,
         stage: sg,
-        stageStart: td,
-        t0: td,
+        stageStart: beginn,
+        t0: beginn,
       );
     } else {
       final same = _listEq(plan, a.plan) && sg == a.stage;
