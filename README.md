@@ -76,7 +76,7 @@ The rest of this README is in German. Code, tests and tools are documented in th
 ### Plan
 - **Plan erstellen** als Fragebogen: Abschnitte wie „von 10 mg bis 5 mg, 1 mg alle 14 Tage“, danach langsamer und so weiter. Startdatum wählbar.
 - **Plan importieren** aus PDF, Word (.docx) oder Text, zum Beispiel aus einem Plan vom Arzt.
-- **Neuer Plan bei bestehendem = Neustart**, wie eine neu installierte App: alles wird gelöscht (erst beim Speichern, vorher bestätigen). Wer den alten Stand behalten will, sichert vorher.
+- Erstellen und Importieren gibt es nur ohne eigenen Plan. Läuft ein Plan, wird er mit **Plan anpassen** geändert. **Ganz neu anfangen** geht über Mehr → Zurücksetzen (wie eine neu installierte App, vorher sichern).
 - Stufenliste mit erledigten, aktuellen und kommenden Stufen.
 
 ### Fortschritt
@@ -94,7 +94,7 @@ The rest of this README is in German. Code, tests and tools are documented in th
 - **PIN-Sperre** mit Schlüsselwort für „PIN vergessen?“ (die PIN sperrt nur die Oberfläche).
 - **Erinnerung zum Eintragen** (standardmäßig aus, Uhrzeit einstellbar).
 - **Vorrat-Hinweis** als Benachrichtigung, wenn der Vorrat noch 14 und noch 7 Tage reicht (um 10 Uhr, sobald ein Vorrat eingetragen ist).
-- **Verschlüsselte Sicherung** speichern und laden, etwa für ein neues Handy.
+- **Verschlüsselte Sicherung** speichern und laden, etwa für ein neues Handy. Sie enthält den ganzen Abdosierverlauf (Plan, alle Einträge mit Uhrzeit, Vorrat, Notizen, Notizbuch), aber nichts von der App selbst: PIN, Schlüsselwort und Einstellungen bleiben auf dem Gerät.
 - Anleitung, alle Hinweise nochmal lesen, alles zurücksetzen.
 
 Ohne eigenen Plan zeigt die App einen **Beispielplan**, damit man sieht, wie alles aussieht. Das Beispiel wird nie gespeichert.

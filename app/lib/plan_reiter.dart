@@ -50,7 +50,11 @@ class PlanReiter extends StatelessWidget {
         // wann der Plan gestartet bzw. zuletzt geändert wurde.
         Sub(planDatumZeile(ta), key: const Key('planDatum'), oben: 2),
         if (status.isNotEmpty) Sub(status, oben: 2),
-        if (!app.beispiel) ...[const SizedBox(height: 14), planKnoepfe(context, app)],
+        // Neuer Plan oder Import gibt es nur ohne eigenen Plan; geändert wird mit „Plan anpassen“ (Heute).
+        if (!app.beispiel)
+          Sub(tr('Ganz neu anfangen? Erst sichern, dann Mehr → Zurücksetzen.',
+                  'Start completely over? Back up first, then More → Reset.'),
+              key: const Key('neuAnfangen'), oben: 10),
       ],
     );
   }

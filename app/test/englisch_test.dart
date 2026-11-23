@@ -191,26 +191,8 @@ void main() {
     expect(find.byKey(const Key('anzahl0')), findsOneWidget, reason: 'Vorrat-Eingabe in Heute');
     await reiterEn(t, 'Plan');
     keinDeutsch(t, 'Plan-Reiter');
-    await reiterEn(t, 'Plan');
-    await t.ensureVisible(find.byKey(const Key('planErstellen')));
-    await t.tap(find.byKey(const Key('planErstellen')));
-    await t.pumpAndSettle();
-    keinDeutsch(t, 'Sicher?-Dialog');
-    await t.enterText(find.byType(TextField).last, 'Yes, I am sure');
-    await t.pump();
-    await t.tap(find.byType(Checkbox));
-    await t.pump();
-    await t.tap(find.text('Continue').last);
-    await t.pumpAndSettle();
-    for (var i = 0; i < 4; i++) {
-      keinDeutsch(t, 'Plan-Assistent Schritt $i');
-      final weiter = find.text('Next');
-      if (weiter.evaluate().isEmpty) break;
-      await t.tap(weiter.first);
-      await t.pumpAndSettle();
-    }
-    zurueck();
-    await t.pumpAndSettle();
+    expect(find.text('Start completely over? Back up first, then More → Reset.'), findsOneWidget);
+    expect(find.byKey(const Key('planErstellen')), findsNothing, reason: 'mit Plan nur „Plan anpassen“');
 
     // Fortschritt + Bericht
     await reiterEn(t, 'Progress');
@@ -231,6 +213,36 @@ void main() {
     await besuche(find.text('Save backup'), 'Sicherung speichern');
     await besuche(find.text('Load backup'), 'Sicherung laden', zu: false);
     expect(app.sprache, 'en');
+  });
+
+  testWidgets('Englischer Plan-Assistent ab der Startkarte und Zurücksetzen-Fenster', (t) async {
+    final app = await startEn(t, einrichten: false);
+    expect(app.beispiel, isTrue);
+    await reiterEn(t, 'Today');
+    await t.ensureVisible(find.byKey(const Key('planErstellen')));
+    await t.tap(find.byKey(const Key('planErstellen')));
+    await t.pumpAndSettle();
+    for (var i = 0; i < 4; i++) {
+      keinDeutsch(t, 'Plan-Assistent Schritt $i');
+      final weiter = find.text('Next');
+      if (weiter.evaluate().isEmpty) break;
+      await t.tap(weiter.first);
+      await t.pumpAndSettle();
+    }
+    Navigator.of(t.element(find.byType(Scaffold).last)).pop();
+    await t.pumpAndSettle();
+    // Mit eigenem Plan: Zurücksetzen-Fenster auf Englisch
+    app.beispielWeg();
+    app.taper.setup(dose: 10, step: 1, minStep: 0.5, days: 14, goal: 0);
+    app.aenderung();
+    await t.pumpAndSettle();
+    await t.tap(find.byTooltip('More'));
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.byKey(const Key('zuruecksetzen')));
+    await t.tap(find.byKey(const Key('zuruecksetzen')));
+    await t.pumpAndSettle();
+    keinDeutsch(t, 'Zurücksetzen-Fenster');
+    expect(find.textContaining('Like a newly installed app'), findsOneWidget);
   });
 
   testWidgets('Notruf: Deutsch mit Telefonseelsorge, Englisch ohne deutsche Hotline', (t) async {

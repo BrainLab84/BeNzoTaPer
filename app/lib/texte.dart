@@ -56,7 +56,7 @@ const anleitungDe = <Abschnitt>[
     Absatz(B.p,
         'Mit „Plan anpassen“ änderst du ab heute Dosis und Tage jeder Stufe. Das gilt sofort; bisherige Tage, Einnahmen und Vorrat bleiben. Geht es höher oder dauert es länger, hältst du vorher kurz inne.'),
     Absatz(B.p,
-        '„Neuen Plan erstellen“ dagegen ist ein Neustart wie eine frisch installierte App: Alles wird gelöscht. Was du behalten willst, sicherst du vorher.'),
+        'Ganz neu anfangen geht über Mehr → Zurücksetzen: Dann ist alles gelöscht wie bei einer frisch installierten App, und du legst einen neuen Plan an. Was du behalten willst, sicherst du vorher.'),
     Absatz(B.p,
         'Dadurch bleibt dein Kalender übersichtlich und der ursprüngliche Ablauf muss nicht jedes Mal vollständig neu angelegt werden.'),
     Absatz(B.p,

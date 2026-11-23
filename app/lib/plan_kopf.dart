@@ -13,23 +13,20 @@ import 'sicherung.dart';
 /// Öffnet „Neuen Plan erstellen“ bzw. „Plan importieren“ und meldet das Ergebnis.
 Future<void> planNeuOeffnen(BuildContext context, AppState app, PlanArt art, {PlanEdit? vorgemerkt}) async {
   final messenger = ScaffoldMessenger.of(context);
-  // Es gibt schon einen eigenen Plan: neuer Plan = Neustart (alles weg). Erst „Bist du dir sicher?“.
-  // Gelöscht wird erst beim Speichern des neuen Plans; Abbrechen lässt alles, wie es war.
-  final ersetzt = app.taper.s != null && !app.beispiel;
-  final neustart = ersetzt && vorgemerkt == null;
-  if (neustart && !await planSicherFragen(context)) return;
-  if (!context.mounted) return;
+  // Neuer Plan / Import nur ohne eigenen Plan. Mit Plan gibt es „Plan anpassen“; ganz neu anfangen =
+  // Mehr → Zurücksetzen (vorher sichern).
+  if (app.eingerichtet && vorgemerkt == null) return;
   final warBeispiel = app.beispiel;
   app.beispielWeg();
   final r = await Navigator.of(context).push<PlanErgebnis>(
-      MaterialPageRoute(builder: (_) => PlanNeuSeite(app: app, art: art, vorgemerkt: vorgemerkt, neustart: neustart)));
+      MaterialPageRoute(builder: (_) => PlanNeuSeite(app: app, art: art, vorgemerkt: vorgemerkt)));
   if (warBeispiel && app.taper.s == null) {
     app.beispielLaden();
     app.aenderung();
   }
   if (r == PlanErgebnis.uebernommen) {
     messenger.showSnackBar(SnackBar(content: Text(tr('Dein Plan ist gespeichert.', 'Your plan has been saved.'))));
-    // Erster eigener Plan (auch nach einem Neustart): einmal PIN anbieten, überspringbar.
+    // Erster eigener Plan (auch nach dem Zurücksetzen): einmal PIN anbieten, überspringbar.
     if (vorgemerkt == null && !app.hatPin && context.mounted) {
       await Navigator.of(context)
           .push<bool>(MaterialPageRoute(builder: (_) => PinEinrichtenSeite(app: app, nachPlan: true)));
@@ -55,13 +52,7 @@ bool sicherPasst(String s) {
   return planSicherPasst(t) || const {'ich bin mir sicher', 'i am sure'}.contains(t);
 }
 
-/// Fenster vor einem neuen Plan, wenn schon einer existiert: Satz eintippen + Häkchen. `true` = weiter.
-Future<bool> planSicherFragen(BuildContext context) async {
-  final r = await showDialog<bool>(context: context, builder: (_) => const _PlanSicherDialog());
-  return r ?? false;
-}
-
-/// Gleiches Fenster vor „Zurücksetzen“: Satz eintippen + Häkchen. `true` = löschen.
+/// Vor „Zurücksetzen“: Satz eintippen + Häkchen. `true` = löschen.
 Future<bool> zuruecksetzenSicherFragen(BuildContext context) async {
   final r = await showDialog<bool>(
       context: context,
@@ -86,7 +77,8 @@ Future<bool> sicherungLadenSicherFragen(BuildContext context) async {
       builder: (_) => _PlanSicherDialog(
             dialogKey: const Key('ladenSicherDialog'),
             titel: tr('Sicherung laden?', 'Load backup?'),
-            text: tr('Dein aktueller Stand auf diesem Gerät wird dabei ersetzt.', 'Your current data on this device will be replaced.'),
+            text: tr('Deine Einträge auf diesem Gerät werden dabei ersetzt. PIN und Einstellungen bleiben, wie sie sind.',
+                'Your entries on this device will be replaced. PIN and settings stay as they are.'),
             ohneHaken: true,
             weiter: tr('Laden', 'Load'),
             passt: sicherPasst,
@@ -96,10 +88,10 @@ Future<bool> sicherungLadenSicherFragen(BuildContext context) async {
 
 class _PlanSicherDialog extends StatefulWidget {
   const _PlanSicherDialog(
-      {this.dialogKey, this.titel, this.text, this.haken, this.ohneHaken = false, this.weiter, this.passt = planSicherPasst});
+      {this.dialogKey, this.titel, required this.text, this.haken, this.ohneHaken = false, this.weiter, this.passt = planSicherPasst});
   final Key? dialogKey;
   final String? titel;
-  final String? text;
+  final String text;
   final String? haken;
   final bool ohneHaken;
   final String? weiter;
@@ -126,12 +118,7 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
       title: Text(widget.titel ?? tr('Bist du dir sicher?', 'Are you sure?')),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.text ??
-              tr('Ein neuer Plan ist ein Neustart – wie eine neu installierte App. Alles auf diesem Gerät wird gelöscht: '
-                  'Plan, Einnahmen, Vorrat, Notizen, Notizbuch, PIN und Einstellungen. Gelöscht wird erst, wenn du den '
-                  'neuen Plan speicherst.',
-                  'A new plan is a fresh start – like a newly installed app. Everything on this device will be deleted: '
-                      'plan, intakes, supply, notes, notebook, PIN and settings. Deletion happens only when you save the new plan.')),
+          Text(widget.text),
           Feldname(tr('Bitte eintippen: $planSicherSatz', 'Please type: $planSicherSatz')),
           TextField(
             key: const Key('planSicherText'),

@@ -45,12 +45,8 @@ class _ZeileFelder {
 
 class PlanNeuSeite extends StatefulWidget {
   const PlanNeuSeite(
-      {super.key, required this.app, this.art = PlanArt.erstellen, this.vorgemerkt, this.pdf, this.neustart = false});
+      {super.key, required this.app, this.art = PlanArt.erstellen, this.vorgemerkt, this.pdf});
   final AppState app;
-
-  /// Neuer Plan über einen bestehenden: Neustart. Schon im Fenster „Bist du dir sicher?“ bestätigt
-  /// (siehe `planSicherFragen`); beim Speichern wird zuerst alles gelöscht, dann wie ein erster Plan angelegt.
-  final bool neustart;
   final PlanArt art;
 
   /// Vorgemerkte Planänderung nach der Bedenkzeit: nur noch bestätigen.
@@ -87,7 +83,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
   AppState get app => widget.app;
   Taper get ta => app.taper;
   /// Gilt ein bestehender Plan weiter (nur beim Übernehmen einer alten Vormerkung)? Beim Neustart nicht.
-  bool get _gibtPlan => ta.s != null && !widget.neustart;
+  bool get _gibtPlan => ta.s != null;
 
   List<String> get _schritte => widget.vorgemerkt != null
       ? const ['los']
@@ -96,8 +92,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
   @override
   void initState() {
     super.initState();
-    // Neustart = wie neu installiert: nichts vom alten Plan vorbelegen (auch nicht Name, Medikament, Dosis).
-    final s = widget.neustart ? null : ta.s;
+    final s = ta.s;
     _person.text = s?.person ?? '';
     _med.text = s?.name ?? 'Diazepam';
     _unit = s?.unit ?? 'mg';
@@ -222,19 +217,6 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
 
   void _uebernehmen() {
     final v = widget.vorgemerkt;
-    if (widget.neustart && v == null) {
-      // Erst an einem leeren Kern prüfen, dann löschen – ein Fehler darf nie zu „alles weg, kein Plan“ führen.
-      final probe = Taper(clock: ta.clock);
-      final pr = probe.applyPlan(probe.openEditor(neu: true)
-        ..rows = _rows
-        ..start = _start
-        ..startDatum = _beginn);
-      if (pr.err != null) {
-        setState(() => _fehler = meldungText(pr.err!));
-        return;
-      }
-      app.neustart();
-    }
     final e = v ?? ta.openEditor(neu: true);
     if (v == null) {
       e

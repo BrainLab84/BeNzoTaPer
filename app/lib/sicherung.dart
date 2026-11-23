@@ -132,8 +132,13 @@ class _SicherungSpeichernSeiteState extends State<SicherungSpeichernSeite> {
     return Scaffold(
       appBar: AppBar(title: Text(tr('Sicherung speichern', 'Save backup'))),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text(tr('Die Sicherung ist eine Datei mit deinem Plan, Kalender und Tagebuch. '
-            'Du kannst sie per Messenger oder Mail verschicken oder in einem Ordner ablegen.', 'The backup is a file with your plan, calendar and diary. You can send it by messenger or mail or put it in a folder.')),
+        Text(tr('Die Sicherung ist eine Datei mit deinem ganzen Abdosierverlauf: Plan, alle Einträge mit Uhrzeit, '
+                'Vorrat, Notizen und Notizbuch – also auch alles für den Arztbericht. PIN und Einstellungen gehören '
+                'zur App und sind nicht dabei. Du kannst die Datei per Messenger oder Mail verschicken oder in einem '
+                'Ordner ablegen.',
+            'The backup is a file with your whole tapering history: plan, all entries with times, supply, notes and '
+                'notebook – so also everything for the doctor report. PIN and settings belong to the app and are not '
+                'included. You can send the file by messenger or mail or put it in a folder.')),
         const SizedBox(height: 16),
         if (!_ohne) ...[
           TextField(

@@ -40,7 +40,7 @@ const anleitungEn = <Abschnitt>[
     Absatz(B.p,
         'With “Adjust plan” you change the dose and days of every step from today. It applies immediately; past days, intakes and supply are kept. If it goes higher or takes longer, you pause for a moment first.'),
     Absatz(B.p,
-        '“Create new plan”, on the other hand, is a fresh start like a newly installed app: everything is deleted. Back up what you want to keep beforehand.'),
+        'To start completely over, use More → Reset: everything is deleted as in a freshly installed app, and you set up a new plan. Back up what you want to keep beforehand.'),
     Absatz(B.p,
         'This keeps your calendar clear, and the original schedule does not have to be set up again from scratch every time.'),
     Absatz(B.p,

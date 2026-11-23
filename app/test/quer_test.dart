@@ -75,10 +75,10 @@ void main() {
     expect(maler(t).tage.any((x) => x.zukunft), isFalse);
   });
 
-  testWidgets('Neuer Plan aus dem Plan-Reiter: alle Reiter zeigen ihn', (t) async {
-    final app = await starte(t, aufReiter: 'Plan');
+  testWidgets('Erster Plan über die Startkarte: alle Reiter zeigen ihn', (t) async {
+    final app = await starte(t, einrichten: false);
+    expect(app.beispiel, isTrue);
     await tippe(t, find.byKey(const Key('planErstellen')));
-    await planSicherBestaetigen(t);
     await tippe(t, find.byKey(const Key('planWeiter')));
     await t.enterText(find.byKey(const Key('planDosis')), '10');
     await t.enterText(find.byKey(const Key('abSchritt0')), '2');

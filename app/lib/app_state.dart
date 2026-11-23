@@ -470,15 +470,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// „Neuen Plan erstellen“ bei bestehendem Plan: wie eine Neuinstallation – alles weg (Plan, Einnahmen,
-  /// Vorrat, Notizen, Notizbuch, PIN, Einstellungen). Bleiben nur Sprache und „Hinweise gelesen“.
-  /// Danach gibt es keinen Plan; der neue wird direkt danach angelegt.
-  void neustart() {
-    _allesWeg();
-    stand++;
-    notifyListeners();
-  }
-
   void _allesWeg() {
     taper.wipe();
     gesperrt = false;
@@ -506,9 +497,11 @@ class AppState extends ChangeNotifier {
   Future<String?> sicherungErstellen({String? passwort}) async {
     final j = taper.exportJson();
     if (j == null) return null;
-    // Notizbuch kommt mit in die Sicherung (eigener Schlüssel, auch leer – beim Laden ersetzt es das jetzige).
+    // Die Sicherung enthält den ganzen Abdosierverlauf (Plan, Einträge, Vorrat, Notizen, Notizbuch), aber
+    // nichts von der App selbst: keine PIN (Schlüsselwort und Einstellungen liegen ohnehin getrennt).
+    // Notizbuch mit eigenem Schlüssel, auch leer – beim Laden ersetzt es das jetzige.
     final klar = jsonEncode({
-      ...j,
+      ...j..remove('pin'),
       'notizbuch': [for (final e in notizbuch) e.toJson()],
     });
     if (passwort == null || passwort.isEmpty) return klar;
@@ -533,7 +526,11 @@ class AppState extends ChangeNotifier {
     } catch (_) {
       throw SicherungException(SicherungFehler.kaputt);
     }
+    // PIN gehört zur App, nicht zur Sicherung: die jetzige bleibt (auch bei älteren Sicherungen mit PIN).
+    final pin = eingerichtet ? taper.s!.pin : null;
     if (!taper.importJson(o)) throw SicherungException(SicherungFehler.kaputt);
+    taper.st.pin = pin;
+    taper.save();
     // Sicherungen ab v0.2.2 enthalten das Notizbuch immer (auch leer); ältere ohne Schlüssel lassen es, wie es ist.
     if (o is Map && o.containsKey('notizbuch')) {
       notizbuch = o['notizbuch'] == null ? [] : NotizbuchEintrag.liste(o['notizbuch']);

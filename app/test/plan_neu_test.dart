@@ -6,9 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tapering_buddy/app_state.dart';
 import 'package:tapering_buddy/main.dart';
 import 'package:tapering_buddy/pin.dart';
-import 'package:tapering_buddy/plan_kopf.dart';
 import 'package:tapering_buddy/plan_lesen.dart';
-import 'package:tapering_buddy/plan_neu.dart';
 import 'package:tapering_core/tapering_core.dart' show EditRow;
 import 'package:tapering_buddy/sicherung.dart';
 import 'package:tapering_buddy/store.dart';
@@ -214,12 +212,14 @@ void main() {
     expect(feld('abBis0').controller!.text, '10');
   });
 
-  testWidgets('Neuer Plan bei bestehendem: erst „Bist du dir sicher?“; schneller sofort', (t) async {
+  testWidgets('Mit Plan kein neuer Plan; Zurücksetzen-Fenster: Satz und Häkchen nötig, Abbrechen lässt alles', (t) async {
     final app = await starte(t, aufReiter: 'Plan');
-    app.taper.st.person = 'Alex';
-    await tippe(t, find.byKey(const Key('planErstellen')));
+    expect(find.byKey(const Key('planErstellen')), findsNothing);
+    expect(find.byKey(const Key('neuAnfangen')), findsOneWidget);
+    await tippe(t, find.byTooltip('Mehr'));
+    await tippe(t, find.byKey(const Key('zuruecksetzen')));
     expect(find.text('Bist du dir sicher?'), findsOneWidget);
-    expect(txt(planBackupSatz), findsOneWidget);
+    expect(txt('Wie eine neu installierte App'), findsOneWidget);
     bool weiterAn() => t.widget<FilledButton>(find.byKey(const Key('planSicherWeiter'))).onPressed != null;
     expect(weiterAn(), isFalse);
     await t.enterText(find.byKey(const Key('planSicherText')), 'ja ich bin mir');
@@ -231,50 +231,13 @@ void main() {
     await tippe(t, find.byKey(const Key('planBackupHaken')));
     expect(weiterAn(), isFalse, reason: 'ohne Häkchen');
     await tippe(t, find.text('Abbrechen'));
-    expect(find.byKey(const Key('planSicherDialog')), findsNothing);
-    expect(find.byType(PlanNeuSeite), findsNothing, reason: 'Abbrechen = kein Fragebogen');
-
-    await tippe(t, find.byKey(const Key('planErstellen')));
-    await planSicherBestaetigen(t);
-    // Neustart = wie neu installiert: nichts vom alten Plan vorbelegt
-    expect(t.widget<TextField>(find.byKey(const Key('planPerson'))).controller!.text, '');
-    await weiter(t);
-    expect(t.widget<TextField>(find.byKey(const Key('planDosis'))).controller!.text, '', reason: 'keine alte Dosis');
-    await t.enterText(find.byKey(const Key('planDosis')), '10');
-    await abschnitt(t, 0, '2', '14', '0');
-    await weiter(t);
-    await weiter(t);
-    expect(txt('Kalender und Tagebuch bleiben erhalten.'), findsNothing, reason: 'Neustart: nichts bleibt');
-    expect(find.byKey(const Key('planSicher')), findsNothing, reason: 'schon im Fenster bestätigt');
-    await tippe(t, find.byKey(const Key('planLos')));
-    await tippe(t, find.text('Überspringen'));
-    expect(app.taper.st.plan, [10, 8, 6, 4, 2, 0]);
-    expect(app.taper.st.pend, isNull);
-    // Neustart: ein frischer Plan, kein „geändert am“.
-    await reiter(t, 'Plan');
-    expect(find.text('Plan gestartet am 10.03.2026'), findsOneWidget);
+    expect(find.byKey(const Key('resetSicherDialog')), findsNothing);
+    expect(app.eingerichtet, isTrue, reason: 'Abbrechen = nichts gelöscht');
   });
 
   testWidgets('Plan-Karte: „Plan gestartet am …“ ohne Änderung', (t) async {
     await starte(t, json: basis(), aufReiter: 'Plan');
     expect(find.text('Plan gestartet am 01.03.2026'), findsOneWidget);
-  });
-
-  testWidgets('Langsamerer neuer Plan: Neustart sofort, keine Bedenkzeit', (t) async {
-    final app = await starte(t, aufReiter: 'Plan');
-    await tippe(t, find.byKey(const Key('planErstellen')));
-    await planSicherBestaetigen(t);
-    await weiter(t);
-    await t.enterText(find.byKey(const Key('planDosis')), '10');
-    await abschnitt(t, 0, '0,5', '21', '0');
-    await weiter(t);
-    await weiter(t);
-    await tippe(t, find.byKey(const Key('planLos')));
-    expect(txt('48 Stunden Bedenkzeit'), findsNothing);
-    await tippe(t, find.text('Überspringen'));
-    expect(app.taper.st.pend, isNull);
-    expect(app.taper.st.plan.length, 21);
-    expect(app.taper.need(0), 21);
   });
 
   testWidgets('Alte Vormerkung (frühere Version): nach 48 h auf Heute übernehmen', (t) async {

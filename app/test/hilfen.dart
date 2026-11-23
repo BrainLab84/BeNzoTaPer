@@ -104,11 +104,3 @@ String aktuellerReiter(WidgetTester t) {
   return (nb.destinations[nb.selectedIndex] as NavigationDestination).label;
 }
 
-/// Fenster „Bist du dir sicher?“ vor einem neuen Plan ausfüllen und weiter.
-Future<void> planSicherBestaetigen(WidgetTester t) async {
-  await t.enterText(find.byKey(const Key('planSicherText')), 'Ja, ich bin mir sicher');
-  await t.tap(find.byKey(const Key('planBackupHaken')));
-  await t.pumpAndSettle();
-  await t.tap(find.byKey(const Key('planSicherWeiter')));
-  await t.pumpAndSettle();
-}
