@@ -1,0 +1,7 @@
+• "Today" first: everything important at a glance
+• One "Intake" button: enter the amount, the time is added automatically
+• "Adjust plan": change dose and days from today, applies immediately
+• Tablet supply counts days without an entry and never changes the past afterwards
+• New plan = fresh start (back up first!), start date selectable
+• Live average since the step began, progress report for your doctor
+• PIN with a keyword, backup reminder

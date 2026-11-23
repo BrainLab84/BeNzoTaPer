@@ -1,0 +1,7 @@
+• „Heute“ zuerst: alles Wichtige auf einen Blick
+• Ein Knopf „Einnahme“: Menge eingeben, die Uhrzeit kommt automatisch
+• „Plan anpassen“: ab heute Dosis und Tage ändern, gilt sofort
+• Tablettenvorrat rechnet Tage ohne Eintrag mit und ändert Vergangenes nie rückwirkend
+• Neuer Plan = Neustart (vorher sichern!), Startdatum wählbar
+• Live-Durchschnitt seit Stufenbeginn, Verlaufsbericht für den Arzt
+• PIN mit Schlüsselwort, Erinnerung ans Sichern

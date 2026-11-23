@@ -5,9 +5,9 @@
   (Liste: Datei, alter Text, neuer Text), führt die Tests aus, meldet ERKANNT / NICHT ERKANNT und stellt
   die Datei danach wieder her.
   - Kern: `python3 tools/pruefung/mutation.py . "dart test" core tools/pruefung/mut_kern.txt`
-    (ganze Kern-Suite, knapp 2 Minuten je Gegenprobe; M1–M29)
+    (ganze Kern-Suite, gut 1 Minute je Gegenprobe; M1–M29, alle erkannt)
   - Oberfläche: `python3 tools/pruefung/mutation.py . "flutter test test/audit_ui_test.dart test/simulation_ui_test.dart test/heute_test.dart test/sicherung_ui_test.dart test/store_test.dart test/erinnerung_test.dart test/bericht_test.dart test/kalender_test.dart test/neuer_plan_test.dart" app tools/pruefung/mut_ui.txt`
-    (etwa 6 Minuten je Gegenprobe; U1–U18)
+    (etwa 4–5 Minuten je Gegenprobe; U1–U18, alle erkannt)
   - Währenddessen keine anderen Tests laufen lassen und nichts committen, die Datei ist kurz verändert.
     Bricht ein Lauf ab, danach `git status` prüfen und die Datei ggf. mit `git checkout -- <datei>` zurückholen.
 - `rechtschreibung.py`: in `app/` ausführen; listet unbekannte Wörter und Zeichenprobleme in allen

@@ -17,16 +17,16 @@ Updates werden über die bestehende, signierte Installation installiert. Die Dat
 
 ## ✨ Funktionen
 
-- 📅 Kalender mit Funktion „Heute eintragen“
-- 📋 Abdosierungsplan erstellen oder importieren (PDF, Word, Text)
-- ⏸️ Dosis halten
-- ⏳ 48 Stunden Bedenkzeit bei Planänderungen
-- 💊 Tablettenvorrat mit Warnhinweisen bei 14 und 7 Tagen
+- ☀️ Startseite „Heute“ mit einem Knopf „Einnahme“ (Uhrzeit automatisch)
+- 📅 Kalender mit Wochen- und Live-Durchschnitt
+- 📋 Abdosierungsplan erstellen oder importieren (PDF, Word, Text), Startdatum wählbar
+- ⏸️ Dosis halten, Plan ab heute anpassen
+- 💊 Tablettenvorrat, der auch Tage ohne Eintrag mitrechnet, mit Warnhinweisen bei 14 und 7 Tagen
 - 📈 Fortschritt und Verlauf
-- 📄 PDF-Bericht für den Arzt
+- 📄 PDF-Berichte für den Arzt (Diagramm und Verlaufsbericht)
 - 🆘 SOS-Funktion
 - 📝 Notizbuch
-- 🔒 PIN-Sperre
+- 🔒 PIN-Sperre mit Schlüsselwort
 - 🔔 Erinnerungen
 - 💾 Verschlüsselte Datensicherung
 

@@ -21,10 +21,11 @@ BeNzoTaPer hält dich auf deinem Reduktionsplan auf Linie: Er zeigt jeden Tag, w
 
 The app is available in **English and German**. You choose the language when you first open it and can change it any time under *More*.
 
-- Calendar with ticks, "Log today", notes and a "good day" mark
-- Create a plan or import one (PDF, Word, text), hold the dose, 48-hour reflection period for changes that raise the dose or slow the plan
-- Tablet supply with notices at 14 and 7 days, progress chart, PDF history for your doctor
-- SOS (15-minute timer, breathing circle), notebook, PIN lock, reminders, encrypted backup
+- "Today" first: one "Intake" button (the time is added automatically), dose, tablet combination, live average
+- Calendar with ticks, notes and a "good day" mark
+- Create a plan or import one (PDF, Word, text), start date selectable, hold the dose, adjust the plan from today (raising the dose or slowing down asks for a short pause first)
+- Tablet supply that also counts days without an entry, notices at 14 and 7 days, progress chart, progress report for your doctor
+- SOS (15-minute timer, breathing circle), notebook, PIN lock with keyword, reminders, encrypted backup
 
 **Install:** download the matching APK under [Releases](../../releases) (`arm64-v8a` for almost all phones, `armeabi-v7a` only for old ones) and allow installation from this source. For automatic updates use [Obtainium](https://github.com/ImranR98/Obtainium) with `https://github.com/BrainLab84/BeNzoTaPer`. Updates install over the existing version and keep your data.
 
@@ -49,36 +50,40 @@ The rest of this README is in German. Code, tests and tools are documented in th
 ## Die Idee dahinter
 
 - **Fortschritt statt Symptomjagd.** Im Mittelpunkt steht der Weg, den du schon geschafft hast, und nicht das tägliche Absuchen nach Entzugssymptomen.
-- **Die App rät nichts.** Ein Tag ohne Eintrag bleibt ein Fragezeichen. Er zählt nie als „wie geplant“ und nie als 0 mg.
-- **Bremse ohne Bevormundung.** Schneller reduzieren geht sofort. Hochgehen oder langsamer werden geht auch, aber erst nach 48 Stunden Bedenkzeit mit Begründung.
+- **Die App rät nichts.** Ein Tag ohne Eintrag bleibt ein Fragezeichen. Er zählt nie als „wie geplant“ und nie als 0 mg. Einzige Ausnahme ist der Vorrat: Dort zählt er mit der geplanten Dosis, als Schätzung gekennzeichnet, bis du nachträgst – sonst wäre der Vorrat schneller leer, als die App sagt.
+- **Bremse ohne Bevormundung.** Schneller reduzieren geht sofort. Hochgehen oder langsamer werden geht auch – nach einem kurzen Innehalten.
 - **Der Vorrat ist wichtig.** Ärzte machen manchmal ohne Vorwarnung dicht. Mit einem Puffer hast du Zeit, eine Lösung zu finden.
 - **Schlicht.** Keine Prozente, keine Punkte, keine Belohnungsspielchen, nichts, was man bedienen *muss*.
 
 ## Was die App kann
 
-### Kalender (Startseite)
+### Heute (Startseite)
+- **Einnahme:** ein Knopf, Menge eingeben, OK. Die Uhrzeit kommt automatisch (so steht sie auch im Arztbericht). Bis zur geplanten Dosis gibt es ein Häkchen, darüber erst ein kurzes Innehalten.
+- Aktuelle Stufe und Dosis, Tag x von y, nächste Stufe, dazu die passende **Tablettenkombination** (z. B. aus 5-mg- und 2-mg-Tabletten).
+- **Plan anpassen** (ab heute Dosis, Tage und Stufen ändern, gilt sofort) und **Dosis halten** (mit oder ohne Enddatum, der Plan verschiebt sich automatisch).
+- Wochenstreifen der letzten 7 Tage.
+- **Lob beim Halten:** Wer eine Dosis hält, bekommt alle paar Tage eine kurze Bestätigung, aber nur für saubere Tage. Das Lob ist als Vorbeugung gedacht, nicht als Belohnung.
+- **Tablettenvorrat:** Anzahl × Stärke eintragen, die App rechnet in mg um und sagt, wie lange es beim aktuellen Plan reicht („Keine exakte Angabe garantiert – zu viele Variablen, aber ziemlich genau.“). Jede Einnahme wird automatisch abgezogen, Tage ohne Eintrag zählen mit der geplanten Dosis. Nachkäufe lassen sich dazurechnen. Teilbare Tabletten und Lösungen (mg/ml) werden berücksichtigt.
+- Dezente Erinnerung, wenn länger nicht gesichert wurde.
+
+### Kalender
 - Monatsansicht mit Häkchen für jeden Tag im Plan, Zahlen für mehr Genommenes, die geplante Dosis an kommenden Tagen, **?** für Tage ohne Eintrag, einem Strich bei jeder neuen Stufe, einer Sonne für gute Tage und einem Punkt für Notizen.
-- **Heute eintragen** direkt darunter: „wie geplant genommen“, eine einzelne Einnahme mit Menge und Uhrzeit oder „Heute war ein guter Tag“.
 - **Voraussichtlich bei 0 mg: TT.MM.JJJJ.** Das Datum rechnet sich jeden Tag neu, denn ein fester Termin setzt nur unter Druck.
 - Tag antippen: nachtragen (bis 7 Tage zurück) oder eine Notiz schreiben.
+- **Wochen-Durchschnitt** der letzten 4 Wochen und ein **Live-Durchschnitt seit Stufenbeginn**, der sich mit jedem Eintrag sofort ändert. Der Durchschnitt zeigt, wie wenig ein einzelner Ausrutscher am Gesamtbild ändert.
 - **Notizen für heute** mit Smileys für das Befinden. Gedacht für Mustererkennung im Nachhinein (Koffein, Vapen, neue Medikamente …), nicht als Symptomtagebuch.
-- **Lob beim Halten:** Wer eine Dosis hält, bekommt alle paar Tage eine kurze Bestätigung, aber nur für saubere Tage. Das Lob ist als Vorbeugung gedacht, nicht als Belohnung.
-
-### Heute
-- Aktuelle Stufe und Dosis, Tag x von y, nächste Stufe, dazu die passende **Tablettenkombination** (z. B. aus 5-mg- und 2-mg-Tabletten).
-- **Ändern** und **Dosis halten** (mit oder ohne Enddatum, der Plan verschiebt sich automatisch).
-- Wochenstreifen der letzten 7 Tage und **Wochen-Durchschnitt** der letzten 4 Wochen. Der Durchschnitt zeigt, wie wenig ein einzelner Ausrutscher am Gesamtbild ändert.
 
 ### Plan
-- **Plan erstellen** als Fragebogen: Abschnitte wie „von 10 mg bis 5 mg, 1 mg alle 14 Tage“, danach langsamer und so weiter.
+- **Plan erstellen** als Fragebogen: Abschnitte wie „von 10 mg bis 5 mg, 1 mg alle 14 Tage“, danach langsamer und so weiter. Startdatum wählbar.
 - **Plan importieren** aus PDF, Word (.docx) oder Text, zum Beispiel aus einem Plan vom Arzt.
+- **Neuer Plan bei bestehendem = Neustart**, wie eine neu installierte App: alles wird gelöscht (erst beim Speichern, vorher bestätigen). Wer den alten Stand behalten will, sichert vorher.
 - Stufenliste mit erledigten, aktuellen und kommenden Stufen.
-- **Tablettenvorrat:** Anzahl × Stärke eintragen, die App rechnet in mg um und sagt, wie lange es beim aktuellen Plan reicht („Keine exakte Angabe garantiert – zu viele Variablen, aber ziemlich genau.“). Jede Einnahme wird automatisch abgezogen. Nachkäufe lassen sich dazurechnen. Teilbare Tabletten und Lösungen (mg/ml) werden berücksichtigt.
 
 ### Fortschritt
 - **Dein Weg:** von wie viel auf wie viel mg, geschaffte Tage, Stufe x von n, voraussichtliches Ende.
 - **Verlauf** als Diagramm: der Plan als Treppe, der 7-Tage-Durchschnitt als Welle, rote Punkte an Tagen über Plan.
 - **Verlauf für den Arzt:** dasselbe Diagramm als PDF zum Teilen oder zum Anschauen in groß („Lesen“).
+- **Verlaufsbericht für den Arzt:** Übersicht, Stufen, Planänderungen, Wochen-Durchschnitte und Tagesprotokoll mit Uhrzeiten, als PDF (ohne Notizen).
 
 ### Immer erreichbar
 - **SOS** (rot, oben in der Mitte): ein 15-Minuten-Timer, um eine Welle auszusitzen, ein Atemkreis (4 Sekunden ein, 6 aus), „Was du schon geschafft hast“ sowie Notruf 112 und (in der deutschen Fassung) die Telefonseelsorge 0800 111 0 111.
@@ -86,7 +91,7 @@ The rest of this README is in German. Code, tests and tools are documented in th
 - **Notizbuch** (oben links) für Gedanken und Alltägliches, unabhängig vom Kalender.
 
 ### Einstellungen („Mehr“)
-- **PIN-Sperre.**
+- **PIN-Sperre** mit Schlüsselwort für „PIN vergessen?“ (die PIN sperrt nur die Oberfläche).
 - **Erinnerung zum Eintragen** (standardmäßig aus, Uhrzeit einstellbar).
 - **Vorrat-Hinweis** als Benachrichtigung, wenn der Vorrat noch 14 und noch 7 Tage reicht (um 10 Uhr, sobald ein Vorrat eingetragen ist).
 - **Verschlüsselte Sicherung** speichern und laden, etwa für ein neues Handy.
@@ -104,8 +109,10 @@ Ohne eigenen Plan zeigt die App einen **Beispielplan**, damit man sieht, wie all
 | Tag ohne Eintrag | Bleibt **?**. Anzeigen pausieren, der Plan verschiebt sich **nicht**. Nachtragen geht bis 7 Tage zurück, ältere Tage bekommen „Weiß ich nicht mehr“. |
 | Mehr genommen als geplant | Wird dokumentiert. Am nächsten Tag gilt einfach wieder die geplante Dosis. Der Plan verschiebt sich nicht. |
 | Dosis halten | Der Plan pausiert und das Ende rückt um die gehaltenen Tage nach hinten. Ohne Enddatum rückt es täglich mit. |
-| Schneller reduzieren | Gilt sofort (nach „Ich bin mir sicher“). |
-| Hochgehen / langsamer | Wird vorgemerkt und gilt erst nach **48 Stunden Bedenkzeit** mit Begründung. Bis dahin lässt es sich verwerfen. |
+| Schneller reduzieren | Gilt sofort („Plan anpassen“). |
+| Hochgehen / langsamer | Gilt sofort, nach einem kurzen Innehalten. |
+| Plan ändern | Gilt ab heute. Vergangene Tage behalten die Dosis, die an ihnen galt – auch im Vorrat. |
+| Vorrat | Rest = gezählt − Einnahmen danach − geplante Dosis für jeden Tag ohne Eintrag (Schätzung, bis du nachträgst). Reichweite ab der echten Planposition, mit Stufenwechseln und Halten. |
 | Ziel 0 mg erreicht | Du trägst weiter ein („Heute nichts genommen“), so bleibt auch ein Rückfall dokumentierbar. |
 
 Wochen-Durchschnitt und Diagramm rechnen nur mit eingetragenen Tagen. Ein Fragezeichen geht nie als 0 mg in eine Rechnung ein.
@@ -182,7 +189,7 @@ Mehr dazu in `core/README.md` und `tools/README.md`.
 - Weitere Workflows: `core.yml` und `flutter.yml` (Analyse + Tests), `apk-flutter.yml` (Test-APK).
 
 ### App-ID
-`de.tapering.buddy` · Version 0.2.1
+`de.tapering.buddy` · Version 0.2.2
 
 ### Lizenz
 [GPL-3.0](LICENSE). Du darfst den Code nutzen, ändern und weitergeben, solange deine Version ebenfalls unter der GPL-3.0 offen bleibt.
