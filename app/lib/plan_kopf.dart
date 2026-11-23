@@ -47,14 +47,41 @@ bool planSicherPasst(String s) =>
     const {'ja ich bin mir sicher', 'yes i am sure'}
         .contains(s.toLowerCase().replaceAll(RegExp(r'[^a-zäöüß ]'), ' ').trim().replaceAll(RegExp(r'\s+'), ' '));
 
+/// Wie [planSicherPasst], zusätzlich ohne „Ja“ („Ich bin mir sicher.“ / „I am sure“).
+bool sicherPasst(String s) {
+  final t = s.toLowerCase().replaceAll(RegExp(r'[^a-zäöüß ]'), ' ').trim().replaceAll(RegExp(r'\s+'), ' ');
+  return planSicherPasst(t) || const {'ich bin mir sicher', 'i am sure'}.contains(t);
+}
+
 /// Fenster vor einem neuen Plan, wenn schon einer existiert: Satz eintippen + Häkchen. `true` = weiter.
 Future<bool> planSicherFragen(BuildContext context) async {
   final r = await showDialog<bool>(context: context, builder: (_) => const _PlanSicherDialog());
   return r ?? false;
 }
 
+/// Gleiches Fenster vor „Zurücksetzen“: Satz eintippen + Häkchen. `true` = löschen.
+Future<bool> zuruecksetzenSicherFragen(BuildContext context) async {
+  final r = await showDialog<bool>(
+      context: context,
+      builder: (_) => _PlanSicherDialog(
+            dialogKey: const Key('resetSicherDialog'),
+            text: tr('Alle Daten auf diesem Gerät werden gelöscht: Plan, Einnahmen, Notizen, Vorrat.',
+                'All data on this device will be deleted: plan, intakes, notes, supply.'),
+            haken: tr('Ich weiß: Ohne Sicherung kann ich nichts davon wiederherstellen.',
+                'I know: without a backup I cannot restore any of it.'),
+            weiter: tr('Alles löschen', 'Delete everything'),
+            passt: sicherPasst,
+          ));
+  return r ?? false;
+}
+
 class _PlanSicherDialog extends StatefulWidget {
-  const _PlanSicherDialog();
+  const _PlanSicherDialog({this.dialogKey, this.text, this.haken, this.weiter, this.passt = planSicherPasst});
+  final Key? dialogKey;
+  final String? text;
+  final String? haken;
+  final String? weiter;
+  final bool Function(String) passt;
   @override
   State<_PlanSicherDialog> createState() => _PlanSicherDialogState();
 }
@@ -71,13 +98,13 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final ok = _haken && planSicherPasst(_text.text);
+    final ok = _haken && widget.passt(_text.text);
     return AlertDialog(
-      key: const Key('planSicherDialog'),
+      key: widget.dialogKey ?? const Key('planSicherDialog'),
       title: Text(tr('Bist du dir sicher?', 'Are you sure?')),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(tr('Dein bisheriger Plan wird ersetzt.', 'Your current plan will be replaced.')),
+          Text(widget.text ?? tr('Dein bisheriger Plan wird ersetzt.', 'Your current plan will be replaced.')),
           Feldname(tr('Bitte eintippen: $planSicherSatz', 'Please type: $planSicherSatz')),
           TextField(
             key: const Key('planSicherText'),
@@ -94,7 +121,7 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
             onChanged: (v) => setState(() => _haken = v ?? false),
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
-            title: Text(planBackupSatz),
+            title: Text(widget.haken ?? planBackupSatz),
           ),
         ]),
       ),
@@ -103,7 +130,7 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
         FilledButton(
           key: const Key('planSicherWeiter'),
           onPressed: ok ? () => Navigator.of(context).pop(true) : null,
-          child: Text(tr('Weiter', 'Continue')),
+          child: Text(widget.weiter ?? tr('Weiter', 'Continue')),
         ),
       ],
     );

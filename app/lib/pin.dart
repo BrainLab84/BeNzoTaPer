@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'bausteine.dart';
+import 'plan_kopf.dart';
 import 'sos.dart';
 
 String get pinErklaerung =>
@@ -219,43 +220,24 @@ class PinAbschnitt extends StatelessWidget {
       );
 }
 
-/// „Zurücksetzen“ in „Mehr“ : erstes Tippen → „Wirklich löschen?“, zweites löscht alles.
-/// Danach wieder das Beispiel. Im Beispiel ausgeblendet (nichts zu löschen).
-class ZuruecksetzenKnopf extends StatefulWidget {
+/// „Zurücksetzen“ in „Mehr“: Fenster wie beim neuen Plan (Satz eintippen + Häkchen), dann
+/// ist alles gelöscht. Danach wieder das Beispiel. Im Beispiel ausgeblendet (nichts zu löschen).
+class ZuruecksetzenKnopf extends StatelessWidget {
   const ZuruecksetzenKnopf({super.key, required this.app});
   final AppState app;
   @override
-  State<ZuruecksetzenKnopf> createState() => _ZuruecksetzenKnopfState();
-}
-
-class _ZuruecksetzenKnopfState extends State<ZuruecksetzenKnopf> {
-  bool _fragen = false;
-  @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: widget.app,
+        listenable: app,
         builder: (context, _) {
-          if (!widget.app.eingerichtet) return const SizedBox.shrink();
+          if (!app.eingerichtet) return const SizedBox.shrink();
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Row(children: [
-                if (_fragen) ...[
-                  Expanded(child: knopf(tr('Abbrechen', 'Cancel'), () => setState(() => _fragen = false))),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: knopf(_fragen ? tr('Wirklich löschen?', 'Really delete?') : tr('Zurücksetzen', 'Reset'), () {
-                    if (!_fragen) {
-                      setState(() => _fragen = true);
-                      return;
-                    }
-                    setState(() => _fragen = false);
-                    widget.app.allesLoeschen();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Alles gelöscht.', 'Everything deleted.'))));
-                  }, hinten: F.bads, vorne: const Color(0xFFF0A7A4), rand: F.bad, key: const Key('zuruecksetzen')),
-                ),
-              ]),
-            ]),
+            child: knopf(tr('Zurücksetzen', 'Reset'), () async {
+              final messenger = ScaffoldMessenger.of(context);
+              if (!await zuruecksetzenSicherFragen(context)) return;
+              app.allesLoeschen();
+              messenger.showSnackBar(SnackBar(content: Text(tr('Alles gelöscht.', 'Everything deleted.'))));
+            }, hinten: F.bads, vorne: const Color(0xFFF0A7A4), rand: F.bad, key: const Key('zuruecksetzen')),
           );
         },
       );

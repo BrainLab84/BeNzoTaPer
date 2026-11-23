@@ -126,16 +126,26 @@ void main() {
     expect(find.byKey(const Key('pinEinrichten')), findsNothing);
   });
 
-  testWidgets('Zurücksetzen: erst „Wirklich löschen?“, dann alles weg → Beispiel', (t) async {
+  testWidgets('Zurücksetzen: erst Satz + Häkchen, dann alles weg → Beispiel', (t) async {
     final app = await starte(t);
     await tippe(t, find.byTooltip('Mehr'));
     await tippe(t, find.byKey(const Key('zuruecksetzen')));
-    expect(find.text('Wirklich löschen?'), findsOneWidget);
-    expect(app.eingerichtet, isTrue, reason: 'erstes Tippen löscht nichts');
+    expect(find.byKey(const Key('resetSicherDialog')), findsOneWidget);
+    expect(app.eingerichtet, isTrue, reason: 'Tippen allein löscht nichts');
     await tippe(t, find.text('Abbrechen'));
-    expect(find.text('Zurücksetzen'), findsOneWidget);
+    expect(find.byKey(const Key('resetSicherDialog')), findsNothing);
+    expect(app.eingerichtet, isTrue);
+
     await tippe(t, find.byKey(const Key('zuruecksetzen')));
-    await tippe(t, find.byKey(const Key('zuruecksetzen')));
+    FilledButton weiter() => t.widget<FilledButton>(find.byKey(const Key('planSicherWeiter')));
+    expect(weiter().onPressed, isNull, reason: 'ohne Satz und Häkchen gesperrt');
+    await t.enterText(find.byKey(const Key('planSicherText')), 'ich bin mir');
+    await tippe(t, find.byKey(const Key('planBackupHaken')));
+    expect(weiter().onPressed, isNull, reason: 'Satz unvollständig');
+    await t.enterText(find.byKey(const Key('planSicherText')), '  ICH bin mir sicher. ');
+    await t.pump();
+    expect(weiter().onPressed, isNotNull, reason: 'Groß/Klein, Punkt, Leerzeichen egal');
+    await tippe(t, find.byKey(const Key('planSicherWeiter')));
     expect(app.beispiel, isTrue);
     expect(find.byKey(const Key('zuruecksetzen')), findsNothing, reason: 'im Beispiel nichts zu löschen');
     await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
