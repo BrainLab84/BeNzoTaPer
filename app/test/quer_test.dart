@@ -30,8 +30,7 @@ void main() {
     expect(vorher.dosis, isNull);
 
     await reiter(t, 'Heute');
-    await schreibe(t, find.byKey(const Key('menge')), '12');
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, '12');
     await tippe(t, find.text('Eintragen'));
     await tippe(t, find.byKey(const Key('mehrAlsGeplantOk')));
     expect(app.taper.st.log['2026-03-10']!.dose, 12);

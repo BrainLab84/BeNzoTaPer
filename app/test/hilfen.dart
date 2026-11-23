@@ -60,6 +60,13 @@ Future<void> schreibe(WidgetTester t, Finder f, String text) async {
   await t.enterText(f, text);
 }
 
+/// „Einnahme“ antippen, Menge eingeben, OK (Uhrzeit = jetzt).
+Future<void> nehme(WidgetTester t, String menge) async {
+  await tippe(t, find.byKey(const Key('einnahme')));
+  await t.enterText(find.byKey(const Key('menge')), menge);
+  await tippe(t, find.byKey(const Key('plus')));
+}
+
 Future<void> tippe(WidgetTester t, Finder f) async {
   await finde(t, f);
   await t.ensureVisible(f);

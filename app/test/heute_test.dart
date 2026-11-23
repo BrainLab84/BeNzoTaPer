@@ -21,53 +21,61 @@ void main() {
     expect(find.byKey(const Key('fortschrittBlase')), findsOneWidget);
     expect(txt('Tag 1/14'), findsOneWidget);
 
-    await tippe(t, find.byKey(const Key('wieGeplant')));
+    expect(find.byKey(const Key('wieGeplant')), findsNothing, reason: 'nur noch ein Knopf „Einnahme“');
+    await nehme(t, '10');
     expect(app.taper.st.log['2026-03-10']!.dose, 10);
+    expect(app.taper.st.log['2026-03-10']!.it.single.t, '12:00', reason: 'Uhrzeit automatisch');
     expect(txt('Tagesdosis komplett – im Plan.'), findsOneWidget);
-    expect(txt('Weitere Einnahme (mg · Uhrzeit)'), findsOneWidget);
+    expect(find.byKey(const Key('einnahme')), findsOneWidget, reason: 'weitere Einnahme jederzeit');
     // Heutiger Tag zählt erst mit, wenn er komplett ist – ist er: 10 mg.
     await reiter(t, 'Kalender');
     expect(find.byKey(const Key('wochenschnitt')), findsOneWidget);
     expect(txt('Ø 10'), findsOneWidget);
   });
 
-  testWidgets('Teilmenge, Rest genommen, Löschen', (t) async {
+  testWidgets('Aufgeteilt: morgens und abends, je mit eigener Uhrzeit; Löschen', (t) async {
     final app = await starte(t);
-    await schreibe(t, find.byKey(const Key('menge')), '4,5');
-    await tippe(t, find.byKey(const Key('plus')));
+    jetzt = DateTime.utc(2026, 3, 10, 8, 15);
+    app.auffrischen();
+    await nehme(t, '4,5');
     expect(app.taper.st.log['2026-03-10']!.dose, 4.5);
     expect(txt('bisher 4,5 von 10 mg'), findsOneWidget);
-    expect(find.text('12:00'), findsWidgets, reason: 'Uhrzeit = jetzt');
-    await tippe(t, find.byKey(const Key('rest')));
+    expect(find.text('08:15'), findsWidgets, reason: 'Uhrzeit = jetzt');
+    jetzt = DateTime.utc(2026, 3, 10, 20, 30);
+    await nehme(t, '5,5');
     expect(app.taper.st.log['2026-03-10']!.dose, 10);
+    expect([for (final i in app.taper.st.log['2026-03-10']!.it) i.t], ['08:15', '20:30']);
+    expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing, reason: 'genau im Plan: Häkchen');
     expect(txt('Tagesdosis komplett – im Plan.'), findsOneWidget);
 
     await tippe(t, find.byTooltip('Einnahme löschen').first);
     expect(app.taper.st.log['2026-03-10']!.dose, 5.5);
     await tippe(t, find.byTooltip('Einnahme löschen').first);
     expect(app.taper.st.log['2026-03-10'], isNull);
-    expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
+    expect(find.byKey(const Key('einnahme')), findsOneWidget);
   });
 
-  testWidgets('Ungültige Menge: rot, nichts eingetragen', (t) async {
+  testWidgets('Ungültige Menge: Fenster bleibt offen, nichts eingetragen; Abbrechen', (t) async {
     final app = await starte(t);
-    await schreibe(t, find.byKey(const Key('menge')), 'abc');
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, 'abc');
+    expect(find.byKey(const Key('einnahmeDialog')), findsOneWidget);
+    expect(app.taper.st.log, isEmpty);
+    await tippe(t, find.text('Abbrechen'));
+    expect(find.byKey(const Key('einnahmeDialog')), findsNothing);
     expect(app.taper.st.log, isEmpty);
   });
 
   testWidgets('Mehr als geplant: Kurz innehalten → Doch nicht / Eintragen / Warten', (t) async {
     final app = await starte(t);
-    await tippe(t, find.byKey(const Key('wieGeplant')));
-    await schreibe(t, find.byKey(const Key('menge')), '2');
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, '10');
+    await nehme(t, '2');
     expect(find.text('Kurz innehalten'), findsWidgets);
     expect(txt('wären es heute 12 statt 10 mg.'), findsOneWidget);
 
     await tippe(t, find.text('Doch nicht'));
     expect(app.taper.st.log['2026-03-10']!.dose, 10);
 
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, '2');
     await tippe(t, find.text('Eintragen'));
     expect(app.taper.st.log['2026-03-10']!.dose, 12);
     expect(app.taper.st.log['2026-03-10']!.r, 'lapse');
@@ -80,14 +88,12 @@ void main() {
     expect(txt('Morgen gilt wieder 10 mg. Ein Tag ändert den Wochen-Ø nur wenig.'), findsOneWidget);
 
     // Weitere Einnahme am selben Tag: innehalten ja, das Fenster nicht nochmal.
-    await schreibe(t, find.byKey(const Key('menge')), '1');
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, '1');
     await tippe(t, find.text('Eintragen'));
     expect(app.taper.st.log['2026-03-10']!.dose, 13);
     expect(find.byKey(const Key('mehrAlsGeplant')), findsNothing, reason: 'nur einmal pro Tag');
 
-    await schreibe(t, find.byKey(const Key('menge')), '1');
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, '1');
     await t.tap(find.text('Erst 15 Minuten warten'));
     await t.pump(const Duration(milliseconds: 500));
     await t.pump(const Duration(milliseconds: 500));
@@ -193,7 +199,7 @@ void main() {
 
   testWidgets('Ändern: kürzer sofort, länger nur mit Begründung → Vormerkung', (t) async {
     final app = await starte(t);
-    await tippe(t, find.byKey(const Key('wieGeplant')));
+    await nehme(t, '10');
     await tippe(t, find.byKey(const Key('aendern')));
     expect(txt('In wie vielen Tagen soll die nächste Stufe beginnen?'), findsOneWidget);
     await t.enterText(find.byKey(const Key('linksTage')), '3');
@@ -350,7 +356,7 @@ void main() {
     expect(find.byKey(const Key('vorratWarnung')), findsNothing, reason: 'reicht jetzt über 14 Tage');
 
     jetzt = DateTime.utc(2026, 3, 10, 12, 1); // Einnahme nach dem Zählen
-    await tippe(t, find.byKey(const Key('wieGeplant')));
+    await nehme(t, '10');
     expect(txt('Rest: 190 mg'), findsOneWidget, reason: 'Einnahme wird abgezogen');
   });
 
@@ -404,8 +410,7 @@ void main() {
     expect(app.taper.st.stage, 1);
     expect(txt('Neue Stufe ab heute:'), findsOneWidget);
     expect(txt('9 mg pro Tag'), findsOneWidget);
-    expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
-    expect(txt('9 mg wie geplant genommen'), findsOneWidget);
+    expect(find.byKey(const Key('einnahme')), findsOneWidget);
     jetzt = DateTime.utc(2026, 3, 12, 9);
     app.auffrischen();
     await t.pumpAndSettle();
@@ -441,8 +446,7 @@ void main() {
       '2026-03-09': eintrag(0, 0, stage: 1),
     };
     final app = await starte(t, json: j);
-    await schreibe(t, find.byKey(const Key('menge')), '0,5');
-    await tippe(t, find.byKey(const Key('plus')));
+    await nehme(t, '0,5');
     expect(txt('wären es heute 0,5 statt 0 mg.'), findsOneWidget);
     await tippe(t, find.text('Eintragen'));
     expect(app.taper.st.log['2026-03-10']!.r, 'lapse');
@@ -459,7 +463,7 @@ void main() {
 
   testWidgets('Gespeicherter Stand nach Eintrag (JSON)', (t) async {
     final app = await starte(t);
-    await tippe(t, find.byKey(const Key('wieGeplant')));
+    await nehme(t, '10');
     await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     final raw = (app.store as MemStore).state!;
     final j = jsonDecode(raw) as Map;

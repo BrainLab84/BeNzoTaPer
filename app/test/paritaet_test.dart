@@ -95,6 +95,16 @@ const erlaubt = <String>{
   'Gespeichert',
 };
 
+/// Bewusst entfallen (mit Grund): Eintragen geht nur noch über „Einnahme“ → Menge → OK, die Uhrzeit
+/// speichert sich selbst. „wie geplant genommen“, „Rest genommen“ und das Feld „Menge · Uhrzeit“ mit „+“
+/// gibt es in Heute nicht mehr.
+final erlaubtMuster = [
+  RegExp(r'^[\d,]+ \S+ wie geplant genommen$'),
+  RegExp(r'^Rest genommen \([\d,]+ \S+\)$'),
+  RegExp(r'^(Weitere|Oder einzelne) Einnahme \(\S+ · Uhrzeit\)$'),
+  RegExp(r'^\+$'),
+];
+
 /// Was die neue App zusätzlich zeigen darf: Feldinhalte (Platzhalter, Uhrzeit, Auswahl),
 /// die in der Referenz als Attribut statt als Text stehen.
 final zusaetzlichErlaubt = [
@@ -109,6 +119,7 @@ final zusaetzlichErlaubt = [
   RegExp(r'^(notiz|notiz nachtragen|einnahmen)$'),
   RegExp(r'^z\. b\. 4 kaffee, neues medikament$'),
   RegExp(r'^du kannst jederzeit nachtragen'),
+  RegExp(r'^einnahme$'),
   RegExp(r'^notiz für heute gespeichert\. tipp auf den tag im kalender'),
   // Halten mit „voraussichtlich“ und mg
   RegExp(r'^dosis wird voraussichtlich gehalten bis \d+\.\d+\.\d{4} \(\d+ tage? noch\)\.$'),
@@ -201,7 +212,7 @@ void main() {
         final alles = norm(texte.join('\n'));
         final fehlt = <String>[
           for (final f in (s['frags'] as List).cast<String>())
-            if (!alles.contains(norm(mitJahr(f, jetzt))) && !erlaubt.contains(f)) f,
+            if (!alles.contains(norm(mitJahr(f, jetzt))) && !erlaubt.contains(f) && !erlaubtMuster.any((r) => r.hasMatch(f))) f,
         ];
         expect(fehlt, isEmpty, reason: 'Flutter-Texte:\n${texte.join(' | ')}');
         final js = norm(mitJahr((s['frags'] as List).join('\n'), jetzt));

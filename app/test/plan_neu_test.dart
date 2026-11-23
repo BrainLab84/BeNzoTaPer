@@ -85,7 +85,7 @@ void main() {
     expect(find.byKey(const Key('vorStart')), findsOneWidget);
     expect(txt('Plan startet am 15.03.2026'), findsOneWidget);
     expect(txt('Startdosis: 10 mg pro Tag'), findsOneWidget);
-    expect(find.byKey(const Key('wieGeplant')), findsNothing, reason: 'nichts zum Eintragen');
+    expect(find.byKey(const Key('einnahme')), findsNothing, reason: 'nichts zum Eintragen');
     expect(find.byKey(const Key('dosis')), findsNothing);
     expect(find.byKey(const Key('vorratKarte')), findsOneWidget, reason: 'Vorrat kann man schon eintragen');
     await reiter(t, 'Kalender');
@@ -105,9 +105,9 @@ void main() {
     await reiter(t, 'Heute');
     expect(app.taper.vorStart, isFalse);
     expect(find.byKey(const Key('vorStart')), findsNothing);
-    expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
+    expect(find.byKey(const Key('einnahme')), findsOneWidget);
     expect(app.taper.st.frz, isNull, reason: 'Vorlauftage sind keine offenen Tage');
-    await tippe(t, find.byKey(const Key('wieGeplant')));
+    await nehme(t, '10');
     expect(app.taper.st.log['2026-03-15']!.dose, 10);
   });
 

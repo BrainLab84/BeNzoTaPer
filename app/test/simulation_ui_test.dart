@@ -179,18 +179,22 @@ void main() {
         final y = r.nextDouble();
         // „Dosis genommen“ steht in Heute.
         await reiter(t, 'Heute');
-        if (ta.st.log[heute] == null && find.byKey(const Key('wieGeplant')).evaluate().isNotEmpty) {
+        Future<void> einnahme(num v) async {
+          await _tap(t, find.byKey(const Key('einnahme')));
+          await t.enterText(find.byKey(const Key('menge')), fmt(v));
+          await _tap(t, find.byKey(const Key('plus')));
+        }
+        if (ta.st.log[heute] == null && find.byKey(const Key('einnahme')).evaluate().isNotEmpty) {
           if (y < .1) {
             merke('vergessen');
           } else if (y < .2) {
-            await t.enterText(find.byKey(const Key('menge')), fmt(ta.st.plan[ta.st.stage] + 1));
-            await _tap(t, find.byKey(const Key('plus')));
+            await einnahme(ta.st.plan[ta.st.stage] + 1);
             await _tap(t, find.text('Eintragen'));
             expect(find.byKey(const Key('mehrAlsGeplant')), findsOneWidget, reason: 'Fenster nach dem Eintragen');
             await _tap(t, find.byKey(const Key('mehrAlsGeplantOk')));
             merke('Ausrutscher');
           } else {
-            await _tap(t, find.byKey(const Key('wieGeplant')));
+            await einnahme(ta.st.plan[ta.st.stage]);
             merke('wie geplant');
           }
         }

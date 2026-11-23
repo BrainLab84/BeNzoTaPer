@@ -35,8 +35,7 @@ void main() {
         findsOneWidget,
         reason: 'mit Befinden-Text und Links');
     await reiter(t, 'Heute');
-    expect(find.byKey(const Key('wieGeplant')), findsOneWidget);
-    expect(find.byKey(const Key('menge')), findsOneWidget, reason: 'abweichende Dosis direkt dabei');
+    expect(find.byKey(const Key('einnahme')), findsOneWidget);
     expect(find.byKey(const Key('tagebuchHeute')), findsNothing);
     expect(find.byKey(const Key('wochenKarte')), findsNothing);
     final ein = t.getTopLeft(find.byKey(const Key('heuteEintragen'))).dy;
@@ -117,7 +116,7 @@ void main() {
     }
     // Im Beispiel eintragen: wird nicht gespeichert.
     await reiter(t, 'Heute');
-    await tippe(t, find.byKey(const Key('wieGeplant')));
+    await nehme(t, '1');
     expect((app.store as MemStore).state, isNull, reason: 'Beispiel wird nie gespeichert');
   });
 

@@ -18,32 +18,17 @@ class HeuteEintragen extends StatefulWidget {
 }
 
 class _HeuteEintragenState extends State<HeuteEintragen> {
-  final _menge = TextEditingController();
-  String? _zeit; // null = aktuelle Uhrzeit
-  bool _mengeFehler = false;
-
   AppState get app => widget.app;
   Taper get ta => app.taper;
 
-  @override
-  void dispose() {
-    _menge.dispose();
-    super.dispose();
-  }
-
   void _fertig() => app.aenderung();
 
-  Future<void> _einzeln() async {
-    final v = zahl(_menge.text);
-    if (v == null || !(v >= 0)) {
-      setState(() => _mengeFehler = true);
-      return;
-    }
-    setState(() => _mengeFehler = false);
-    if (await einnahmeEintragen(context, app, v, t: _zeit ?? ta.nowHM())) {
-      _menge.clear();
-      if (mounted) setState(() => _zeit = null);
-    }
+  /// „Einnahme“: Menge eingeben, OK – die Uhrzeit ist der Moment des Eintragens.
+  Future<void> _einnahme() async {
+    final s = ta.st;
+    final v = await showDialog<double>(context: context, builder: (_) => _MengeDialog(unit: s.unit));
+    if (v == null || !mounted) return;
+    await einnahmeEintragen(context, app, v, t: ta.nowHM());
   }
 
   @override
@@ -108,42 +93,15 @@ class _HeuteEintragenState extends State<HeuteEintragen> {
           child: IconText(Icons.check, tr('bisher ${fz(tk)} von ${fz(soll)} ${s.unit}', 'so far ${fz(tk)} of ${fz(soll)} ${s.unit}'), farbe: F.ok),
         ));
       }
-      if (tk < soll - 1e-9) {
-        final rest = round3(soll - tk);
-        k.add(const SizedBox(height: 10));
-        k.add(hauptKnopf(tr('Rest genommen (${fz(rest)} ${s.unit})', 'Remainder taken (${fz(rest)} ${s.unit})'), () => einnahmeEintragen(context, app, rest),
-            icon: Icons.check, key: const Key('rest')));
-      }
-    } else {
-      k.add(hauptKnopf(dose > 0 ? tr('${fz(dose)} ${s.unit} wie geplant genommen', '${fz(dose)} ${s.unit} taken as planned') : tr('Heute nichts genommen', 'Nothing taken today'),
-          () => einnahmeEintragen(context, app, dose),
-          icon: Icons.check, key: const Key('wieGeplant')));
     }
-    final min = (s.min != null && s.min != 0) ? s.min! : 0.25;
-    k.add(Feldname(tr('${te != null ? 'Weitere Einnahme' : 'Oder einzelne Einnahme'} (${s.unit} · Uhrzeit)', '${te != null ? "Another intake" : "Or a single intake"} (${s.unit} · time)')));
-    final menge = TextField(
-      key: const Key('menge'),
-      controller: _menge,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: feldStil(hinweis: tr('z. B. ', 'e.g. ') + fz(dose > 0 ? dose / 2 : min), fehler: _mengeFehler),
-    );
-    final zeit = UhrzeitFeld(wert: _zeit ?? ta.nowHM(), geaendert: (z) => setState(() => _zeit = z));
-    final plus = SizedBox(width: 64, child: knopf('+', _einzeln, key: const Key('plus')));
-    k.add(LayoutBuilder(
-      builder: (context, c) => genugPlatz(context, c, 300)
-          ? Row(children: [
-              Expanded(child: menge),
-              const SizedBox(width: 8),
-              SizedBox(width: 108, child: zeit),
-              const SizedBox(width: 8),
-              plus,
-            ])
-          : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              menge,
-              const SizedBox(height: 8),
-              Row(children: [Expanded(child: zeit), const SizedBox(width: 8), plus]),
-            ]),
-    ));
+    k.add(const SizedBox(height: 12));
+    k.add(hauptKnopf(tr('Einnahme', 'Intake'), _einnahme, icon: Icons.add, key: const Key('einnahme')));
+    // Nach dem Ziel (0 mg): „nichts genommen“ mit einem Tipp, damit auch ein Rückfall nachvollziehbar bleibt.
+    if (te == null && !(dose > 0)) {
+      k.add(const SizedBox(height: 8));
+      k.add(knopf(tr('Heute nichts genommen', 'Nothing taken today'), () => einnahmeEintragen(context, app, 0, t: ta.nowHM()),
+          icon: Icons.check, key: const Key('nichts')));
+    }
     k.add(const SizedBox(height: 12));
     k.add(guterTagKnopf(app, today, heute: true));
     k.add(const SizedBox(height: 26)); // Platz für den Lavendel unten links
@@ -152,4 +110,53 @@ class _HeuteEintragenState extends State<HeuteEintragen> {
         hintergrund: const CustomPaint(painter: LavendelEckeMaler()),
         children: k);
   }
+}
+
+/// Fenster „Einnahme“: nur die Menge. Gibt die Menge zurück oder `null` (Abbrechen).
+class _MengeDialog extends StatefulWidget {
+  const _MengeDialog({required this.unit});
+  final String unit;
+  @override
+  State<_MengeDialog> createState() => _MengeDialogState();
+}
+
+class _MengeDialogState extends State<_MengeDialog> {
+  final _menge = TextEditingController();
+  bool _fehler = false;
+
+  @override
+  void dispose() {
+    _menge.dispose();
+    super.dispose();
+  }
+
+  void _ok() {
+    final v = zahl(_menge.text);
+    if (v == null || !(v >= 0) || !v.isFinite) {
+      setState(() => _fehler = true);
+      return;
+    }
+    Navigator.pop(context, v);
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        key: const Key('einnahmeDialog'),
+        title: Text(tr('Einnahme', 'Intake')),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          TextField(
+            key: const Key('menge'),
+            controller: _menge,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: feldStil(hinweis: tr('Menge in ${widget.unit}', 'Amount in ${widget.unit}'), fehler: _fehler),
+            onSubmitted: (_) => _ok(),
+          ),
+          Sub(tr('Die Uhrzeit wird automatisch gespeichert.', 'The time is saved automatically.'), oben: 8),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Abbrechen', 'Cancel'))),
+          FilledButton(key: const Key('plus'), onPressed: _ok, child: const Text('OK')),
+        ],
+      );
 }
