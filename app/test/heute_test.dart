@@ -309,7 +309,9 @@ void main() {
     final n = app.taper.st.notes['2026-03-10']!;
     expect(n.sym, 3);
     expect(n.text, '4 Kaffee');
-    expect(find.text('Gespeichert'), findsOneWidget);
+    expect(find.byKey(const Key('notizVersteckt')), findsOneWidget, reason: 'nach dem Speichern ausgeblendet');
+    expect(find.text('4 Kaffee'), findsNothing);
+    expect(find.byKey(const Key('notiz')), findsNothing);
     await tippe(t, find.text('Heute war ein guter Tag'));
     expect(app.taper.st.good, contains('2026-03-10'));
     expect(find.text('Guter Tag'), findsOneWidget);
@@ -317,7 +319,7 @@ void main() {
     expect(app.taper.st.good, isEmpty);
   });
 
-  testWidgets('Notiz im Tag-Fenster: „Notizen für heute“ unter dem Kalender zeigt sie danach', (t) async {
+  testWidgets('Notiz im Tag-Fenster: unter dem Kalender nur vermerkt, im Tag-Fenster lesbar', (t) async {
     await starte(t);
     await tippe(t, find.byKey(const Key('streifen-2026-03-10')));
     expect(find.byKey(const Key('monat')), findsOneWidget);
@@ -327,8 +329,12 @@ void main() {
     await tippe(t, find.descendant(of: fenster, matching: find.byKey(const Key('notizSpeichern'))));
     await tippe(t, find.byTooltip('Schließen'));
     final unten = find.byKey(const Key('tagebuchHeute'));
-    expect(find.descendant(of: unten, matching: find.widgetWithText(TextField, 'Kopfweh')), findsOneWidget);
-    expect(find.descendant(of: unten, matching: find.text('Notiz speichern')), findsOneWidget);
+    expect(find.descendant(of: unten, matching: find.byKey(const Key('notizVersteckt'))), findsOneWidget);
+    expect(find.text('Kopfweh'), findsNothing, reason: 'unter dem Kalender nicht angezeigt');
+    // Tag antippen: dort steht sie zum Lesen und Bearbeiten.
+    await tippe(t, find.byKey(const Key('streifen-2026-03-10')));
+    expect(find.descendant(of: fenster, matching: find.byKey(const Key('notizLesen'))), findsOneWidget);
+    expect(find.descendant(of: fenster, matching: find.text('Kopfweh')), findsOneWidget);
   });
 
   testWidgets('Mitternacht: neuer Tag, neue Stufe als Banner', (t) async {

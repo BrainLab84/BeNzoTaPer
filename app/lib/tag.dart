@@ -294,7 +294,33 @@ class _TagInhaltState extends State<TagInhalt> {
       final n = s.notes[nd];
       final hatNotiz = n != null && (n.text.trim().isNotEmpty || n.sym > 0);
       final nurLesen = widget.kurz && hatNotiz && !_bearbeiten;
-      if (widget.kurz) {
+      // Unter dem Kalender: eine gespeicherte Notiz wird nicht angezeigt, nur vermerkt.
+      // Lesen und Ändern über den Tag im Kalender (und im Notizbuch).
+      final versteckt = !widget.kurz && hatNotiz;
+      if (versteckt) {
+        w.add(Container(
+          key: const Key('notizVersteckt'),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: F.card2,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: F.line2),
+          ),
+          child: Row(children: [
+            const Icon(Icons.check, color: F.ok, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                  tr('Notiz für heute gespeichert. Tipp auf den Tag im Kalender, um sie zu lesen oder zu ändern.',
+                      'Note for today saved. Tap the day in the calendar to read or change it.'),
+                  style: const TextStyle(color: F.mu, height: 1.35)),
+            ),
+          ]),
+        ));
+      }
+      if (versteckt) {
+        // nichts weiter
+      } else if (widget.kurz) {
         w.add(Text(hatNotiz ? tr('Notiz', 'Note') : tr('Notiz nachtragen', 'Add a note'),
             key: const Key('notizKopf'), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)));
         w.add(const SizedBox(height: 8));
@@ -325,9 +351,9 @@ class _TagInhaltState extends State<TagInhalt> {
         w.add(knopf(tr('Bearbeiten', 'Edit'), () => setState(() => _bearbeiten = true),
             icon: Icons.edit_outlined, key: const Key('notizBearbeiten')));
       }
-      if (!widget.kurz) w.add(Feldname(tr('Befinden', 'How you feel')));
+      if (!widget.kurz && !versteckt) w.add(Feldname(tr('Befinden', 'How you feel')));
       // Eingabe (Smileys, Feld, Speichern) nur, wenn nicht feststehend
-      if (!nurLesen) {
+      if (!nurLesen && !versteckt) {
         if (!widget.kurz) {
           w.add(const BefindenText());
           w.add(const SizedBox(height: 12));
