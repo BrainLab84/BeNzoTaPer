@@ -155,6 +155,12 @@ void main() {
           await zeige('$name: Bericht lesen');
           await t.pageBack();
           await zeige('$name: zurück vom Bericht');
+          // Verlaufsbericht (Logbuch): Lesen-Seite
+          await t.ensureVisible(find.byKey(const Key('logbuchLesen')));
+          await t.tap(find.byKey(const Key('logbuchLesen')));
+          await zeige('$name: Logbuch lesen');
+          await t.pageBack();
+          await zeige('$name: zurück vom Logbuch');
           // Vorrat-Karte aufgeklappt (unten in Heute)
           await reiter('Heute');
           final auf = find.textContaining('VORRAT');

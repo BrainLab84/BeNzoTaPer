@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tapering_buddy/app_state.dart';
 import 'package:tapering_buddy/main.dart';
+import 'package:tapering_buddy/sicherung.dart';
 import 'package:tapering_buddy/store.dart';
 
 /// Uhr, die der Test vorstellen kann.
@@ -20,12 +21,12 @@ Map<String, dynamic> eintrag(double v, double plan, {int stage = 0}) => {
 
 /// Startet die App. Sie öffnet in Heute; [aufReiter] wechselt danach (Standard: Heute).
 Future<AppState> starte(WidgetTester t,
-    {Map<String, dynamic>? json, bool einrichten = true, String? aufReiter = 'Heute'}) async {
+    {Map<String, dynamic>? json, bool einrichten = true, String? aufReiter = 'Heute', Dateien? dateien}) async {
   t.view.physicalSize = const Size(1000, 7000);
   t.view.devicePixelRatio = 1;
   addTearDown(t.view.reset);
   final store = MemStore()..disc = true;
-  final app = AppState(store, clock: () => jetzt);
+  final app = AppState(store, clock: () => jetzt, dateien: dateien);
   await t.runAsync(app.laden);
   if (json != null) {
     expect(app.taper.importJson(json), isTrue);

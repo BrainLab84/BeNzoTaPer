@@ -10,6 +10,7 @@ import 'package:tapering_core/tapering_core.dart';
 
 import 'app_state.dart';
 import 'bericht.dart';
+import 'logbuch.dart';
 import 'bausteine.dart';
 import 'plan_kopf.dart';
 
@@ -138,6 +139,8 @@ class VerlaufSeite extends StatelessWidget {
       ]),
       // Verlauf für den Arzt – teilen und lesen (nicht im Beispiel).
       if (!app.beispiel) Padding(padding: const EdgeInsets.only(top: 2), child: berichtKnoepfe(context, app)),
+      // Verlaufsbericht (Logbuch) – eigene Karte, unabhängig vom Diagramm.
+      if (!app.beispiel) Padding(padding: const EdgeInsets.only(top: 14), child: LogbuchKarte(app: app)),
     ]);
   }
 
