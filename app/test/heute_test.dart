@@ -30,7 +30,8 @@ void main() {
     // Heutiger Tag zählt erst mit, wenn er komplett ist – ist er: 10 mg.
     await reiter(t, 'Kalender');
     expect(find.byKey(const Key('wochenschnitt')), findsOneWidget);
-    expect(txt('Ø 10'), findsOneWidget);
+    expect(t.widget<Text>(find.byKey(const Key('wochenschnitt'))).data, 'Ø 10');
+    expect(t.widget<Text>(find.byKey(const Key('liveSchnitt'))).data, 'Ø 10');
   });
 
   testWidgets('Aufgeteilt: morgens und abends, je mit eigener Uhrzeit; Löschen', (t) async {
@@ -146,6 +147,27 @@ void main() {
     expect(t.getTopLeft(find.byKey(const Key('fortschrittBlase')).first).dx, greaterThan(vorher),
         reason: 'Marker wandert mit');
     expect(app.taper.st.stage, 0);
+  });
+
+  testWidgets('Live-Ø seit Stufenbeginn: ändert sich mit jedem Eintrag', (t) async {
+    final app = await starte(t);
+    await reiter(t, 'Kalender');
+    expect(txt('In dieser Stufe noch kein abgeschlossener Tag.'), findsOneWidget);
+    await reiter(t, 'Heute');
+    await nehme(t, '10');
+    await reiter(t, 'Kalender');
+    expect(find.text('Ø 10'), findsNWidgets(2), reason: 'Live und diese Woche');
+    expect(txt('genau im Plan (10 mg) · 1 Tag'), findsOneWidget);
+    jetzt = DateTime.utc(2026, 3, 11, 9);
+    app.auffrischen();
+    await reiter(t, 'Heute');
+    await nehme(t, '10');
+    await nehme(t, '5');
+    await tippe(t, find.text('Eintragen'));
+    await tippe(t, find.byKey(const Key('mehrAlsGeplantOk')));
+    await reiter(t, 'Kalender');
+    expect(t.widget<Text>(find.byKey(const Key('liveSchnitt'))).data, 'Ø 12,5');
+    expect(txt('nur 2,5 mg über Plan (10 mg) · 2 Tage'), findsOneWidget);
   });
 
   testWidgets('Halten 7 Tage: angezeigtes „bis“ ist der letzte Haltetag (Audit 20.11.)', (t) async {

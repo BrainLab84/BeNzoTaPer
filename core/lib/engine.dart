@@ -311,6 +311,22 @@ class Taper {
     return out;
   }
 
+  /// Live-Ø: Durchschnitt aller eingetragenen Tage der aktuellen Stufe (bis heute). Zählt die Tage, die
+  /// der aktuellen Stufe zugeordnet sind – nach einem Halten bleiben sie drin. Ein angefangener heutiger Tag
+  /// zählt erst, wenn er komplett (oder über Plan) ist; ein ? nie als 0 mg.
+  WeekAvg stufenSchnitt() {
+    final a = st;
+    var sum = 0.0;
+    var n = 0;
+    final td = today;
+    a.log.forEach((k, e) {
+      if (e.stage != a.stage || k.compareTo(td) > 0 || partToday(k, e)) return;
+      sum += e.dose;
+      n++;
+    });
+    return WeekAvg(n > 0 ? sum / n : null, n);
+  }
+
   /// Durchschnitt der eingetragenen Tage in den 7 Tagen bis [k] .
   /// Ein angefangener heutiger Tag zählt nicht mit, ein ? nie als 0 mg.
   double? avg7(String k) {

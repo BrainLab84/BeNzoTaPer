@@ -17,6 +17,62 @@ class WochenschnittKarte extends StatelessWidget {
     return _wochenschnitt(ta, ta.weekAvgs(null, 4), ta.today, ta.st.frz != null);
   }
 
+  // Live-Ø seit Beginn der aktuellen Stufe: ändert sich mit jedem Eintrag.
+  Widget _live(Taper ta) {
+    final s = ta.st;
+    final l = ta.stufenSchnitt();
+    final plan = s.plan[s.stage];
+    final mx = s.plan[0] != 0 ? s.plan[0] : 1.0;
+    final k = <Widget>[
+      Text(tr('Live seit Stufenbeginn', 'Live since step start').toUpperCase(),
+          style: const TextStyle(fontSize: 11.5, letterSpacing: 1, fontWeight: FontWeight.w600, color: F.ac2)),
+      const SizedBox(height: 4),
+    ];
+    final a = l.avg;
+    if (a == null) {
+      k.add(Sub(tr('In dieser Stufe noch kein abgeschlossener Tag.', 'No completed day in this step yet.')));
+    } else {
+      final df = round1(a - plan);
+      k.add(Wrap(crossAxisAlignment: WrapCrossAlignment.end, spacing: 10, children: [
+        Text('Ø ${fz(round1(a))}', key: const Key('liveSchnitt'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+        Padding(padding: const EdgeInsets.only(bottom: 5), child: Text(tr('${s.unit} / Tag', '${s.unit} / day'))),
+      ]));
+      k.add(Padding(
+        padding: const EdgeInsets.only(top: 6, bottom: 2),
+        child: Container(
+          height: 10,
+          decoration: BoxDecoration(color: F.card2, borderRadius: BorderRadius.circular(6)),
+          alignment: Alignment.centerLeft,
+          child: FractionallySizedBox(
+            widthFactor: (a / mx).clamp(0.0, 1.0),
+            child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6), gradient: const LinearGradient(colors: [F.ac, F.ac2])),
+            ),
+          ),
+        ),
+      ));
+      final zumPlan = df.abs() < 0.05
+          ? tr('genau im Plan (${fz(plan)} ${s.unit})', 'exactly on plan (${fz(plan)} ${s.unit})')
+          : (df > 0
+              ? tr('nur ${fz(df)} ${s.unit} über Plan (${fz(plan)} ${s.unit})', 'only ${fz(df)} ${s.unit} above plan (${fz(plan)} ${s.unit})')
+              : tr('${fz(-df)} ${s.unit} unter Plan (${fz(plan)} ${s.unit})', '${fz(-df)} ${s.unit} below plan (${fz(plan)} ${s.unit})'));
+      k.add(Text('$zumPlan · ${tage(l.n)}',
+          key: const Key('liveZumPlan'), style: const TextStyle(color: F.mu, fontSize: 13.5)));
+    }
+    return Container(
+      key: const Key('liveKarte'),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: F.acs2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: F.acRand),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: k),
+    );
+  }
+
   Widget _wochenschnitt(Taper ta, List<WeekAvg> wk, String today, bool frozen) {
     if (frozen) {
       return Opacity(
@@ -31,6 +87,7 @@ class WochenschnittKarte extends StatelessWidget {
     final s = ta.st;
     final cur = wk[0].avg;
     final k = <Widget>[KartenTitel(tr('Wochen-Durchschnitt', 'Weekly average'), hilfe: 'avg')];
+    k.add(_live(ta));
     if (cur == null) {
       k.add(Sub(tr('Noch keine Einträge in den letzten 7 Tagen.', 'No entries in the last 7 days yet.')));
     } else {

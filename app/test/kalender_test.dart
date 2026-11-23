@@ -57,13 +57,16 @@ void main() {
     expect(find.byKey(const Key('tagFenster')), findsOneWidget, reason: 'Fenster von unten');
     expect(find.text('05.03.2026'), findsOneWidget);
     expect(txt('Einnahme an diesem Tag'), findsOneWidget);
-    expect(txt('im Plan'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('tagFenster')), matching: find.text('im Plan', findRichText: true)),
+        findsOneWidget);
     await tippe(t, find.byTooltip('Einnahme löschen'));
     expect(app.taper.st.log['2026-03-05'], isNull);
     expect(txt('Nichts eingetragen.'), findsOneWidget);
     await tippe(t, find.text('Nachtragen: 10 mg wie geplant'));
     expect(app.taper.st.log['2026-03-05']!.dose, 10);
-    expect(txt('im Plan'), findsOneWidget, reason: 'Fenster baut sich nach dem Nachtragen neu auf');
+    expect(find.descendant(of: find.byKey(const Key('tagFenster')), matching: find.text('im Plan', findRichText: true)),
+        findsOneWidget,
+        reason: 'Fenster baut sich nach dem Nachtragen neu auf');
     await tippe(t, find.byTooltip('Schließen'));
     expect(find.byKey(const Key('tagFenster')), findsNothing);
     expect(inZelle('2026-03-05', find.byIcon(Icons.check)), findsOneWidget, reason: 'Häkchen im Kalender');
