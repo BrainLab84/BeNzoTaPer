@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tapering_core/tapering_core.dart';
 
 import 'hilfen.dart';
 
@@ -45,6 +46,32 @@ void main() {
     expect(inZelle('2026-03-04', find.text('12')), findsOneWidget);
     expect(inZelle('2026-03-03', find.byIcon(Icons.wb_sunny_outlined)), findsOneWidget);
     expect(inZelle('2026-02-28', find.text('?')), findsNothing, reason: 'vor dem Start kein ?');
+  });
+
+  testWidgets('Nachtragen nach dem Halten: „wie geplant“ = Dosis, die an dem Tag galt', (t) async {
+    // 3 Tage 10 mg, dann Stufe 5 mg; am ersten 5-mg-Tag (04.03.) gehalten für 2 Tage, nichts eingetragen.
+    jetzt = DateTime.utc(2026, 3, 1, 9);
+    final app = await starte(t, einrichten: false, aufReiter: null);
+    final ta = app.taper;
+    app.beispielWeg();
+    ta.applyPlan(ta.openEditor(neu: true)..rows = [EditRow(10, 3), EditRow(5, 40), EditRow(0, 14)]);
+    for (var d = 1; d <= 3; d++) {
+      jetzt = DateTime.utc(2026, 3, d, 9);
+      ta.refresh();
+      ta.addIntake(10, force: true);
+    }
+    jetzt = DateTime.utc(2026, 3, 4, 9);
+    ta.refresh();
+    expect(ta.startHold(2), isTrue);
+    jetzt = DateTime.utc(2026, 3, 7, 9); // Halten vorbei
+    ta.refresh();
+    app.aenderung();
+    await t.pumpAndSettle();
+    expect(ta.st.hold, isFalse);
+    await reiter(t, 'Kalender');
+    await tippe(t, find.byKey(const Key('tag-2026-03-04')));
+    expect(find.text('Nachtragen: 5 mg wie geplant'), findsOneWidget);
+    expect(find.text('Nachtragen: 10 mg wie geplant'), findsNothing);
   });
 
   testWidgets('Tag antippen: Fenster von unten, Vergangenheit nachtragen, Zukunft nur Kopf, Schließen', (t) async {

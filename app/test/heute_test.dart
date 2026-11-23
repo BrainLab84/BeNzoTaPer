@@ -379,6 +379,30 @@ void main() {
     expect(txt('Rest: 190 mg'), findsOneWidget, reason: 'Einnahme wird abgezogen');
   });
 
+  testWidgets('Vorrat überzogen: ehrlicher Hinweis, Nachkauf-Vorschau = Ergebnis nach dem Speichern', (t) async {
+    final app = await starte(t);
+    app.taper.setStock(1, 10); // 10 mg gezählt
+    jetzt = DateTime.utc(2026, 3, 10, 12, 1);
+    app.taper.addIntake(10, force: true);
+    app.taper.addIntake(20, force: true); // 20 mg mehr als gezählt
+    app.aenderung();
+    await t.pumpAndSettle();
+    expect(app.taper.stockInfo()!.rem, -20);
+    expect(txt('Rest: 0 mg'), findsOneWidget);
+    expect(find.byKey(const Key('vorratUeberzogen')), findsOneWidget);
+    expect(txt('Rechnerisch 20 mg mehr genommen als gezählt'), findsOneWidget);
+    await tippe(t, find.text('VORRAT ÄNDERN'));
+    await t.enterText(find.byKey(const Key('anzahl0')), '10');
+    await t.enterText(find.byKey(const Key('staerke0')), '10');
+    await t.pumpAndSettle();
+    // 100 dazu → 80 mg: heute ist schon alles genommen (zählt mit), ab morgen 8 × 10 mg → 9 Tage, bis 18.03.
+    expect(txt('Als Nachkauf dazu: reicht ca. 9 Tage (bis 18.03.2026)'), findsOneWidget);
+    await tippe(t, find.byKey(const Key('nachkauf')));
+    expect(app.taper.stockInfo()!.rem, 80);
+    expect(find.byKey(const Key('vorratUeberzogen')), findsNothing);
+    expect(txt('Reicht noch ca. 9 Tage (bis 18.03.2026)'), findsWidgets);
+  });
+
   testWidgets('Tagebuch heute: Befinden + Notiz speichern, guter Tag', (t) async {
     final app = await starte(t);
     await tippe(t, find.byKey(const Key('sym3')));

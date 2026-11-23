@@ -12,4 +12,9 @@
  'U11 FileStore: Schreiben nicht nacheinander': ('app/lib/store.dart', "(_warteschlange[name] ?? Future<void>.value()).catchError((_) {}).then((_) => f())", "f()"),
  'U12 Vorrat-Hinweis: keine Nachfrage bei vorhandenem Vorrat': ('app/lib/app_state.dart', "if (_vpGefragt || !vorratPush", "if (true || _vpGefragt || !vorratPush"),
  'U13 Bericht: Datumsbeschriftungen überdecken sich': ('app/lib/bericht.dart', "final s = heute == null || !ueber(start, heute);", "final s = true;"),
+ 'U14 Vorrat-Karte behält Felder eines anderen Stands': ('app/lib/vorrat.dart', "    if (!identical(s, _fuer)) _ausGespeichert();\n", ""),
+ 'U15 Neustart-Fragebogen mit alten Angaben': ('app/lib/plan_neu.dart', "final s = widget.neustart ? null : ta.s;", "final s = ta.s;"),
+ 'U16 Leeres Notizbuch fehlt in der Sicherung': ('app/lib/app_state.dart', "      'notizbuch': [for (final e in notizbuch) e.toJson()],\n", "      if (notizbuch.isNotEmpty) 'notizbuch': [for (final e in notizbuch) e.toJson()],\n"),
+ 'U17 Nachkauf-Vorschau ab 0 statt ab dem Rest': ('app/lib/vorrat.dart', "ta.reichweite(si.rem + sum)", "ta.reichweite(math.max(0.0, si.rem) + sum)"),
+ 'U18 Nachtragen „wie geplant“ mit rückgerechneter Stufe': ('app/lib/tag.dart', "final pp = ta.planAm(nd);", "final pp = ta.planFor(nd);"),
 }

@@ -506,10 +506,10 @@ class AppState extends ChangeNotifier {
   Future<String?> sicherungErstellen({String? passwort}) async {
     final j = taper.exportJson();
     if (j == null) return null;
-    // Notizbuch kommt mit in die Sicherung (eigener Schlüssel).
+    // Notizbuch kommt mit in die Sicherung (eigener Schlüssel, auch leer – beim Laden ersetzt es das jetzige).
     final klar = jsonEncode({
       ...j,
-      if (notizbuch.isNotEmpty) 'notizbuch': [for (final e in notizbuch) e.toJson()]
+      'notizbuch': [for (final e in notizbuch) e.toJson()],
     });
     if (passwort == null || passwort.isEmpty) return klar;
     return Isolate.run(() => sicherungVerschluesseln(klar, passwort));
@@ -534,8 +534,9 @@ class AppState extends ChangeNotifier {
       throw SicherungException(SicherungFehler.kaputt);
     }
     if (!taper.importJson(o)) throw SicherungException(SicherungFehler.kaputt);
-    if (o is Map && o['notizbuch'] != null) {
-      notizbuch = NotizbuchEintrag.liste(o['notizbuch']);
+    // Sicherungen ab v0.2.2 enthalten das Notizbuch immer (auch leer); ältere ohne Schlüssel lassen es, wie es ist.
+    if (o is Map && o.containsKey('notizbuch')) {
+      notizbuch = o['notizbuch'] == null ? [] : NotizbuchEintrag.liste(o['notizbuch']);
       store.writeNotizbuch(jsonEncode([for (final e in notizbuch) e.toJson()]));
     }
     gesperrt = false; // nach dem Laden entsperrt

@@ -253,6 +253,57 @@ void main() {
     expect(app.taper.st.log, isEmpty);
     expect(app.taper.st.stock, isNull);
     expect(app.taper.st.t0, '2026-03-10');
+    // Vorrat-Karte ohne die Tablettenstärken des Beispiels (5 / 2 mg)
+    await reiter(t, 'Heute');
+    await finde(t, find.byKey(const Key('staerke0')));
+    expect(t.widget<TextField>(find.byKey(const Key('staerke0'))).controller!.text, '');
+    expect(find.byKey(const Key('staerke1')), findsNothing);
+    await t.enterText(find.byKey(const Key('anzahl0')), '10');
+    await t.enterText(find.byKey(const Key('staerke0')), '10');
+    await tippe(t, find.byKey(const Key('vorratSpeichern')));
+    expect(app.taper.st.tabs!.str, [10]);
+    expect(app.taper.stockInfo()!.rem, 100);
+  });
+
+  testWidgets('Neustart: Fragebogen ohne alte Angaben, Vorrat-Karte ohne alte Stärken', (t) async {
+    final app = await vollerStand(t);
+    app.taper.st.person = 'Alex';
+    await reiter(t, 'Plan');
+    await tippe(t, find.byKey(const Key('planErstellen')));
+    await planSicherBestaetigen(t);
+    expect(t.widget<TextField>(find.byKey(const Key('planPerson'))).controller!.text, '');
+    await weiter(t);
+    expect(t.widget<TextField>(find.byKey(const Key('planMed'))).controller!.text, 'Diazepam', reason: 'Vorgabe wie neu');
+    expect(t.widget<TextField>(find.byKey(const Key('planDosis'))).controller!.text, '');
+    await t.enterText(find.byKey(const Key('planDosis')), '20');
+    await abschnitt(t, 0, '5', '21', '0');
+    await weiter(t);
+    await weiter(t);
+    await tippe(t, find.byKey(const Key('planLos')));
+    await tippe(t, find.text('Überspringen'));
+    expect(app.taper.st.person, isNull);
+    await reiter(t, 'Heute');
+    await finde(t, find.byKey(const Key('staerke0')));
+    expect(t.widget<TextField>(find.byKey(const Key('staerke0'))).controller!.text, '');
+    expect(find.byKey(const Key('staerke1')), findsNothing);
+  });
+
+  testWidgets('Sicherung mit leerem Notizbuch: Laden leert auch das jetzige Notizbuch', (t) async {
+    final d = FakeDateien();
+    final app = await vollerStand(t, d: d);
+    app.notizLoeschen(app.notizbuch.single.id);
+    expect(app.notizbuch, isEmpty);
+    final text = await t.runAsync<String?>(() => app.sicherungErstellen());
+    expect((jsonDecode(text!) as Map).containsKey('notizbuch'), isTrue, reason: 'auch leer in der Sicherung');
+    app.notizSchreiben('später geschrieben');
+    expect(app.notizbuch, hasLength(1));
+    await t.runAsync(() => app.sicherungLaden(text));
+    expect(app.notizbuch, isEmpty);
+    // Alte Sicherung ohne Notizbuch-Schlüssel: Notizbuch bleibt, wie es ist
+    app.notizSchreiben('bleibt');
+    final alt = jsonEncode(app.taper.exportJson());
+    await t.runAsync(() => app.sicherungLaden(alt));
+    expect(app.notizbuch.single.text, 'bleibt');
   });
 
   testWidgets('Sicherung vorher gespeichert: nach dem Neustart zurückholbar', (t) async {

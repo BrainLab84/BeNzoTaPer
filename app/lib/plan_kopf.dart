@@ -67,8 +67,10 @@ Future<bool> zuruecksetzenSicherFragen(BuildContext context) async {
       context: context,
       builder: (_) => _PlanSicherDialog(
             dialogKey: const Key('resetSicherDialog'),
-            text: tr('Alle Daten auf diesem Gerät werden gelöscht: Plan, Einnahmen, Notizen, Vorrat.',
-                'All data on this device will be deleted: plan, intakes, notes, supply.'),
+            text: tr('Wie eine neu installierte App: Alles auf diesem Gerät wird gelöscht – Plan, Einnahmen, Vorrat, '
+                    'Notizen, Notizbuch, PIN und Einstellungen.',
+                'Like a newly installed app: everything on this device will be deleted – plan, intakes, supply, '
+                    'notes, notebook, PIN and settings.'),
             haken: tr('Ich weiß: Ohne Sicherung kann ich nichts davon wiederherstellen.',
                 'I know: without a backup I cannot restore any of it.'),
             weiter: tr('Alles löschen', 'Delete everything'),

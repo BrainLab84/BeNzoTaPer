@@ -216,6 +216,7 @@ void main() {
 
   testWidgets('Neuer Plan bei bestehendem: erst „Bist du dir sicher?“; schneller sofort', (t) async {
     final app = await starte(t, aufReiter: 'Plan');
+    app.taper.st.person = 'Alex';
     await tippe(t, find.byKey(const Key('planErstellen')));
     expect(find.text('Bist du dir sicher?'), findsOneWidget);
     expect(txt(planBackupSatz), findsOneWidget);
@@ -235,8 +236,11 @@ void main() {
 
     await tippe(t, find.byKey(const Key('planErstellen')));
     await planSicherBestaetigen(t);
+    // Neustart = wie neu installiert: nichts vom alten Plan vorbelegt
+    expect(t.widget<TextField>(find.byKey(const Key('planPerson'))).controller!.text, '');
     await weiter(t);
-    expect(find.widgetWithText(TextField, '10'), findsOneWidget, reason: 'aktuelle Dosis vorbelegt');
+    expect(t.widget<TextField>(find.byKey(const Key('planDosis'))).controller!.text, '', reason: 'keine alte Dosis');
+    await t.enterText(find.byKey(const Key('planDosis')), '10');
     await abschnitt(t, 0, '2', '14', '0');
     await weiter(t);
     await weiter(t);
@@ -261,6 +265,7 @@ void main() {
     await tippe(t, find.byKey(const Key('planErstellen')));
     await planSicherBestaetigen(t);
     await weiter(t);
+    await t.enterText(find.byKey(const Key('planDosis')), '10');
     await abschnitt(t, 0, '0,5', '21', '0');
     await weiter(t);
     await weiter(t);

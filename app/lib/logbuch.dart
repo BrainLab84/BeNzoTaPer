@@ -89,10 +89,10 @@ Logbuch logbuchErstellen(Taper ta) {
       final e = s.log[k];
       if (e == null) {
         if (k == heute) continue; // heute noch nichts: kein „?“
-        tage.add(LogbuchTag(k, ta.planFor(k).plan, null, const [], TagArt.offen, gehalten(k)));
+        tage.add(LogbuchTag(k, ta.planAm(k).plan, null, const [], TagArt.offen, gehalten(k)));
         continue;
       }
-      final plan = e.plan ?? ta.planFor(k).plan;
+      final plan = e.plan ?? ta.planAm(k).plan;
       final TagArt art;
       if (ta.partToday(k, e)) {
         art = TagArt.laufend;

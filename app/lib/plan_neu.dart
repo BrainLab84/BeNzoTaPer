@@ -96,7 +96,8 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
   @override
   void initState() {
     super.initState();
-    final s = ta.s;
+    // Neustart = wie neu installiert: nichts vom alten Plan vorbelegen (auch nicht Name, Medikament, Dosis).
+    final s = widget.neustart ? null : ta.s;
     _person.text = s?.person ?? '';
     _med.text = s?.name ?? 'Diazepam';
     _unit = s?.unit ?? 'mg';

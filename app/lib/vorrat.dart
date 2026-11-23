@@ -37,6 +37,10 @@ class _Zeile {
 class _VorratKarteState extends State<VorratKarte> {
   bool _offen = false;
   final _zeilen = <_Zeile>[];
+
+  /// Für welchen Stand die Felder gefüllt sind. Neuer Plan, Neustart, Beispiel weg, Sicherung geladen:
+  /// anderer Stand → Felder neu aus dem Gespeicherten (sonst blieben z. B. Stärken des Beispiels stehen).
+  TaperState? _fuer;
   final _loesung = TextEditingController();
   double _teilbar = 1;
 
@@ -50,6 +54,8 @@ class _VorratKarteState extends State<VorratKarte> {
   }
 
   void _ausGespeichert() {
+    _fuer = ta.s;
+    _offen = false;
     for (final z in _zeilen) {
       z.dispose();
     }
@@ -127,6 +133,7 @@ class _VorratKarteState extends State<VorratKarte> {
   @override
   Widget build(BuildContext context) {
     final s = ta.st;
+    if (!identical(s, _fuer)) _ausGespeichert();
     final si = ta.stockInfo();
     final t = s.tabs;
     final kinder = <Widget>[KartenTitel(tr('Tablettenvorrat', 'Tablet supply'), icon: Icons.medication_outlined)];
@@ -149,6 +156,16 @@ class _VorratKarteState extends State<VorratKarte> {
       kinder.add(Sub(
           tr('Rest: ${fz(rest)} ${s.unit}${hatT ? ' (≈ ${fz(jsRound(rest / t.str[0] * 4) / 4)} Tbl à ${fz(t.str[0])})' : ''}', 'Remaining: ${fz(rest)} ${s.unit}${hatT ? " (≈ ${fz(jsRound(rest / t.str[0] * 4) / 4)} tabs of ${fz(t.str[0])})" : ""}'),
           oben: 2));
+      if (si.rem < -1e-9) {
+        // Mehr genommen als gezählt: ehrlich sagen statt still auf 0 setzen (ein Nachkauf zieht es ab).
+        kinder.add(Sub(
+            tr('Rechnerisch ${fz(-si.rem)} ${s.unit} mehr genommen als gezählt. Ein Nachkauf zieht das ab – '
+                'stimmt das nicht, zähl lieber neu und speichere als Vorrat.',
+                'By the numbers, ${fz(-si.rem)} ${s.unit} more taken than counted. A refill deducts it – '
+                    'if that is wrong, better count again and save as supply.'),
+            key: const Key('vorratUeberzogen'),
+            oben: 2));
+      }
       if (si.geschaetzt > 0) {
         kinder.add(Sub(
             tr('Darin ${si.geschaetzt == 1 ? '1 Tag' : '${si.geschaetzt} Tage'} ohne Eintrag, mit der geplanten Dosis gerechnet. '
@@ -237,7 +254,9 @@ class _VorratKarteState extends State<VorratKarte> {
               key: const Key('vorratVorschau'), style: const TextStyle(fontWeight: FontWeight.w700)),
         ];
         if (si != null) {
-          vorschau.add(Sub(tr('Als Nachkauf dazu: ${_reicht(ta.reichweite(math.max(0.0, si.rem) + sum))}', 'With the refill: ${_reicht(ta.reichweite(math.max(0.0, si.rem) + sum))}'), oben: 2));
+          // Genau wie nach dem Speichern: der Nachkauf kommt auf den Rest (auch einen überzogenen).
+          final mit = _reicht(ta.reichweite(si.rem + sum));
+          vorschau.add(Sub(tr('Als Nachkauf dazu: $mit', 'With the refill: $mit'), key: const Key('nachkaufVorschau'), oben: 2));
         }
         kinder.add(Padding(
           padding: const EdgeInsets.only(top: 4, bottom: 4),

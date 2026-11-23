@@ -269,7 +269,7 @@ class _TagInhaltState extends State<TagInhalt> {
         w.add(Sub(tr('Nichts eingetragen.', 'Nothing logged.')));
       }
       if (kannNach) {
-        final pp = ta.planFor(nd);
+        final pp = ta.planAm(nd);
         if (pe == null) {
           w.add(const SizedBox(height: 8));
           w.add(hauptKnopf(tr('Nachtragen: ${fz(pp.plan)} ${s.unit} wie geplant', 'Add: ${fz(pp.plan)} ${s.unit} as planned'),
