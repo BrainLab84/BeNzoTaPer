@@ -117,6 +117,7 @@ class _SicherungSpeichernSeiteState extends State<SicherungSpeichernSeite> {
       final text = await widget.app.sicherungErstellen(passwort: _ohne ? null : _pw1.text);
       if (text == null) return;
       await widget.dateien.teilen(sicherungDateiname(widget.app.taper.clock()), text);
+      widget.app.sicherungGemacht();
       if (mounted) Navigator.of(context).pop(true);
     } catch (_) {
       if (mounted) setState(() => _fehler = tr('Sicherung konnte nicht erstellt werden.', 'The backup could not be created.'));

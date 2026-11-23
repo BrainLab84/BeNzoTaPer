@@ -38,6 +38,7 @@ List<String> texteIn(WidgetTester t, Finder wurzel, {List<String> auchOhne = con
       'planKopf',
       'vorratWarnung',
       'vorratKarte',
+      'sicherungBanner', // Erinnerung zum Sichern (neu)
       'befindenText',
       'kalenderFortschritt',
       'beispielHinweis',

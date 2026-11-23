@@ -106,6 +106,9 @@ class AppState extends ChangeNotifier {
         if (j is Map && sperrZeiten.contains(j['sperrMin'])) sperrMinuten = j['sperrMin'] as int;
         if (j is Map && j['pw'] is String) _wortHash = j['pw'] as String;
         if (j is Map && j['pwq'] == true) _wortGefragt = true;
+        if (j is Map && j['sbMs'] is int) _gesichertMs = j['sbMs'] as int;
+        if (j is Map && j['sbH'] is String) _gesichertHash = j['sbH'] as String;
+        if (j is Map && j['sbW'] is int) _sicherungWegMs = j['sbW'] as int;
       }
     } catch (_) {}
     try {
@@ -242,6 +245,9 @@ class AppState extends ChangeNotifier {
         'sperrMin': sperrMinuten,
         if (_wortHash != null) 'pw': _wortHash,
         if (_wortGefragt) 'pwq': true,
+        if (_gesichertMs != null) 'sbMs': _gesichertMs,
+        if (_gesichertHash != null) 'sbH': _gesichertHash,
+        if (_sicherungWegMs != null) 'sbW': _sicherungWegMs,
       }));
 
   // ===== Lob beim Halten (lob.dart) =====
@@ -348,6 +354,44 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ===== Erinnerung zum Sichern (Banner in Heute) =====
+  // Alle 14 Tage, nur wenn sich der Stand seit der letzten Sicherung geändert hat.
+
+  static const sicherungAbstand = Duration(days: 14);
+  int? _gesichertMs;
+  String? _gesichertHash;
+  int? _sicherungWegMs;
+
+  String _standHash() => Taper.hashPin(jsonEncode({
+        's': taper.exportJson(),
+        'n': [for (final e in notizbuch) e.toJson()],
+      }));
+
+  bool get sicherungErinnern {
+    if (!eingerichtet) return false;
+    final jetzt = taper.clock().millisecondsSinceEpoch;
+    final start = DateTime.parse('${taper.st.t0 ?? taper.today}T00:00:00Z').millisecondsSinceEpoch;
+    var seit = _gesichertMs ?? start;
+    if (_sicherungWegMs != null && _sicherungWegMs! > seit) seit = _sicherungWegMs!;
+    if (jetzt - seit < sicherungAbstand.inMilliseconds) return false;
+    return _standHash() != _gesichertHash;
+  }
+
+  /// Nach dem Speichern oder Laden einer Sicherung: Stand gilt als gesichert.
+  void sicherungGemacht() {
+    _gesichertMs = taper.clock().millisecondsSinceEpoch;
+    _gesichertHash = _standHash();
+    _einstellungenSchreiben();
+    notifyListeners();
+  }
+
+  /// Banner weggetippt: in 14 Tagen wieder.
+  void sicherungErinnerungWeg() {
+    _sicherungWegMs = taper.clock().millisecondsSinceEpoch;
+    _einstellungenSchreiben();
+    notifyListeners();
+  }
+
   // ===== Schlüsselwort zum Zurücksetzen der PIN =====
   // Nur als Hash in der Einstellungen-Datei, nie angezeigt. Groß/Klein und Leerzeichen am Rand egal.
 
@@ -424,6 +468,9 @@ class AppState extends ChangeNotifier {
     gesperrt = false;
     _wortHash = null;
     _wortGefragt = false;
+    _gesichertMs = null;
+    _gesichertHash = null;
+    _sicherungWegMs = null;
     erinnerung = const ErinnerungEinstellung();
     vorratPush = true;
     _vpGefragt = false;
@@ -479,7 +526,7 @@ class AppState extends ChangeNotifier {
     }
     gesperrt = false; // nach dem Laden entsperrt
     stand++;
-    notifyListeners();
+    sicherungGemacht();
     vorratErlaubnisEinmal();
   }
 }

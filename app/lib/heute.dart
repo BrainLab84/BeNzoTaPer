@@ -14,6 +14,7 @@ import 'eintragen.dart';
 import 'kalender.dart';
 import 'lob.dart';
 import 'plan_kopf.dart';
+import 'sicherung.dart';
 import 'vorrat.dart';
 
 class HeuteSeite extends StatefulWidget {
@@ -165,6 +166,7 @@ class _HeuteSeiteState extends State<HeuteSeite> {
     final last = s.stage >= s.plan.length - 1;
 
     final w = <Widget>[];
+    if (app.sicherungErinnern) w.add(_sicherungBanner());
     final si = ta.stockInfo();
     if (si != null && si.days <= 14)
       w.add(VorratWarnung(si: si, unit: s.unit, heute: today, oeffnen: _zumVorrat));
@@ -206,6 +208,34 @@ class _HeuteSeiteState extends State<HeuteSeite> {
     if (s.person != null && !app.beispiel) w.insert(0, Begruessung(name: s.person!));
     return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: w);
   }
+
+  // Dezente Erinnerung zum Sichern (alle 14 Tage, nur bei Änderungen).
+  Widget _sicherungBanner() => Karte(
+        key: const Key('sicherungBanner'),
+        padding: const EdgeInsets.fromLTRB(14, 8, 4, 8),
+        children: [
+          Row(children: [
+            const Icon(Icons.save_outlined, color: F.mu, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(tr('Seit einer Weile nicht gesichert.', 'Not backed up for a while.'),
+                  style: const TextStyle(color: F.mu, fontSize: 14)),
+            ),
+            TextButton(
+              key: const Key('sicherungBannerSichern'),
+              onPressed: () => Navigator.of(context)
+                  .push<bool>(MaterialPageRoute(builder: (_) => SicherungSpeichernSeite(app: app, dateien: app.dateien))),
+              child: Text(tr('Sichern', 'Back up')),
+            ),
+            IconButton(
+              key: const Key('sicherungBannerWeg'),
+              tooltip: tr('Später', 'Later'),
+              icon: const Icon(Icons.close, size: 18, color: F.mu),
+              onPressed: app.sicherungErinnerungWeg,
+            ),
+          ]),
+        ],
+      );
 
   // Vor dem Start: Starttag und Startdosis, nichts zum Eintragen.
   Widget _vorStartKarte() {
