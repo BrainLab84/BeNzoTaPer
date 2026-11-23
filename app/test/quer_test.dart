@@ -119,6 +119,8 @@ void main() {
 
     await tippe(t, find.byTooltip('Mehr'));
     await tippe(t, find.text('Sicherung laden'));
+    await t.enterText(find.byKey(const Key('planSicherText')), 'Ich bin mir sicher');
+    await t.pump();
     await tippe(t, find.widgetWithText(FilledButton, 'Laden'));
     await t.pump(const Duration(seconds: 1));
     await t.pumpAndSettle();

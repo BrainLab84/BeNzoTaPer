@@ -10,6 +10,7 @@ import 'package:tapering_core/tapering_core.dart';
 
 import 'app_state.dart';
 import 'i18n/meldungen.dart';
+import 'plan_kopf.dart';
 
 /// Dateien teilen und öffnen. Eine Schnittstelle, damit Tests ohne Android laufen.
 abstract class Dateien {
@@ -237,18 +238,8 @@ Future<bool> sicherungLadenAblauf(BuildContext context, AppState app, Dateien da
   }
 
   if (app.eingerichtet) {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text(tr('Sicherung laden?', 'Load backup?')),
-        content: Text(tr('Dein aktueller Stand auf diesem Gerät wird dabei ersetzt.', 'Your current data on this device will be replaced.')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Abbrechen', 'Cancel'))),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Laden', 'Load'))),
-        ],
-      ),
-    );
-    if (ok != true || !context.mounted) return false;
+    final ok = await sicherungLadenSicherFragen(context);
+    if (!ok || !context.mounted) return false;
   }
 
   if (app.sicherungBrauchtPasswort(text)) {

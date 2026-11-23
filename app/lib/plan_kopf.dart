@@ -75,11 +75,29 @@ Future<bool> zuruecksetzenSicherFragen(BuildContext context) async {
   return r ?? false;
 }
 
+/// Vor „Sicherung laden“, wenn schon Daten da sind: nur Satz eintippen (kein Häkchen). `true` = laden.
+Future<bool> sicherungLadenSicherFragen(BuildContext context) async {
+  final r = await showDialog<bool>(
+      context: context,
+      builder: (_) => _PlanSicherDialog(
+            dialogKey: const Key('ladenSicherDialog'),
+            titel: tr('Sicherung laden?', 'Load backup?'),
+            text: tr('Dein aktueller Stand auf diesem Gerät wird dabei ersetzt.', 'Your current data on this device will be replaced.'),
+            ohneHaken: true,
+            weiter: tr('Laden', 'Load'),
+            passt: sicherPasst,
+          ));
+  return r ?? false;
+}
+
 class _PlanSicherDialog extends StatefulWidget {
-  const _PlanSicherDialog({this.dialogKey, this.text, this.haken, this.weiter, this.passt = planSicherPasst});
+  const _PlanSicherDialog(
+      {this.dialogKey, this.titel, this.text, this.haken, this.ohneHaken = false, this.weiter, this.passt = planSicherPasst});
   final Key? dialogKey;
+  final String? titel;
   final String? text;
   final String? haken;
+  final bool ohneHaken;
   final String? weiter;
   final bool Function(String) passt;
   @override
@@ -98,10 +116,10 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final ok = _haken && widget.passt(_text.text);
+    final ok = (_haken || widget.ohneHaken) && widget.passt(_text.text);
     return AlertDialog(
       key: widget.dialogKey ?? const Key('planSicherDialog'),
-      title: Text(tr('Bist du dir sicher?', 'Are you sure?')),
+      title: Text(widget.titel ?? tr('Bist du dir sicher?', 'Are you sure?')),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text(widget.text ?? tr('Dein bisheriger Plan wird ersetzt.', 'Your current plan will be replaced.')),
@@ -114,8 +132,8 @@ class _PlanSicherDialogState extends State<_PlanSicherDialog> {
             decoration: feldStil(hinweis: planSicherSatz),
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: 8),
-          CheckboxListTile(
+          if (!widget.ohneHaken) const SizedBox(height: 8),
+          if (!widget.ohneHaken) CheckboxListTile(
             key: const Key('planBackupHaken'),
             value: _haken,
             onChanged: (v) => setState(() => _haken = v ?? false),

@@ -127,6 +127,11 @@ void main() {
 
     await t.tap(find.text('Sicherung laden'));
     await t.pumpAndSettle();
+    FilledButton laden() => t.widget<FilledButton>(find.byKey(const Key('planSicherWeiter')));
+    expect(laden().onPressed, isNull, reason: 'erst den Satz eintippen');
+    expect(find.byKey(const Key('planBackupHaken')), findsNothing, reason: 'kein Häkchen beim Laden');
+    await t.enterText(find.byKey(const Key('planSicherText')), 'Ich bin mir sicher.');
+    await t.pump();
     await t.tap(find.widgetWithText(FilledButton, 'Laden'));
     await t.pumpAndSettle();
     expect(find.text('Passwort für die Sicherung'), findsOneWidget);
