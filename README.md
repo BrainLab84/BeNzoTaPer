@@ -82,7 +82,7 @@ The rest of this README is in German. Code, tests and tools are documented in th
 ### Fortschritt
 - **Dein Weg:** von wie viel auf wie viel mg, geschaffte Tage, Stufe x von n, voraussichtliches Ende.
 - **Verlauf** als Diagramm: der Plan als Treppe, der 7-Tage-Durchschnitt als Welle, rote Punkte an Tagen über Plan.
-- **Verlauf für den Arzt:** dasselbe Diagramm als PDF zum Teilen oder zum Anschauen in groß („Lesen“).
+- **Diagramm für den Arzt:** dasselbe Diagramm als PDF zum Teilen oder zum Anschauen in groß („Lesen“).
 - **Verlaufsbericht für den Arzt:** Übersicht, Stufen, Planänderungen, Wochen-Durchschnitte und Tagesprotokoll mit Uhrzeiten, als PDF (ohne Notizen).
 
 ### Immer erreichbar

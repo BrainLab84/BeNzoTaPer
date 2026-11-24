@@ -137,7 +137,7 @@ class VerlaufSeite extends StatelessWidget {
           Sub(tr('Trag deine Einnahmen ein – dann zeigt die Welle, was du tatsächlich genommen hast.', 'Log your intakes – then the wave shows what you actually took.'), oben: 10),
         if (s.frz != null) Sub(tr('Offene Tage – Anzeigen pausieren bis zum Nachtragen.', 'Open days – displays pause until filled in.'), oben: 10),
       ]),
-      // Verlauf für den Arzt – teilen und lesen (nicht im Beispiel).
+      // Diagramm für den Arzt – teilen und lesen (nicht im Beispiel).
       if (!app.beispiel) Padding(padding: const EdgeInsets.only(top: 2), child: berichtKnoepfe(context, app)),
       // Verlaufsbericht (Logbuch) – eigene Karte, unabhängig vom Diagramm.
       if (!app.beispiel) Padding(padding: const EdgeInsets.only(top: 14), child: LogbuchKarte(app: app)),

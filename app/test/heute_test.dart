@@ -51,8 +51,14 @@ void main() {
     expect(txt('Tagesdosis komplett – im Plan.'), findsOneWidget);
 
     await tippe(t, find.byTooltip('Einnahme löschen').first);
+    expect(find.text('Einnahme löschen?'), findsOneWidget, reason: 'erst nachfragen');
+    await tippe(t, find.text('Abbrechen'));
+    expect(app.taper.st.log['2026-03-10']!.dose, 10, reason: 'Abbrechen lässt die Einnahme stehen');
+    await tippe(t, find.byTooltip('Einnahme löschen').first);
+    await tippe(t, find.byKey(const Key('einnahmeLoeschenJa')));
     expect(app.taper.st.log['2026-03-10']!.dose, 5.5);
     await tippe(t, find.byTooltip('Einnahme löschen').first);
+    await tippe(t, find.byKey(const Key('einnahmeLoeschenJa')));
     expect(app.taper.st.log['2026-03-10'], isNull);
     expect(find.byKey(const Key('einnahme')), findsOneWidget);
   });

@@ -1,4 +1,4 @@
-// Verlauf für den Arzt: Knöpfe im Fortschritt, PDF teilen, Lesen.
+// Diagramm für den Arzt: Knöpfe im Fortschritt, PDF teilen, Lesen.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tapering_buddy/app_state.dart';
@@ -53,7 +53,7 @@ Future<void> warte(WidgetTester t, bool Function() fertig) async {
 void main() {
   setUp(() => jetzt = DateTime.utc(2026, 3, 10, 12));
 
-  testWidgets('Fortschritt: „Verlauf als PDF teilen“ teilt ein PDF', (t) async {
+  testWidgets('Fortschritt: „Diagramm als PDF teilen“ teilt ein PDF', (t) async {
     final d = TeilDateien();
     await los(t, d);
     await reiter(t, 'Fortschritt');
@@ -73,7 +73,7 @@ void main() {
     await t.tap(find.byKey(const Key('berichtLesen')));
     await t.pump(); // Seite baut, Bild rechnet noch (Kreisel dreht – kein pumpAndSettle)
     await t.pump(const Duration(milliseconds: 400));
-    expect(find.text('Verlauf für den Arzt'), findsOneWidget);
+    expect(find.text('Diagramm für den Arzt'), findsOneWidget);
     await warte(t, () => find.byKey(const Key('berichtBlatt')).evaluate().isNotEmpty);
     expect(find.byKey(const Key('berichtBlatt')), findsOneWidget);
     await t.tap(find.byKey(const Key('berichtTeilenSeite')));

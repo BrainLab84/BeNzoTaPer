@@ -87,6 +87,7 @@ void main() {
     expect(find.descendant(of: find.byKey(const Key('tagFenster')), matching: find.text('im Plan', findRichText: true)),
         findsOneWidget);
     await tippe(t, find.byTooltip('Einnahme löschen'));
+    await tippe(t, find.byKey(const Key('einnahmeLoeschenJa')));
     expect(app.taper.st.log['2026-03-05'], isNull);
     expect(txt('Nichts eingetragen.'), findsOneWidget);
     await tippe(t, find.text('Nachtragen: 10 mg wie geplant'));

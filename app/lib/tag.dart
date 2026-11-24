@@ -70,10 +70,30 @@ class EinnahmeZeile extends StatelessWidget {
               tooltip: tr('Einnahme löschen', 'Delete intake'),
               style: IconButton.styleFrom(backgroundColor: F.bads, foregroundColor: const Color(0xFFF0A7A4)),
               icon: const Icon(Icons.close, size: 18),
-              onPressed: loeschen,
+              onPressed: () => _loeschenFragen(context),
             ),
         ]),
       );
+}
+
+extension on EinnahmeZeile {
+  Future<void> _loeschenFragen(BuildContext context) async {
+    final ja = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(tr('Einnahme löschen?', 'Delete intake?')),
+        content: Text('${zeit.isEmpty ? '' : '$zeit · '}$menge'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Abbrechen', 'Cancel'))),
+          TextButton(
+              key: const Key('einnahmeLoeschenJa'),
+              onPressed: () => Navigator.pop(c, true),
+              child: Text(tr('Löschen', 'Delete'))),
+        ],
+      ),
+    );
+    if (ja == true) loeschen?.call();
+  }
 }
 
 /// Uhrzeit-Auswahl „HH:MM“. [wert] leer = keine Uhrzeit (nur bei [leerErlaubt]).

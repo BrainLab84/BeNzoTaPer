@@ -146,7 +146,7 @@ void main() {
           for (final r in ['Plan', 'Kalender', 'Fortschritt']) {
             await reiter(r);
           }
-          // Verlauf für den Arzt: Lesen-Seite
+          // Diagramm für den Arzt: Lesen-Seite
           await t.ensureVisible(find.byKey(const Key('berichtLesen')));
           await t.tap(find.byKey(const Key('berichtLesen')));
           for (var i = 0; i < 50 && find.byKey(const Key('berichtBlatt')).evaluate().isEmpty; i++) {

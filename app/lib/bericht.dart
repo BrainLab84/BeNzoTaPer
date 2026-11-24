@@ -1,4 +1,4 @@
-// Verlauf für den Arzt: nur das Verlaufs-Diagramm, immer der komplette
+// Diagramm für den Arzt: nur das Verlaufs-Diagramm, immer der komplette
 // Verlauf, als PDF zum Teilen – und zum Lesen direkt in der App. Knöpfe im Fortschritt unter dem Diagramm.
 //
 // Das ganze Blatt (Kopf, Diagramm, Datumsleiste, Legende) wird als Bild gezeichnet – derselbe Maler wie im
@@ -213,7 +213,7 @@ class _BerichtSeiteState extends State<BerichtSeite> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(tr('Verlauf für den Arzt', 'History for the doctor'))),
+        appBar: AppBar(title: Text(tr('Diagramm für den Arzt', 'Chart for the doctor'))),
         body: SafeArea(
           child: Column(children: [
             Expanded(
@@ -254,7 +254,7 @@ class _BerichtSeiteState extends State<BerichtSeite> {
 
 /// Die zwei Knöpfe unter dem Diagramm im Fortschritt.
 Widget berichtKnoepfe(BuildContext context, AppState app) => LayoutBuilder(builder: (context, c) {
-      final teilen = knopf(tr('Verlauf als PDF teilen', 'Share history as PDF'), () => berichtTeilen(context, app),
+      final teilen = knopf(tr('Diagramm als PDF teilen', 'Share chart as PDF'), () => berichtTeilen(context, app),
           icon: Icons.picture_as_pdf_outlined, key: const Key('berichtTeilen'));
       final lesen = knopf(tr('Lesen', 'Read'), () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => BerichtSeite(app: app)));
