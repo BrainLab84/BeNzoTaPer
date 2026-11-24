@@ -102,6 +102,15 @@ void main() {
 
   testWidgets('Beim Halten: Knopf da, Hinweis, danach Halten beendet', (t) async {
     final app = await stand(t);
+    // Stufe läuft seit 01.03. (14 Tage): bis zum letzten Stufentag, 14.03., alles eintragen.
+    for (var d = 10; d <= 13; d++) {
+      jetzt = DateTime.utc(2026, 3, d, 12);
+      app.auffrischen();
+      app.taper.addIntake(10, t: '08:00');
+    }
+    jetzt = DateTime.utc(2026, 3, 14, 12);
+    app.auffrischen();
+    await t.pumpAndSettle();
     await tippe(t, find.byKey(const Key('halten')));
     await tippe(t, find.text('Ohne Enddatum halten'));
     expect(app.taper.st.hold, isTrue);

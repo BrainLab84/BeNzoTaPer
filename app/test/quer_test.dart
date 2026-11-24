@@ -46,6 +46,7 @@ void main() {
 
   testWidgets('Halten: Plan-Karte und Fortschritt zeigen die Pause', (t) async {
     final app = await starte(t);
+    await zumStufenende(t, app);
     await tippe(t, find.byKey(const Key('halten')));
     await tippe(t, find.text('Ohne Enddatum halten'));
     expect(app.taper.st.hold, isTrue);
@@ -55,7 +56,7 @@ void main() {
     await reiter(t, 'Fortschritt');
     expect(imWeg(find.text('28.07.2026')), findsOneWidget, reason: 'voraussichtlich, auch beim Halten');
     final m = maler(t);
-    expect(m.tage.last.tag, '2026-04-09', reason: 'heute + 30 Tage');
+    expect(m.tage.last.tag, '2026-04-22', reason: 'heute + 30 Tage');
     expect(m.tage.where((x) => x.zukunft).every((x) => x.plan == 10), isTrue, reason: 'gehaltene Dosis');
 
     await reiter(t, 'Heute');

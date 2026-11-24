@@ -129,6 +129,9 @@ final zusaetzlichErlaubt = [
   RegExp(r'^du kannst jederzeit nachtragen'),
   RegExp(r'^einnahme$'),
   RegExp(r'^plan anpassen$'),
+  // Hinweis über „Dosis halten“ (geht erst am letzten Stufentag)
+  RegExp(r'^wenn die nächste stufe beginnt und du noch nicht bereit bist'),
+  RegExp(r'^beginnt morgen die nächste stufe und du bist noch nicht bereit'),
   RegExp(r'^notiz für heute gespeichert\. tipp auf den tag im kalender'),
   // Halten mit „voraussichtlich“ und mg
   RegExp(r'^dosis wird voraussichtlich gehalten bis \d+\.\d+\.\d{4} \(noch \d+ tage?\)\.$'),

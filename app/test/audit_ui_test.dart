@@ -143,7 +143,7 @@ Future<String> _pruefeAlles(WidgetTester t, AppState app, String grund) async {
   if (s.frz == null && !last && s.pend == null) {
     final alles = heute.join('\n');
     if (s.hold && s.holdUntil != null) {
-      final bis = addD(s.holdUntil!, -1);
+      final bis = ta.haltBis!;
       expect(alles, contains('gehalten bis ${dmy(bis)} (noch ${tage(dBetween(ta.today, s.holdUntil!))}).'),
           reason: 'Heute Halte-Ende. $grund');
       expect(soll.stufeAm(bis), s.stage, reason: 'letzter Haltetag noch gehalten. $grund');
@@ -273,7 +273,7 @@ void main() {
           if (ta.openDays().isNotEmpty) ta.markUnk();
           merke('Lücken');
         } else if (w < 55) {
-          if (!s.hold && !lastSt && s.frz == null) {
+          if (ta.haltenMoeglich) {
             ta.startHold(r.nextBool() ? null : 1 + r.nextInt(10));
             merke('Halten');
           } else if (s.hold) {

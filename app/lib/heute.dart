@@ -71,6 +71,7 @@ class _HeuteSeiteState extends State<HeuteSeite> {
         return;
       }
     }
+    if (!ta.haltenMoeglich) return;
     ta.startHold(n);
     setState(() {
       _halten = false;
@@ -82,7 +83,7 @@ class _HeuteSeiteState extends State<HeuteSeite> {
 
   void _haltenUmschalten() {
     if (!ta.st.hold) {
-      setState(() => _halten = true);
+      if (ta.haltenMoeglich) setState(() => _halten = true);
       return;
     }
     ta.stopHold();
@@ -294,10 +295,9 @@ class _HeuteSeiteState extends State<HeuteSeite> {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: F.ok)),
       ));
     } else if (!last && s.hold) {
-      // holdUntil = erster Tag mit der nächsten Dosis (so rechnen Kern, Kalender und Lob). Angezeigt wird der
-      // letzte gehaltene Tag – vorher stand hier der Tag danach (Kalender zeigte an dem
-      // Datum schon die nächste Stufe). Die Zahl „noch“ zählt heute mit.
-      final bis = s.holdUntil == null ? null : addD(s.holdUntil!, -1);
+      // Halten beginnt am letzten Stufentag: letzter Haltetag = [holdUntil], die nächste Stufe beginnt am
+      // Tag danach. Die Zahl „noch“ zählt die Tage nach heute.
+      final bis = ta.haltBis;
       final rest = s.holdUntil == null ? 0 : dBetween(today, s.holdUntil!);
       k.add(Padding(
         padding: const EdgeInsets.only(top: 8),
@@ -332,8 +332,21 @@ class _HeuteSeiteState extends State<HeuteSeite> {
       }, icon: Icons.tune, key: const Key('anpassen'));
       final halten = last
           ? null
-          : knopf(s.hold ? tr('Weiter abdosieren', 'Continue tapering') : tr('Dosis halten', 'Hold dose'), _haltenUmschalten,
+          : knopf(s.hold ? tr('Weiter abdosieren', 'Continue tapering') : tr('Dosis halten', 'Hold dose'),
+              (s.hold || ta.haltenMoeglich) ? _haltenUmschalten : null,
               icon: s.hold ? Icons.play_arrow : Icons.pause, key: const Key('halten'));
+      if (!last && !s.hold) {
+        final ab = ta.haltenAb;
+        k.add(Sub(
+            ta.haltenMoeglich
+                ? tr('Beginnt morgen die nächste Stufe und du bist noch nicht bereit? Dann kannst du hier die Dosis halten.',
+                    'Next step starts tomorrow and you are not ready yet? Then you can hold the dose here.')
+                : tr('Wenn die nächste Stufe beginnt und du noch nicht bereit bist, kannst du die Dosis halten – ab ${datum(ab!)} möglich.',
+                    'If the next step begins and you are not ready yet, you can hold the dose – possible from ${datum(ab)}.'),
+            oben: 0,
+            mitte: true));
+        k.add(const SizedBox(height: 8));
+      }
       k.add(LayoutBuilder(
         builder: (context, c) => halten == null
             ? Row(children: [Expanded(child: anpassen), const HilfeKnopf('time')])

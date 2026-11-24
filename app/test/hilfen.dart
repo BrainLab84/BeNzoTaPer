@@ -104,3 +104,17 @@ String aktuellerReiter(WidgetTester t) {
   return (nb.destinations[nb.selectedIndex] as NavigationDestination).label;
 }
 
+
+/// Bringt die App an den letzten Tag der ersten Stufe (alle Tage davor eingetragen): erst dort geht „Dosis halten“.
+/// Setzt voraus, dass [jetzt] am ersten Stufentag steht. Danach ist heute = erster Tag + 13.
+Future<void> zumStufenende(WidgetTester t, AppState app, {int tage = 14, double dosis = 10}) async {
+  final start = jetzt;
+  for (var d = 0; d < tage - 1; d++) {
+    jetzt = start.add(Duration(days: d));
+    app.auffrischen();
+    app.taper.addIntake(dosis, t: '08:00');
+  }
+  jetzt = start.add(Duration(days: tage - 1));
+  app.auffrischen();
+  await t.pumpAndSettle();
+}

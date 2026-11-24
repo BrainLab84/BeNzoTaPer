@@ -121,7 +121,7 @@ void main() {
             fail('Kein „Dosis halten“ auf Heute: Stufe ${ta.st.stage + 1}/${ta.st.plan.length}, '
                 '${_texte(find.byType(Scaffold).first).take(40).join(' | ')}\n${spur()}');
           }
-          if (!zielStufe && !ta.st.hold && x < .09) {
+          if (!zielStufe && !ta.st.hold && x < .6 && ta.haltenMoeglich) {
             await _tap(t, find.byKey(const Key('halten')));
             if (r.nextBool()) {
               await t.enterText(find.byKey(const Key('haltenTage')), '${2 + r.nextInt(6)}');

@@ -177,26 +177,42 @@ void main() {
     expect(txt('nur 2,5 mg über Plan (10 mg) · 2 Tage'), findsOneWidget);
   });
 
-  testWidgets('Halten 7 Tage: angezeigtes „bis“ ist der letzte Haltetag (Audit 20.11.)', (t) async {
+  testWidgets('Halten ausgegraut bis zum letzten Stufentag, dann aktiv (Hinweis darüber)', (t) async {
     final app = await starte(t);
+    final knopf = find.byKey(const Key('halten'));
+    expect(t.widget<OutlinedButton>(knopf).onPressed, isNull, reason: 'erster Tag: ausgegraut');
+    expect(txt('kannst du die Dosis halten – ab 23.03.2026 möglich.'), findsOneWidget);
+    await tippe(t, knopf);
+    expect(find.byKey(const Key('haltenTage')), findsNothing, reason: 'ausgegraut öffnet nichts');
+    await zumStufenende(t, app);
+    expect(t.widget<OutlinedButton>(knopf).onPressed, isNotNull, reason: 'letzter Stufentag: aktiv');
+    expect(txt('Beginnt morgen die nächste Stufe und du bist noch nicht bereit?'), findsOneWidget);
+  });
+
+  testWidgets('Halten 7 Tage am Stufenende: angezeigtes „bis“ ist der letzte Haltetag', (t) async {
+    final app = await starte(t);
+    await zumStufenende(t, app);
     await tippe(t, find.byKey(const Key('halten')));
     await t.enterText(find.byKey(const Key('haltenTage')), '7');
     await tippe(t, find.byKey(const Key('haltenStart')));
-    expect(txt('gehalten bis 16.03.2026 (noch 7 Tage)'), findsOneWidget);
-    jetzt = DateTime.utc(2026, 3, 16, 20);
+    expect(txt('gehalten bis 30.03.2026 (noch 7 Tage)'), findsOneWidget);
+    jetzt = DateTime.utc(2026, 3, 29, 20);
     app.auffrischen();
     await t.pumpAndSettle();
-    expect(app.taper.st.hold, isTrue, reason: '16.03. = letzter Haltetag');
-    expect(txt('gehalten bis 16.03.2026 (noch 1 Tag)'), findsOneWidget);
-    jetzt = DateTime.utc(2026, 3, 17, 8);
+    expect(app.taper.st.hold, isTrue, reason: '29.03. noch gehalten');
+    expect(txt('gehalten bis 30.03.2026 (noch 1 Tag)'), findsOneWidget);
+    jetzt = DateTime.utc(2026, 3, 30, 8);
     app.auffrischen();
     await t.pumpAndSettle();
-    expect(app.taper.st.hold, isFalse, reason: '17.03. = es geht weiter');
+    expect(app.taper.st.hold, isFalse, reason: '30.03. = Halten vorbei, Tag 14 der Stufe mit alter Dosis');
+    expect(app.taper.planAm('2026-03-30').plan, 10);
+    expect(app.taper.planAm('2026-03-31').plan, 9, reason: '31.03. = nächste Stufe');
     expect(txt('gehalten bis'), findsNothing);
   });
 
   testWidgets('Dosis halten mit Tagen, dann weiter abdosieren', (t) async {
     final app = await starte(t);
+    await zumStufenende(t, app);
     await tippe(t, find.byKey(const Key('halten')));
     expect(txt('Wie viele Tage willst du die Dosis halten?'), findsOneWidget);
     await t.enterText(find.byKey(const Key('haltenTage')), '0');
@@ -205,17 +221,18 @@ void main() {
     await t.enterText(find.byKey(const Key('haltenTage')), '7');
     await tippe(t, find.byKey(const Key('haltenStart')));
     expect(app.taper.st.hold, isTrue);
-    // letzter gehaltener Tag (10.–16.03. = 7 Tage); am 17.03. kommt die nächste Dosis.
-    expect(txt('Dosis wird voraussichtlich gehalten bis 16.03.2026 (noch 7 Tage).'), findsOneWidget);
+    // 7 Tage nach dem letzten Stufentag (24.–30.03.); am 31.03. kommt die nächste Dosis.
+    expect(txt('Dosis wird voraussichtlich gehalten bis 30.03.2026 (noch 7 Tage).'), findsOneWidget);
     expect(find.byKey(const Key('anpassen')), findsOneWidget, reason: 'Plan anpassen geht auch beim Halten');
     expect(find.text('Weiter abdosieren'), findsOneWidget);
     await tippe(t, find.byKey(const Key('halten')));
     expect(app.taper.st.hold, isFalse);
-    expect(txt('Nächste Stufe in 14 Tagen'), findsOneWidget);
+    expect(txt('Nächste Stufe morgen'), findsOneWidget);
   });
 
   testWidgets('Ohne Enddatum halten; Abbrechen', (t) async {
     final app = await starte(t);
+    await zumStufenende(t, app);
     await tippe(t, find.byKey(const Key('halten')));
     await tippe(t, find.text('Abbrechen'));
     expect(find.byKey(const Key('haltenTage')), findsNothing);

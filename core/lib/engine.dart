@@ -823,6 +823,31 @@ class Taper {
     if (ch) save();
   }
 
+  /// Letzter Tag der aktuellen Stufe – ab da geht „Dosis halten“. `null` in der letzten Stufe.
+  String? get haltenAb {
+    final a = s;
+    if (a == null || a.stage >= a.plan.length - 1) return null;
+    return addD(stageStart, need(a.stage) - 1);
+  }
+
+  /// „Dosis halten“ ist nur am letzten Tag einer Stufe möglich (statt der nächsten Stufe). Vorher rechnet
+  /// nichts mit einem Halten.
+  bool get haltenMoeglich {
+    final a = s;
+    final ab = haltenAb;
+    if (a == null || ab == null || a.hold || vorStart || a.frz != null) return false;
+    return today.compareTo(ab) >= 0;
+  }
+
+  /// Letzter Tag mit der gehaltenen Dosis (beim Halten mit Enddatum). Begann das Halten am letzten Stufentag,
+  /// ist das [holdUntil]; sonst der Tag davor (die Stufe läuft dann nach dem Halten weiter).
+  String? get haltBis {
+    final a = st;
+    if (!a.hold || a.holdUntil == null || a.holdSince == null) return null;
+    final amEnde = dBetween(stageStart, a.holdSince!) >= need(a.stage) - 1;
+    return amEnde ? a.holdUntil : addD(a.holdUntil!, -1);
+  }
+
   /// Dosis halten für [days] Tage (`null` = ohne Enddatum). Gibt `false` bei ungültiger Zahl.
   bool startHold(int? days) {
     final a = st;
