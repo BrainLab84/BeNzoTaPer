@@ -307,6 +307,17 @@ class _TagInhaltState extends State<TagInhalt> {
       w.add(const SizedBox(height: 12));
       w.add(guterTagKnopf(app, nd, heute: false));
     }
+    if (nd.compareTo(heute) > 0) {
+      // Zukünftiger Tag: nur die voraussichtliche Dosis, Eintragen geht erst an dem Tag.
+      final p = ta.projMap(nd).map[nd];
+      w.add(Text(
+          p == null
+              ? tr('Für diesen Tag ist noch nichts geplant.', 'Nothing is planned for this day yet.')
+              : tr('Voraussichtlich ${fz(p.v)} ${s.unit}. Eintragen geht ab diesem Tag.',
+                  'Expected ${fz(p.v)} ${s.unit}. You can log from that day on.'),
+          key: const Key('tagZukunft'),
+          style: const TextStyle(color: F.mu, height: 1.35)));
+    }
     // Ab hier: Notizen. Im Tag-Fenster (kurz) stehen sie oben, die Einnahmen klein darunter.
     final notizStart = w.length;
     if (nd.compareTo(heute) <= 0) {
@@ -314,7 +325,7 @@ class _TagInhaltState extends State<TagInhalt> {
       final hatNotiz = n != null && (n.text.trim().isNotEmpty || n.sym > 0);
       final nurLesen = widget.kurz && hatNotiz && !_bearbeiten;
       // Unter dem Kalender: eine gespeicherte Notiz wird nicht angezeigt, nur vermerkt.
-      // Lesen und Ändern über den Tag im Kalender (und im Notizbuch).
+      // Lesen und Ändern über den Tag im Kalender.
       final versteckt = !widget.kurz && hatNotiz;
       if (versteckt) {
         w.add(Container(

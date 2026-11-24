@@ -455,7 +455,7 @@ Future<void> tagFensterOeffnen(BuildContext context, AppState app, String tag) =
           listenable: app,
           builder: (c, _) {
             final today = app.taper.today;
-            final kopf = tag == today ? null : '${datum(tag)}${tag.compareTo(today) > 0 ? ' · Zukunft' : ''}';
+            final kopf = tag == today ? null : '${datum(tag)}${tag.compareTo(today) > 0 ? tr(' · Zukunft', ' · future') : ''}';
             return ListView(
               key: const Key('tagFenster'),
               controller: sc,

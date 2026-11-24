@@ -92,6 +92,10 @@ const erlaubt = <String>{
   'Laut Plan bei 8 mg ab',
   'Dosis wird gehalten bis 23.11. (4 Tage noch).',
   'Dosis wird gehalten bis 23.11. (7 Tage noch).',
+  // Geändert: Knopf heißt „Weiter abdosieren“, Nachsorge nennt „Notizen“ statt „Tagebuch“.
+  'Danach geht es automatisch weiter. Bist du früher bereit, drück auf Weiter. Der Plan verschiebt sich automatisch um die gehaltenen Tage nach hinten.',
+  'Wenn du bereit bist, weiter abzudosieren, drück auf Weiter. Der Plan verschiebt sich automatisch um die gehaltenen Tage nach hinten.',
+  'Nachwellen sind nach dem Absetzen nicht ungewöhnlich und klingen meist ab. Trag weiter ein, auch wenn du nichts genommen hast, dann bleibt auch ein Rückfall nachvollziehbar. Tagebuch, gute Tage und SOS bleiben für dich da.',
   // Gespeicherte Notiz unter dem Kalender nur noch vermerkt (lesbar über den Tag im Kalender).
   'Viel Stress',
   'Gespeichert',
@@ -127,7 +131,11 @@ final zusaetzlichErlaubt = [
   RegExp(r'^plan anpassen$'),
   RegExp(r'^notiz für heute gespeichert\. tipp auf den tag im kalender'),
   // Halten mit „voraussichtlich“ und mg
-  RegExp(r'^dosis wird voraussichtlich gehalten bis \d+\.\d+\.\d{4} \(\d+ tage? noch\)\.$'),
+  RegExp(r'^dosis wird voraussichtlich gehalten bis \d+\.\d+\.\d{4} \(noch \d+ tage?\)\.$'),
+  RegExp(r'^(danach geht es automatisch weiter\. bist du früher bereit|wenn du bereit bist), drück auf „weiter abdosieren“\. der plan verschiebt sich'),
+  // Zukünftiger Tag im Tag-Fenster: voraussichtliche Dosis statt leerem Fenster
+  RegExp(r'^voraussichtlich [\d,]+ mg\. eintragen geht ab diesem tag\.$'),
+  RegExp(r'^nachwellen sind nach dem absetzen .* notizen, gute tage und sos bleiben für dich da\.$'),
   RegExp(r'^dosis [\d,]+ mg gehalten – plan pausiert\.$'),
   // immer „voraussichtlich“ statt „Laut Plan … ab“ bzw. „Plan pausiert“
   RegExp(r'^voraussichtlich bei [\d,]+ mg: \d\d\.\d\d\.\d{4}( \(dosis wird gehalten\))?$'),

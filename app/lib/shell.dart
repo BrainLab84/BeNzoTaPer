@@ -285,7 +285,7 @@ class MehrSeite extends StatelessWidget {
               PinAbschnitt(app: app),
               ErinnerungAbschnitt(app: app),
               ListTile(
-                leading: const Icon(Icons.lock_outline),
+                leading: const Icon(Icons.save_outlined),
                 title: Text(tr('Sicherung speichern', 'Save backup')),
                 subtitle: Text(tr('Als Datei, mit Passwort verschlüsselt', 'As a file, encrypted with a password')),
                 trailing: const Icon(Icons.chevron_right),

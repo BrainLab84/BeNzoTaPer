@@ -272,8 +272,8 @@ class _VorratKarteState extends State<VorratKarte> {
           decoration: feldStil(),
           items: [
             DropdownMenuItem(value: 1, child: Text(tr('nur ganz', 'whole only'))),
-            DropdownMenuItem(value: 0.5, child: Text(tr('halbierbar', 'halvable'))),
-            DropdownMenuItem(value: 0.25, child: Text(tr('viertelbar', 'quarterable'))),
+            DropdownMenuItem(value: 0.5, child: Text(tr('halbierbar', 'can be halved'))),
+            DropdownMenuItem(value: 0.25, child: Text(tr('viertelbar', 'can be quartered'))),
           ],
           onChanged: (v) => setState(() => _teilbar = v ?? 1),
         ),

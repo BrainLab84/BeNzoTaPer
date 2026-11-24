@@ -648,7 +648,7 @@ class _PlanNeuSeiteState extends State<PlanNeuSeite> {
       w.add(_absatz(tr('Was die Zeichen und Knöpfe bedeuten, erklären die ?-Symbole und die Anleitung.', 'What the symbols and buttons mean is explained by the ? icons and the guide.')));
     }
     if (_gibtPlan) {
-      w.add(Sub(tr('Kalender und Tagebuch bleiben erhalten.', 'Calendar and diary are kept.'), oben: 16));
+      w.add(Sub(tr('Kalender und Notizen bleiben erhalten.', 'Calendar and notes are kept.'), oben: 16));
     }
     if (_gibtPlan) {
       w.add(Feldname(tr('Zum Speichern bitte eintippen: Ich bin mir sicher', 'To save, please type: I am sure')));

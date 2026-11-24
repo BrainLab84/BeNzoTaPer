@@ -131,6 +131,7 @@ void main() {
   });
   fall('09_tagfenster', (t) async {
     await start(t);
+    await t.scrollUntilVisible(find.byKey(const Key('tag-2026-11-17')), 300, scrollable: find.byType(Scrollable).first);
     await t.tap(find.byKey(const Key('tag-2026-11-17')));
     await t.pumpAndSettle();
     await shot(t, '09_tagfenster');

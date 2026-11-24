@@ -100,6 +100,7 @@ void main() {
 
     await tippe(t, find.byKey(const Key('tag-2026-03-20')));
     expect(find.text('20.03.2026 · Zukunft'), findsOneWidget);
+    expect(txt('Eintragen geht ab diesem Tag.'), findsOneWidget, reason: 'Zukunft: kein leeres Fenster');
     expect(find.descendant(of: find.byKey(const Key('tagFenster')), matching: txt('Befinden')), findsNothing);
     await tippe(t, find.byTooltip('Schließen'));
     expect(find.text('20.03.2026 · Zukunft'), findsNothing);

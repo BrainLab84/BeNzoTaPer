@@ -98,7 +98,7 @@ class _HeuteSeiteState extends State<HeuteSeite> {
         showDialog<void>(
           context: context,
           builder: (c) => AlertDialog(
-            content: Text(tr('Der Plan-Editor ist in dieser Testversion noch nicht eingebaut.', 'The plan editor is not included in this test version yet.')),
+            content: Text(tr('Die Änderung kann hier nicht geöffnet werden.', 'The change cannot be opened here.')),
             actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text('OK'))],
           ),
         );
@@ -222,8 +222,8 @@ class _HeuteSeiteState extends State<HeuteSeite> {
     ];
     if (left > 0) {
       k.add(Sub(
-          tr('Frühestens in ${(left / 3600000).ceil()} Stunden. Bis dahin gilt der bisherige Plan. „Dosis halten“ geht '
-          'jederzeit sofort.', 'Earliest in ${(left / 3600000).ceil()} hours. Until then the current plan applies. “Hold dose” works immediately at any time.'),
+          tr('Frühestens in ${stunden((left / 3600000).ceil())}. Bis dahin gilt der bisherige Plan. „Dosis halten“ geht '
+          'jederzeit sofort.', 'Earliest in ${stundenEn((left / 3600000).ceil())}. Until then the current plan applies. “Hold dose” works immediately at any time.'),
           oben: 6));
       k.add(const SizedBox(height: 8));
       k.add(knopf(tr('Verwerfen', 'Discard'), () {
@@ -304,15 +304,15 @@ class _HeuteSeiteState extends State<HeuteSeite> {
         child: IconText(
           Icons.pause,
           bis != null
-              ? tr('Dosis wird voraussichtlich gehalten bis ${datum(bis)} (${tage(rest)} noch).', 'Dose is expected to be held until ${datum(bis)} (${tage(rest)} left).')
+              ? tr('Dosis wird voraussichtlich gehalten bis ${datum(bis)} (noch ${tage(rest)}).', 'Dose is expected to be held until ${datum(bis)} (${tage(rest)} left).')
               : tr('Dosis wird gehalten – so lange du brauchst.', 'Dose is being held – as long as you need.'),
           farbe: F.warn,
           mitte: true,
         ),
       ));
       k.add(Sub(
-          tr('${bis != null ? 'Danach geht es automatisch weiter. Bist du früher bereit, drück auf Weiter.' : 'Wenn du bereit bist, weiter abzudosieren, drück auf Weiter.'}'
-          ' Der Plan verschiebt sich automatisch um die gehaltenen Tage nach hinten.', '${bis != null ? "After that it continues automatically. If you are ready earlier, tap Continue." : "When you are ready to keep tapering, tap Continue."} The plan shifts back automatically by the days held.'),
+          tr('${bis != null ? 'Danach geht es automatisch weiter. Bist du früher bereit, drück auf „Weiter abdosieren“.' : 'Wenn du bereit bist, drück auf „Weiter abdosieren“.'}'
+          ' Der Plan verschiebt sich automatisch um die gehaltenen Tage nach hinten.', '${bis != null ? "After that it continues automatically. If you are ready earlier, tap “Continue tapering”." : "When you are ready, tap “Continue tapering”."} The plan shifts back automatically by the days held.'),
           oben: 4,
           mitte: true));
     } else if (!last) {
@@ -499,10 +499,13 @@ class _HeuteSeiteState extends State<HeuteSeite> {
         ])),
         Sub(
             tr('Nachwellen sind nach dem Absetzen nicht ungewöhnlich und klingen meist ab. Trag weiter ein, auch wenn du '
-            'nichts genommen hast, dann bleibt auch ein Rückfall nachvollziehbar. Tagebuch, gute Tage und SOS bleiben '
-            'für dich da.', 'Withdrawal waves after stopping are not unusual and usually fade. Keep logging even if you took nothing, so a relapse stays traceable. Diary, good days and SOS remain here for you.'),
+            'nichts genommen hast, dann bleibt auch ein Rückfall nachvollziehbar. Notizen, gute Tage und SOS bleiben '
+            'für dich da.', 'Withdrawal waves after stopping are not unusual and usually fade. Keep logging even if you took nothing, so a relapse stays traceable. Notes, good days and SOS remain here for you.'),
             oben: 6),
       ],
     );
   }
 }
+
+String stunden(int n) => '$n ${n == 1 ? 'Stunde' : 'Stunden'}';
+String stundenEn(int n) => '$n ${n == 1 ? 'hour' : 'hours'}';

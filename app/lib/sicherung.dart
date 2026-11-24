@@ -193,8 +193,8 @@ class _SicherungSpeichernSeiteState extends State<SicherungSpeichernSeite> {
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Text(
-                tr('Dann kann jeder, der die Datei bekommt, deinen Plan und dein Tagebuch lesen. '
-                'Sinnvoll z. B., wenn du sie deinem Arzt geben willst.', 'Then anyone who gets the file can read your plan and diary. Useful, for example, if you want to give it to your doctor.'),
+                tr('Dann kann jeder, der die Datei bekommt, alles darin lesen – auch Notizen und Notizbuch. '
+                'Für den Arzt gibt es im Fortschritt den Verlaufsbericht ohne Notizen.', 'Then anyone who gets the file can read everything in it – including notes and notebook. For your doctor, Progress has the report without notes.'),
                 style: TextStyle(color: th.colorScheme.onErrorContainer),
               ),
             ),
