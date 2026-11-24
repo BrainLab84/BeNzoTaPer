@@ -135,13 +135,11 @@ Widget guterTagKnopf(AppState app, String k, {required bool heute}) {
   );
 }
 
-const _gesichter = [
-  Icons.sentiment_very_satisfied,
-  Icons.sentiment_satisfied,
-  Icons.sentiment_neutral,
-  Icons.sentiment_dissatisfied,
-  Icons.sentiment_very_dissatisfied,
-];
+/// Gesicht [i] (0 = sehr gut … 4 = sehr schlecht) als Bild.
+Widget _gesicht(int i, {double groesse = 30, bool blass = false}) => Opacity(
+      opacity: blass ? 0.45 : 1,
+      child: Image.asset('assets/smileys/s${i + 1}.png', width: groesse, height: groesse),
+    );
 
 /// Inhalt für einen Tag. Für heute: nur Befinden und Notiz.
 class TagInhalt extends StatefulWidget {
@@ -358,7 +356,7 @@ class _TagInhaltState extends State<TagInhalt> {
           ),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             if (n.sym > 0) ...[
-              Icon(_gesichter[n.sym - 1], size: 26, color: F.ac2),
+              _gesicht(n.sym - 1, groesse: 32),
               const SizedBox(width: 10),
             ],
             Expanded(
@@ -397,7 +395,7 @@ class _TagInhaltState extends State<TagInhalt> {
                     _entwurf.sym = _entwurf.sym == i + 1 ? 0 : i + 1;
                     _gespeichert = false;
                   }),
-                  child: Icon(_gesichter[i], size: 26),
+                  child: _gesicht(i, blass: _entwurf.sym != 0 && _entwurf.sym != i + 1),
                 ),
               ),
             ),
