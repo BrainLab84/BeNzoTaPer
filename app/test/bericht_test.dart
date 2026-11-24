@@ -88,7 +88,7 @@ void main() {
     expect(find.byKey(const Key('berichtLesen')), findsNothing);
   });
 
-  test('Datumszeile im Bericht: nichts überdeckt sich (Audit 20.11.)', () {
+  test('Datumszeile im Bericht: nichts überdeckt sich', () {
     // Plan seit gestern: „heute“ direkt neben dem Start → Start weicht
     expect(berichtDatumPlatz((0, 30), (900, 940), (5, 80)), (start: false, ende: true));
     // heute kurz vor dem Ende → Ende weicht

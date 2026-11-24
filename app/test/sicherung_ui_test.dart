@@ -176,7 +176,7 @@ void main() {
     expect(app.taper.s!.plan.first, 10);
   });
 
-  testWidgets('Sicherung aus neuerer Version: Meldung sofort, keine Ersetzen-Frage (Audit 20.11.)', (t) async {
+  testWidgets('Sicherung aus neuerer Version: Meldung sofort, keine Ersetzen-Frage', (t) async {
     final d = FakeDateien()
       ..zumOeffnen = jsonEncode({'format': sicherungFormat, 'v': sicherungVersion + 1, 'kdf': 'argon2id'});
     final app = await start(t, d);

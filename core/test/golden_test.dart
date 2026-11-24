@@ -10,9 +10,9 @@ import 'sim.dart';
 double _d(Object? x) => (x as num).toDouble();
 
 /// Tage, deren Eintrag angelegt wurde, während ein älterer Tag offen war (Anzeigen pausiert). Die Referenz
-/// speicherte dafür die eingefrorene Stufe; seit v0.2.2 speichert der Kern die echte Planposition (Prüfer-
-/// befund: sonst fehlt „Kurz innehalten“ und die Reichweite ist falsch). Für diese Tage werden Plan, Stufe
-/// und Bewertung nicht mit der Referenz verglichen; eigene Prüfung: vorrat_test, pruefer_befunde_test.
+/// speicherte dafür die eingefrorene Stufe; seit v0.2.2 speichert der Kern die echte Planposition (Regressionsfall:
+/// sonst fehlt „Kurz innehalten“ und die Reichweite ist falsch). Für diese Tage werden Plan, Stufe
+/// und Bewertung nicht mit der Referenz verglichen; eigene Prüfung: vorrat_test, vorrat_regression_test.
 final eingefroren = <String>{};
 
 void exec(Sim w, List op, List<Map<String, dynamic>> snaps, int Function() nextSnap,
@@ -261,7 +261,7 @@ void main() {
             // Ebenso: Kalender-Prognose läuft nach dem Halte-Ende laut Plan weiter.
             want['proj'] = got['proj'] = null;
           }
-          // Bewusst anders seit v0.2.2 (Doc 28/29): Tage ohne Eintrag ziehen die geplante Dosis vom Vorrat ab,
+          // Bewusst anders seit v0.2.2: Tage ohne Eintrag ziehen die geplante Dosis vom Vorrat ab,
           // und die Reichweite rechnet mit der echten Planposition, auch wenn offene Tage die Anzeigen pausieren.
           // Die Referenz kannte beides nicht. Eigene Prüfung: vorrat_test, longsim_test.
           if ((w.e.stockInfo()?.geschaetzt ?? 0) > 0) {

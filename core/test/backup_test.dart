@@ -117,7 +117,7 @@ void main() {
     expect(await sicherungEntschluesseln(_eingefroren, 'passwort1'), '{"plan":[10]}');
   });
 
-  test('Vorab-Prüfung ohne Passwort (Audit 20.11.): kaputt/zu neu vor der Ersetzen-Rückfrage erkennen', () async {
+  test('Vorab-Prüfung ohne Passwort: kaputt/zu neu vor der Ersetzen-Rückfrage erkennen', () async {
     final t = Taper(clock: () => DateTime.utc(2026, 3, 10, 12));
     expect(t.setup(dose: 10, step: 1, minStep: .5, days: 14, goal: 0), isNull);
     final klar = jsonEncode(t.exportJson());

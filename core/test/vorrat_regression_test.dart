@@ -1,4 +1,4 @@
-// Befunde der unabhängigen Vorrat-Prüfungen als feste Regressionstests.
+// Regressionstests zur Vorratsrechnung: Fälle aus unabhängigen Nachrechnungen, als feste Tests.
 //
 // Grundsatz: Eine Planänderung, ein Halten oder offene Tage ändern nie rückwirkend, mit welcher Dosis ein
 // vergangener Tag ohne Eintrag im Vorrat geschätzt wird. Ab heute gilt die echte Planposition.

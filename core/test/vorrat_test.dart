@@ -1,4 +1,4 @@
-// Vorratsrechnung (Doc 28/29): feste Referenzfälle und Abläufe, jeweils mit der Rechnung von Hand.
+// Vorratsrechnung: feste Referenzfälle und Abläufe, jeweils mit der Rechnung von Hand.
 // Regeln: Rest = gezählt − eingetragene Einnahmen nach dem Zählen − geplante Dosis jedes vergangenen Tages
 // ohne Eintrag (seit dem Zähltag). Reichweite (inkl. heute) = heute offener Rest, dann Tag für Tag laut Plan
 // ab der echten Planposition; Halten mit Enddatum endet dort; 0 mg = „bis Planende“.
@@ -26,7 +26,7 @@ void main() {
     expect(t.applyPlan(e).applied, isTrue);
   }
 
-  // Referenzplan Doc 29: Diazepam 20 → 0 mg.
+  // Referenzplan: Diazepam 20 → 0 mg.
   const referenz = [
     [20, 2],
     [15, 14],

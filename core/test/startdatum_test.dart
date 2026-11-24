@@ -15,7 +15,7 @@ void main() {
     t.refresh();
   }
 
-  // Referenzplan aus Doc 29: Diazepam 20 → 0 mg.
+  // Referenzplan: Diazepam 20 → 0 mg.
   List<EditRow> referenz() => [
         EditRow(20, 2),
         EditRow(15, 14),
