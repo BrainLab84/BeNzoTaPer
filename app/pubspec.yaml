@@ -1,7 +1,7 @@
 name: tapering_buddy
 description: BeNzoTaPer – native Android-App.
 publish_to: 'none'
-version: 0.2.3+123
+version: 0.2.4+124
 
 environment:
   sdk: '>=3.5.0 <4.0.0'

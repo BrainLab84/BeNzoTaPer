@@ -1,0 +1,2 @@
+• Durchschnitte mit 2 Nachkommastellen: auch 0,01-mg-Schritte sichtbar
+• Neu: Monatsdurchschnitt (mit Vormonat) im Kalender

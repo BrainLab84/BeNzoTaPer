@@ -321,6 +321,27 @@ class Taper {
     return out;
   }
 
+  /// Monats-Ø: Durchschnitt aller eingetragenen Tage im Kalendermonat von [k] (bis heute).
+  /// [zurueck] = 1 liefert den Vormonat (ganzer Monat). Ein angefangener heutiger Tag zählt nicht, ein ? nie als 0 mg.
+  WeekAvg monatsSchnitt([String? k, int zurueck = 0]) {
+    final t = k ?? today;
+    var j = int.parse(t.substring(0, 4));
+    var m = int.parse(t.substring(5, 7)) - zurueck;
+    while (m < 1) {
+      m += 12;
+      j--;
+    }
+    final pre = '$j-${m < 10 ? '0$m' : '$m'}-';
+    var sum = 0.0;
+    var n = 0;
+    st.log.forEach((kk, e) {
+      if (!kk.startsWith(pre) || kk.compareTo(t) > 0 || partToday(kk, e)) return;
+      sum += e.dose;
+      n++;
+    });
+    return WeekAvg(n > 0 ? sum / n : null, n);
+  }
+
   /// Live-Ø: Durchschnitt aller eingetragenen Tage der aktuellen Stufe (bis heute). Zählt die Tage, die
   /// der aktuellen Stufe zugeordnet sind – nach einem Halten bleiben sie drin. Ein angefangener heutiger Tag
   /// zählt erst, wenn er komplett (oder über Plan) ist; ein ? nie als 0 mg.

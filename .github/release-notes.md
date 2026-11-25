@@ -6,7 +6,8 @@ BeNzoTaPer is an offline Android app that helps you follow and document a taperi
 
 ## 🛠 New in this version
 
-Translation fix: date and time pickers now appear in the selected app language.
+- Averages (weekly, live, history) now show 2 decimals, so even 0.01 mg steps are visible
+- New: monthly average for the whole calendar month, with last month for comparison
 
 ## 📲 Installation
 
@@ -24,7 +25,7 @@ Updates install over the existing signed app. Your data is kept.
 ## ✨ Features
 
 - ☀️ “Today” start screen with a single “Intake” button (time added automatically)
-- 📅 Calendar with weekly and live averages
+- 📅 Calendar with weekly, monthly and live averages
 - 📋 Create or import a tapering plan (PDF, Word, text), selectable start date
 - 🔬 Free step size and interval, including daily microtapering (down to 0.001 mg)
 - ⏸️ Hold a dose, adjust the plan from today
@@ -66,7 +67,8 @@ BeNzoTaPer ist eine Offline-App für Android zur Begleitung und Dokumentation ei
 
 ## 🛠 Neu in dieser Version
 
-Translation fix: Datums- und Uhrzeit-Auswahl erscheinen jetzt in der gewählten App-Sprache.
+- Durchschnitte (Woche, Live, Verlauf) jetzt mit 2 Nachkommastellen, damit auch 0,01-mg-Schritte sichtbar sind
+- Neu: Monatsdurchschnitt für den ganzen Kalendermonat, mit Vormonat zum Vergleich
 
 ## 📲 Installation
 
@@ -84,7 +86,7 @@ Updates werden über die bestehende, signierte Installation installiert. Die Dat
 ## ✨ Funktionen
 
 - ☀️ Startseite „Heute“ mit einem Knopf „Einnahme“ (Uhrzeit automatisch)
-- 📅 Kalender mit Wochen- und Live-Durchschnitt
+- 📅 Kalender mit Wochen-, Monats- und Live-Durchschnitt
 - 📋 Abdosierungsplan erstellen oder importieren (PDF, Word, Text), Startdatum wählbar
 - ⏸️ Dosis halten, Plan ab heute anpassen
 - 💊 Tablettenvorrat, der auch Tage ohne Eintrag mitrechnet, mit Warnhinweisen bei 14 und 7 Tagen

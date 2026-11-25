@@ -1,0 +1,2 @@
+• Averages with 2 decimals: even 0.01 mg steps are visible
+• New: monthly average (with last month) in the calendar

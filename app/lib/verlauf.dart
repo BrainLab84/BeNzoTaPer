@@ -127,7 +127,7 @@ class VerlaufSeite extends StatelessWidget {
         const SizedBox(height: 10),
         Wrap(spacing: 14, runSpacing: 4, children: [
           _legende(const _Strich(F.ac2, false),
-              tr('Ø 7 Tage${zuletzt != null ? ' · zuletzt ${fz(round1(zuletzt))} ${s.unit}' : ''}', 'Avg. 7 days${zuletzt != null ? " · latest ${fz(round1(zuletzt))} ${s.unit}" : ""}')),
+              tr('Ø 7 Tage${zuletzt != null ? ' · zuletzt ${fz(round2(zuletzt))} ${s.unit}' : ''}', 'Avg. 7 days${zuletzt != null ? " · latest ${fz(round2(zuletzt))} ${s.unit}" : ""}')),
           _legende(const _Strich(F.mu, true), tr('Plan', 'Plan')),
           _legende(
               Container(width: 8, height: 8, decoration: const BoxDecoration(color: F.bad, shape: BoxShape.circle)),

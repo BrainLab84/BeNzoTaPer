@@ -32,9 +32,9 @@ class WochenschnittKarte extends StatelessWidget {
     if (a == null) {
       k.add(Sub(tr('In dieser Stufe noch kein abgeschlossener Tag.', 'No completed day in this step yet.')));
     } else {
-      final df = round1(a - plan);
+      final df = round2(a - plan);
       k.add(Wrap(crossAxisAlignment: WrapCrossAlignment.end, spacing: 10, children: [
-        Text('Ø ${fz(round1(a))}', key: const Key('liveSchnitt'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+        Text('Ø ${fz(round2(a))}', key: const Key('liveSchnitt'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
         Padding(padding: const EdgeInsets.only(bottom: 5), child: Text(tr('${s.unit} / Tag', '${s.unit} / day'))),
       ]));
       k.add(Padding(
@@ -52,7 +52,7 @@ class WochenschnittKarte extends StatelessWidget {
           ),
         ),
       ));
-      final zumPlan = df.abs() < 0.05
+      final zumPlan = df.abs() < 0.005
           ? tr('genau im Plan (${fz(plan)} ${s.unit})', 'exactly on plan (${fz(plan)} ${s.unit})')
           : (df > 0
               ? tr('nur ${fz(df)} ${s.unit} über Plan (${fz(plan)} ${s.unit})', 'only ${fz(df)} ${s.unit} above plan (${fz(plan)} ${s.unit})')
@@ -70,6 +70,20 @@ class WochenschnittKarte extends StatelessWidget {
         border: Border.all(color: F.acRand),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: k),
+    );
+  }
+
+  // Monats-Ø: ganzer Kalendermonat, dazu der Vormonat zum Vergleich.
+  Widget _monat(Taper ta, String today) {
+    final s = ta.st;
+    final m0 = ta.monatsSchnitt(today);
+    final m1 = ta.monatsSchnitt(today, 1);
+    final dieser = m0.avg == null ? '–' : '${fz(round2(m0.avg!))} ${s.unit}';
+    final vor = m1.avg == null ? '' : tr(' · Vormonat ${fz(round2(m1.avg!))} ${s.unit}', ' · last month ${fz(round2(m1.avg!))} ${s.unit}');
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 10),
+      child: Text(tr('Monats-Ø $dieser$vor', 'Monthly avg. $dieser$vor'),
+          key: const Key('monatsschnitt'), style: const TextStyle(fontWeight: FontWeight.w600)),
     );
   }
 
@@ -93,7 +107,7 @@ class WochenschnittKarte extends StatelessWidget {
     } else {
       // Wrap statt Row: bei großer Schrift auf schmalen Handys rutscht „mg / Tag“ in die nächste Zeile.
       k.add(Wrap(crossAxisAlignment: WrapCrossAlignment.end, spacing: 10, children: [
-        Text('Ø ${fz(round1(cur))}',
+        Text('Ø ${fz(round2(cur))}',
             key: const Key('wochenschnitt'), style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w700)),
         Padding(padding: const EdgeInsets.only(bottom: 7), child: Text(tr('${s.unit} / Tag', '${s.unit} / day'))),
       ]));
@@ -103,7 +117,7 @@ class WochenschnittKarte extends StatelessWidget {
         k.add(Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-              tr('${df < 0 ? '↓ ' : df > 0 ? '↑ ' : '→ '}${fz(round1(df.abs()))} ${s.unit} zur Vorwoche', '${df < 0 ? "↓ " : df > 0 ? "↑ " : "→ "}${fz(round1(df.abs()))} ${s.unit} vs. last week'),
+              tr('${df < 0 ? '↓ ' : df > 0 ? '↑ ' : '→ '}${fz(round2(df.abs()))} ${s.unit} zur Vorwoche', '${df < 0 ? "↓ " : df > 0 ? "↑ " : "→ "}${fz(round2(df.abs()))} ${s.unit} vs. last week'),
               style: TextStyle(fontWeight: FontWeight.w700, color: df < 0 ? F.ok : F.mu)),
         ));
       }
@@ -133,12 +147,13 @@ class WochenschnittKarte extends StatelessWidget {
             ),
             SizedBox(
               width: 56,
-              child: Text(a == null ? '–' : fz(round1(a)),
+              child: Text(a == null ? '–' : fz(round2(a)),
                   textAlign: TextAlign.right, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
             ),
           ]),
         ));
       }
+      k.add(_monat(ta, today));
       final qc = ta.qCount(today);
       k.add(Text.rich(TextSpan(style: const TextStyle(color: F.mu, fontSize: 14), children: [
         TextSpan(text: tr('Ø der eingetragenen Tage', 'Avg. of the logged days')),

@@ -75,7 +75,7 @@ class _HeuteEintragenState extends State<HeuteEintragen> {
         final a0 = wk[0].avg, a1 = wk[1].avg;
         if (a0 != null && a1 != null && a0 < a1) {
           k.add(Sub(
-              tr('Wochen-Ø trotzdem unter der Vorwoche (${fz(round1(a0))} statt ${fz(round1(a1))} ${s.unit}). $tmT ${s.unit}.', 'Weekly avg. still below last week (${fz(round1(a0))} instead of ${fz(round1(a1))} ${s.unit}). $tmT ${s.unit}.'),
+              tr('Wochen-Ø trotzdem unter der Vorwoche (${fz(round2(a0))} statt ${fz(round2(a1))} ${s.unit}). $tmT ${s.unit}.', 'Weekly avg. still below last week (${fz(round2(a0))} instead of ${fz(round2(a1))} ${s.unit}). $tmT ${s.unit}.'),
               oben: 6));
         } else {
           k.add(Sub(tr('$tmT ${s.unit}. Ein Tag ändert den Wochen-Ø nur wenig.', '$tmT ${s.unit}. One day changes the weekly avg. only slightly.'), oben: 6));

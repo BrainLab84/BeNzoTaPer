@@ -12,6 +12,9 @@ double jsRound(double x) {
 /// Auf 3 Nachkommastellen runden .
 double round3(double x) => jsRound(x * 1000) / 1000;
 
+/// Auf 2 Nachkommastellen runden (Durchschnitte, damit 0,01-mg-Schritte sichtbar sind).
+double round2(double x) => jsRound(x * 100) / 100;
+
 /// Auf 1 Nachkommastelle runden .
 double round1(double x) => jsRound(x * 10) / 10;
 

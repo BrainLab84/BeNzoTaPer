@@ -221,7 +221,7 @@ Future<Uint8List> logbuchPdf(AppState app) async {
         h(tr('Wochen-Durchschnitt', 'Weekly average')),
         for (final w in b.wochen)
           z('${datum(w.von)} - ${datum(w.bis)}:  '
-              '${w.avg == null ? '-' : 'Ø ${fz(round1(w.avg!))} ${s.unit}'}  ${tr('(${w.n} Tage eingetragen)', '(${w.n} days logged)')}'),
+              '${w.avg == null ? '-' : 'Ø ${fz(round2(w.avg!))} ${s.unit}'}  ${tr('(${w.n} Tage eingetragen)', '(${w.n} days logged)')}'),
       ],
       h(tr('Tagesprotokoll', 'Daily log')),
       if (b.tage.isEmpty) z(tr('Noch keine Tage.', 'No days yet.')),
@@ -299,7 +299,7 @@ class LogbuchSeite extends StatelessWidget {
                 h(tr('Wochen-Durchschnitt', 'Weekly average')),
                 for (final w in b.wochen)
                   z('${datum(w.von)} – ${datum(w.bis)}:  '
-                      '${w.avg == null ? '–' : 'Ø ${fz(round1(w.avg!))} ${s.unit}'}  ${tr('(${w.n} Tage eingetragen)', '(${w.n} days logged)')}'),
+                      '${w.avg == null ? '–' : 'Ø ${fz(round2(w.avg!))} ${s.unit}'}  ${tr('(${w.n} Tage eingetragen)', '(${w.n} days logged)')}'),
               ],
               h(tr('Tagesprotokoll', 'Daily log')),
               if (b.tage.isEmpty) z(tr('Noch keine Tage.', 'No days yet.')),

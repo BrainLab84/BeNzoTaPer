@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tapering_buddy/app_state.dart';
+import 'package:tapering_core/tapering_core.dart' show fmt, round1;
 import 'package:tapering_buddy/heute.dart';
 import 'package:tapering_buddy/kalender.dart';
 import 'package:tapering_buddy/main.dart';
@@ -26,7 +27,13 @@ String mitJahr(String s, DateTime jetzt) => s.replaceAllMapped(RegExp(r'(?<![\d.
       return '${t.toString().padLeft(2, '0')}.${mo.toString().padLeft(2, '0')}.$j';
     });
 
-String norm(String s) => s.replaceAll(' ', ' ').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+String norm(String s) => zehntel(s).replaceAll(' ', ' ').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+
+/// Die Referenz zeigt Durchschnitte mit 1 Nachkommastelle, die App jetzt mit 2. Für den Vergleich werden
+/// Zahlen mit genau 2 Nachkommastellen auf 1 Stelle gerundet (die Referenz rundete den ungerundeten Wert,
+/// daher auf beiden Seiten nur bis auf eine Stelle genau verglichen).
+String zehntel(String s) => s.replaceAllMapped(RegExp(r'(?<![\d,])(\d+),(\d\d)(?![\d,])'),
+    (m) => fmt(round1(double.parse('${m[1]}.${m[2]}'))));
 
 /// Texte unter [wurzel] – ohne die neue Startkarte oben (Begrüßung, Plan erstellen/importieren),
 /// die es in den Referenzdaten nicht gibt.
@@ -116,6 +123,8 @@ final erlaubtMuster = [
 /// Was die neue App zusätzlich zeigen darf: Feldinhalte (Platzhalter, Uhrzeit, Auswahl),
 /// die in der Referenz als Attribut statt als Text stehen.
 final zusaetzlichErlaubt = [
+  // Neu: Monats-Durchschnitt in der Wochen-Karte.
+  RegExp(r'^monats-ø '),
   RegExp(r'^z\. b\. [\d,]+$'),
   RegExp(r'^\d\d:\d\d$'),
   RegExp(r'^andere menge$'),

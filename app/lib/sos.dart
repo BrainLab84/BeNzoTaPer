@@ -126,8 +126,8 @@ class _SosSeiteState extends State<SosSeite> with SingleTickerProviderStateMixin
         Text(
             tr('Stufe ${s.stage + 1} von ${s.plan.length} · heute ${fz(s.plan[s.stage])} statt ${fz(s.plan[0])} ${s.unit}', 'Step ${s.stage + 1} of ${s.plan.length} · today ${fz(s.plan[s.stage])} instead of ${fz(s.plan[0])} ${s.unit}')),
         if (wk[0].avg != null)
-          Text(tr('Wochen-Ø ${fz(round1(wk[0].avg!))} ${s.unit}'
-              '${wk[1].avg != null && wk[0].avg! < wk[1].avg! ? ' – unter der Vorwoche' : ''}', 'Weekly avg. ${fz(round1(wk[0].avg!))} ${s.unit}${wk[1].avg != null && wk[0].avg! < wk[1].avg! ? " – below last week" : ""}')),
+          Text(tr('Wochen-Ø ${fz(round2(wk[0].avg!))} ${s.unit}'
+              '${wk[1].avg != null && wk[0].avg! < wk[1].avg! ? ' – unter der Vorwoche' : ''}', 'Weekly avg. ${fz(round2(wk[0].avg!))} ${s.unit}${wk[1].avg != null && wk[0].avg! < wk[1].avg! ? " – below last week" : ""}')),
         if (s.sosN > 0) Text(tr('${s.sosN} Welle${s.sosN == 1 ? '' : 'n'} schon ausgesessen', '${s.sosN} ${s.sosN == 1 ? "wave" : "waves"} already ridden out')),
       ]));
     }

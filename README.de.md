@@ -51,7 +51,7 @@ BeNzoTaPer hält dich auf deinem Reduktionsplan auf Linie: Er zeigt jeden Tag, w
 - Monatsansicht mit Häkchen für jeden Tag im Plan, Zahlen für mehr Genommenes, die geplante Dosis an kommenden Tagen, **?** für Tage ohne Eintrag, einem Strich bei jeder neuen Stufe, einer Sonne für gute Tage und einem Punkt für Notizen.
 - **Voraussichtlich bei 0 mg: TT.MM.JJJJ.** Das Datum rechnet sich jeden Tag neu, denn ein fester Termin setzt nur unter Druck.
 - Tag antippen: nachtragen (bis 7 Tage zurück) oder eine Notiz schreiben.
-- **Wochen-Durchschnitt** der letzten 4 Wochen und ein **Live-Durchschnitt seit Stufenbeginn**, der sich mit jedem Eintrag sofort ändert. Der Durchschnitt zeigt, wie wenig ein einzelner Ausrutscher am Gesamtbild ändert.
+- **Wochen-Durchschnitt** der letzten 4 Wochen, ein **Monats-Durchschnitt** für den ganzen Kalendermonat (mit Vormonat zum Vergleich) und ein **Live-Durchschnitt seit Stufenbeginn**, der sich mit jedem Eintrag sofort ändert. Alle Durchschnitte zeigen 2 Nachkommastellen, damit auch 0,01-mg-Schritte sichtbar sind. Der Durchschnitt zeigt, wie wenig ein einzelner Ausrutscher am Gesamtbild ändert.
 - **Notizen für heute** mit Smileys für das Befinden. Gedacht für Mustererkennung im Nachhinein (Koffein, Vapen, neue Medikamente …), nicht als Symptomtagebuch.
 
 ### Plan
@@ -170,7 +170,7 @@ Mehr dazu in `core/README.md` und `tools/README.md`.
 - Weitere Workflows: `core.yml` und `flutter.yml` (Analyse + Tests), `apk-flutter.yml` (Test-APK).
 
 ### App-ID
-`de.tapering.buddy` · Version 0.2.3
+`de.tapering.buddy` · Version 0.2.4
 
 ### Lizenz
 [GPL-3.0](LICENSE). Du darfst den Code nutzen, ändern und weitergeben, solange deine Version ebenfalls unter der GPL-3.0 offen bleibt.

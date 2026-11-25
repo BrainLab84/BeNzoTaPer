@@ -52,7 +52,7 @@ BeNzoTaPer helps you stay on track with your reduction plan: it shows which dose
 - Month view with ticks for every day on plan, numbers when more was taken, the planned dose on upcoming days, **?** for days without an entry, a line at each new step, a sun for good days and a dot for notes.
 - **Expected at 0 mg: DD/MM/YYYY.** The date is recalculated every day, because a fixed deadline only creates pressure.
 - Tap a day: fill it in (up to 7 days back) or write a note.
-- **Weekly average** of the last 4 weeks and a **live average since the step began** that changes with every entry. The average shows how little a single slip changes the big picture.
+- **Weekly average** of the last 4 weeks, a **monthly average** for the whole calendar month (with last month for comparison) and a **live average since the step began** that changes with every entry. All averages show 2 decimals, so even 0.01 mg steps are visible. The average shows how little a single slip changes the big picture.
 - **Notes for today** with smileys for how you feel. Meant for spotting patterns later (caffeine, vaping, new medication …), not as a symptom diary.
 
 ### Plan
@@ -171,7 +171,7 @@ More in `core/README.md` and `tools/README.md` (German).
 - Other workflows: `core.yml` and `flutter.yml` (analysis + tests), `apk-flutter.yml` (test APK).
 
 ### App ID
-`de.tapering.buddy` · Version 0.2.3
+`de.tapering.buddy` · Version 0.2.4
 
 ### License
 [GPL-3.0](LICENSE). You may use, change and share the code as long as your version stays open under the GPL-3.0 as well.
