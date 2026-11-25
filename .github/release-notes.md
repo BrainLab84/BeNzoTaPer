@@ -77,7 +77,7 @@ Unter **Assets** die passende APK herunterladen und auf dem Android-Gerät insta
 
 ### Automatische Updates
 
-Automatische Updates können über **Obtainium** eingerichtet werden. Eine Anleitung dazu befindet sich in der README.
+Automatische Updates können über **Obtainium** eingerichtet werden. Eine Anleitung dazu befindet sich in der [deutschen README](https://github.com/BrainLab84/BeNzoTaPer/blob/main/README.de.md).
 
 Updates werden über die bestehende, signierte Installation installiert. Die Daten bleiben dabei erhalten.
 

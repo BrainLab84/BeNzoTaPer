@@ -1,198 +1,179 @@
 # BeNzoTaPer
 
-**Begleiter zum Abdosieren von Benzodiazepinen – für Android, offline, ohne Konto.**
+**🇬🇧 English** · [🇩🇪 Deutsch](README.de.md)
 
-*Die App gibt es auf Deutsch und Englisch (Sprachwahl beim ersten Start, später unter „Mehr“). The app is available in German and English – you choose the language when you first open it.*
+**A companion for tapering off benzodiazepines – for Android, offline, no account.**
 
-BeNzoTaPer hält dich auf deinem Reduktionsplan auf Linie: Er zeigt jeden Tag, welche Dosis dran ist, zählt die geschafften Tage, passt den Plan an, wenn du eine Dosis länger hältst, und sagt dir rechtzeitig, wann der Tablettenvorrat knapp wird. Gedacht ist er für alle, die beim Abdosieren keine enge ärztliche Begleitung haben, und für alle, die einfach einen klaren Überblick wollen.
+*The app is available in English and German – you choose the language when you first open it and can change it any time under “More”.*
 
-> **Wichtig:** BeNzoTaPer ist ein Werkzeug zum Organisieren und Dokumentieren. Er ersetzt keine ärztliche Beratung, stellt keine Diagnosen und entscheidet nicht über Dosis oder Tempo. Den Plan stimmst du mit einer medizinischen Fachperson ab. Benzodiazepine nach längerer Einnahme nie abrupt absetzen. Bei Krampfanfall, starker Verwirrtheit oder anderen akuten Problemen: **112**.
+BeNzoTaPer helps you stay on track with your reduction plan: it shows which dose is due each day, counts the days you have managed, shifts the plan when you hold a dose longer, and tells you in good time when your tablet supply is running low. It is meant for everyone who has no close medical support while tapering, and for everyone who simply wants a clear overview.
+
+> **Important:** BeNzoTaPer is a tool for organising and documenting. It does not replace medical advice, makes no diagnoses and does not decide on doses or speed. Agree your plan with a medical professional. Never stop benzodiazepines abruptly after long-term use. In case of a seizure, severe confusion or other acute problems call **112 (Europe) or your local emergency number** (US: 911).
 
 <p align="center">
-  <img src="docs/bilder/kalender.png" width="300" alt="Kalender mit Häkchen">
-  <img src="docs/bilder/heute.png" width="300" alt="Heute: Dosis der aktuellen Stufe">
+  <img src="docs/bilder/kalender.png" width="300" alt="Calendar with ticks">
+  <img src="docs/bilder/heute.png" width="300" alt="Today: dose of the current step">
 </p>
-<p align="center"><sub>Bilder mit Testdaten (Name „Alex“, Diazepam 10 → 0 mg).</sub></p>
-
-<details>
-<summary><b>English</b></summary>
-
-**BeNzoTaPer is an offline Android app that helps you stick to a doctor-agreed benzodiazepine tapering plan.** It shows the dose due each day, counts the days you have managed, shifts the plan when you hold a dose, and warns you in good time when your tablet supply runs low. No account, no cloud, no ads, no internet permission.
-
-The app is available in **English and German**. You choose the language when you first open it and can change it any time under *More*.
-
-- "Today" first: one "Intake" button (the time is added automatically), dose, tablet combination, live average
-- Calendar with ticks, notes and a "good day" mark
-- Create a plan or import one (PDF, Word, text), start date selectable, hold the dose, adjust the plan from today (raising the dose or slowing down asks for a short pause first)
-- Tablet supply that also counts days without an entry, notices at 14 and 7 days, progress chart, progress report for your doctor
-- SOS (15-minute timer, breathing circle), notebook, PIN lock with keyword, reminders, encrypted backup
-
-**Install:** download the matching APK under [Releases](../../releases) (`arm64-v8a` for almost all phones, `armeabi-v7a` only for old ones) and allow installation from this source. For automatic updates use [Obtainium](https://github.com/ImranR98/Obtainium) with `https://github.com/BrainLab84/BeNzoTaPer`. Updates install over the existing version and keep your data.
-
-> **Important:** BeNzoTaPer is a tool for organising and documenting. It does not replace medical advice, makes no diagnoses and does not decide on doses or speed. Agree your plan with a medical professional. Never stop benzodiazepines abruptly after long-term use. In an emergency (seizure, severe confusion, hallucinations) call **112 (Europe) or your local emergency number**.
-
-The rest of this README is in German. Code, tests and tools are documented in the *Für Entwickler* section.
-
-</details>
+<p align="center"><sub>Screenshots of the German version with test data (name “Alex”, diazepam 10 → 0 mg).</sub></p>
 
 ---
 
-## Inhalt
-- [Die Idee dahinter](#die-idee-dahinter)
-- [Was die App kann](#was-die-app-kann)
-- [Die Regeln, nach denen sie rechnet](#die-regeln-nach-denen-sie-rechnet)
-- [Daten und Datenschutz](#daten-und-datenschutz)
+## Contents
+- [The idea behind it](#the-idea-behind-it)
+- [What the app can do](#what-the-app-can-do)
+- [The rules it calculates by](#the-rules-it-calculates-by)
+- [Data and privacy](#data-and-privacy)
 - [Installation](#installation)
-- [Für Entwickler](#für-entwickler)
+- [For developers](#for-developers)
 
 ---
 
-## Die Idee dahinter
+## The idea behind it
 
-- **Fortschritt statt Symptomjagd.** Im Mittelpunkt steht der Weg, den du schon geschafft hast, und nicht das tägliche Absuchen nach Entzugssymptomen.
-- **Die App rät nichts.** Ein Tag ohne Eintrag bleibt ein Fragezeichen. Er zählt nie als „wie geplant“ und nie als 0 mg. Einzige Ausnahme ist der Vorrat: Dort zählt er mit der geplanten Dosis, als Schätzung gekennzeichnet, bis du nachträgst – sonst wäre der Vorrat schneller leer, als die App sagt.
-- **Bremse ohne Bevormundung.** Schneller reduzieren geht sofort. Hochgehen oder langsamer werden geht auch – nach einem kurzen Innehalten.
-- **Der Vorrat ist wichtig.** Ärzte machen manchmal ohne Vorwarnung dicht. Mit einem Puffer hast du Zeit, eine Lösung zu finden.
-- **Schlicht.** Keine Prozente, keine Punkte, keine Belohnungsspielchen, nichts, was man bedienen *muss*.
+- **Progress instead of symptom hunting.** The focus is on the way you have already come, not on checking for withdrawal symptoms every day.
+- **The app never guesses.** A day without an entry stays a question mark. It never counts as “as planned” and never as 0 mg. The only exception is the tablet supply: there it counts with the planned dose, marked as an estimate, until you fill it in – otherwise the supply would run out sooner than the app says.
+- **A brake without patronising.** Reducing faster works immediately. Going up or slowing down works too – after a short pause to think.
+- **The supply matters.** Doctors sometimes shut the door without warning. A buffer gives you time to find a solution.
+- **Simple.** No percentages, no points, no reward games, nothing you *have* to operate.
 
-## Was die App kann
+## What the app can do
 
-### Heute (Startseite)
-- **Einnahme:** ein Knopf, Menge eingeben, OK. Die Uhrzeit kommt automatisch (so steht sie auch im Arztbericht). Bis zur geplanten Dosis gibt es ein Häkchen, darüber erst ein kurzes Innehalten.
-- Aktuelle Stufe und Dosis, Tag x von y, nächste Stufe, dazu die passende **Tablettenkombination** (z. B. aus 5-mg- und 2-mg-Tabletten).
-- **Plan anpassen** (ab heute Dosis, Tage und Stufen ändern, gilt sofort) und **Dosis halten** (mit oder ohne Enddatum, der Plan verschiebt sich automatisch).
-- Wochenstreifen der letzten 7 Tage.
-- **Lob beim Halten:** Wer eine Dosis hält, bekommt alle paar Tage eine kurze Bestätigung, aber nur für saubere Tage. Das Lob ist als Vorbeugung gedacht, nicht als Belohnung.
-- **Tablettenvorrat:** Anzahl × Stärke eintragen, die App rechnet in mg um und sagt, wie lange es beim aktuellen Plan reicht („Keine exakte Angabe garantiert – zu viele Variablen, aber ziemlich genau.“). Jede Einnahme wird automatisch abgezogen, Tage ohne Eintrag zählen mit der geplanten Dosis. Nachkäufe lassen sich dazurechnen. Teilbare Tabletten und Lösungen (mg/ml) werden berücksichtigt.
-- Dezente Erinnerung, wenn länger nicht gesichert wurde.
+### Today (start screen)
+- **Intake:** one button, enter the amount, OK. The time is added automatically (and appears like that in the doctor's report). Up to the planned dose you get a tick; above it, a short pause comes first.
+- Current step and dose, day x of y, next step, plus the matching **tablet combination** (e.g. from 5 mg and 2 mg tablets).
+- **Adjust plan** (change dose, days and steps from today, applies immediately) and **Hold dose** (with or without an end date, the plan shifts automatically).
+- Week strip of the last 7 days.
+- **Encouragement while holding:** if you hold a dose, you get a short confirmation every few days, but only for clean days. It is meant as prevention, not as a reward.
+- **Tablet supply:** enter number × strength, the app converts it to mg and tells you how long it lasts on the current plan (“No exact figure guaranteed – too many variables, but fairly accurate.”). Every intake is deducted automatically, days without an entry count with the planned dose. New purchases can be added. Splittable tablets and solutions (mg/ml) are taken into account.
+- A gentle reminder if you haven't made a backup for a while.
 
-### Kalender
-- Monatsansicht mit Häkchen für jeden Tag im Plan, Zahlen für mehr Genommenes, die geplante Dosis an kommenden Tagen, **?** für Tage ohne Eintrag, einem Strich bei jeder neuen Stufe, einer Sonne für gute Tage und einem Punkt für Notizen.
-- **Voraussichtlich bei 0 mg: TT.MM.JJJJ.** Das Datum rechnet sich jeden Tag neu, denn ein fester Termin setzt nur unter Druck.
-- Tag antippen: nachtragen (bis 7 Tage zurück) oder eine Notiz schreiben.
-- **Wochen-Durchschnitt** der letzten 4 Wochen und ein **Live-Durchschnitt seit Stufenbeginn**, der sich mit jedem Eintrag sofort ändert. Der Durchschnitt zeigt, wie wenig ein einzelner Ausrutscher am Gesamtbild ändert.
-- **Notizen für heute** mit Smileys für das Befinden. Gedacht für Mustererkennung im Nachhinein (Koffein, Vapen, neue Medikamente …), nicht als Symptomtagebuch.
+### Calendar
+- Month view with ticks for every day on plan, numbers when more was taken, the planned dose on upcoming days, **?** for days without an entry, a line at each new step, a sun for good days and a dot for notes.
+- **Expected at 0 mg: DD/MM/YYYY.** The date is recalculated every day, because a fixed deadline only creates pressure.
+- Tap a day: fill it in (up to 7 days back) or write a note.
+- **Weekly average** of the last 4 weeks and a **live average since the step began** that changes with every entry. The average shows how little a single slip changes the big picture.
+- **Notes for today** with smileys for how you feel. Meant for spotting patterns later (caffeine, vaping, new medication …), not as a symptom diary.
 
 ### Plan
-- **Plan erstellen** als Fragebogen: Abschnitte wie „von 10 mg bis 5 mg, 1 mg alle 14 Tage“, danach langsamer und so weiter. Startdatum wählbar.
-- **Plan importieren** aus PDF, Word (.docx) oder Text, zum Beispiel aus einem Plan vom Arzt.
-- Erstellen und Importieren gibt es nur ohne eigenen Plan. Läuft ein Plan, wird er mit **Plan anpassen** geändert. **Ganz neu anfangen** geht über Mehr → Zurücksetzen (wie eine neu installierte App, vorher sichern).
-- Stufenliste mit erledigten, aktuellen und kommenden Stufen.
+- **Create a plan** as a questionnaire: sections such as “from 10 mg to 5 mg, 1 mg every 14 days”, then slower, and so on. Step size and interval are up to you, including daily steps (down to 0.001 mg). Selectable start date.
+- **Import a plan** from PDF, Word (.docx) or text, for example a plan from your doctor.
+- Creating and importing are only available while you have no plan of your own. A running plan is changed with **Adjust plan**. To **start over completely**, use More → Reset (like a freshly installed app, make a backup first).
+- List of steps with completed, current and upcoming ones.
 
-### Fortschritt
-- **Dein Weg:** von wie viel auf wie viel mg, geschaffte Tage, Stufe x von n, voraussichtliches Ende.
-- **Verlauf** als Diagramm: der Plan als Treppe, der 7-Tage-Durchschnitt als Welle, rote Punkte an Tagen über Plan.
-- **Diagramm für den Arzt:** dasselbe Diagramm als PDF zum Teilen oder zum Anschauen in groß („Lesen“).
-- **Verlaufsbericht für den Arzt:** Übersicht, Stufen, Planänderungen, Wochen-Durchschnitte und Tagesprotokoll mit Uhrzeiten, als PDF (ohne Notizen).
+### Progress
+- **Your journey:** from how many mg to how many, days managed, step x of n, expected end.
+- **History** as a chart: the plan as a staircase, the 7-day average as a wave, red dots on days above plan.
+- **Chart for your doctor:** the same chart as a PDF to share or to view large (“Read”).
+- **Progress report for your doctor:** overview, steps, plan changes, weekly averages and a daily log with times, as a PDF (without notes).
 
-### Immer erreichbar
-- **SOS** (rot, oben in der Mitte): ein 15-Minuten-Timer, um eine Welle auszusitzen, ein Atemkreis (4 Sekunden ein, 6 aus), „Was du schon geschafft hast“ sowie Notruf 112 und (in der deutschen Fassung) die Telefonseelsorge 0800 111 0 111.
-- **Kurz innehalten:** Wer mehr eintragen will als geplant, bekommt zuerst einen kurzen Halt angeboten. Danach geht es ganz normal weiter.
-- **Notizbuch** (oben links) für Gedanken und Alltägliches, unabhängig vom Kalender.
+### Always within reach
+- **SOS** (red, top centre): a 15-minute timer to sit out a wave, a breathing circle (4 seconds in, 6 out), “What you have already achieved” and the emergency number 112 (the German version also lists the German crisis line Telefonseelsorge 0800 111 0 111).
+- **Short pause:** if you want to log more than planned, you are first offered a brief stop. After that things continue as normal.
+- **Notebook** (top left) for thoughts and everyday things, independent of the calendar.
 
-### Einstellungen („Mehr“)
-- **PIN-Sperre** mit Schlüsselwort für „PIN vergessen?“ (die PIN sperrt nur die Oberfläche).
-- **Erinnerung zum Eintragen** (standardmäßig aus, Uhrzeit einstellbar).
-- **Vorrat-Hinweis** als Benachrichtigung, wenn der Vorrat noch 14 und noch 7 Tage reicht (um 10 Uhr, sobald ein Vorrat eingetragen ist).
-- **Verschlüsselte Sicherung** speichern und laden, etwa für ein neues Handy. Sie enthält den ganzen Abdosierverlauf (Plan, alle Einträge mit Uhrzeit, Vorrat, Notizen, Notizbuch), aber nichts von der App selbst: PIN, Schlüsselwort und Einstellungen bleiben auf dem Gerät.
-- Anleitung, alle Hinweise nochmal lesen, alles zurücksetzen.
+### Settings (“More”)
+- **PIN lock** with a keyword for “Forgot PIN?” (the PIN only locks the interface).
+- **Reminder to log** (off by default, time adjustable).
+- **Supply notice** as a notification when the supply lasts another 14 and another 7 days (at 10 a.m., once a supply has been entered).
+- Save and load an **encrypted backup**, for example for a new phone. It contains your whole tapering history (plan, all entries with times, supply, notes, notebook) but nothing belonging to the app itself: PIN, keyword and settings stay on the device.
+- Guide, read all notes again, reset everything.
 
-Ohne eigenen Plan zeigt die App einen **Beispielplan**, damit man sieht, wie alles aussieht. Das Beispiel wird nie gespeichert.
+Without a plan of your own the app shows a **sample plan** so you can see what everything looks like. The sample is never saved.
 
-### Geplant
-- **Rückwirkende Eintragungen für bereits laufende Abdosierungen.** Wer schon mitten im Abdosieren ist (zum Beispiel mit einer Strichliste auf Papier), soll einen Plan mit Startdatum in der Vergangenheit anlegen und seinen bisherigen Verlauf nachträglich eintragen oder als Liste importieren können. Wochen-Durchschnitt und Verlauf werden dann automatisch nachberechnet. Nachgetragene Tage bekommen im Kalender ein kleines Symbol und zählen nicht für das Lob.
+### Planned
+- **Retroactive entries for tapers already under way.** If you are in the middle of tapering (for example with a tally sheet on paper), you should be able to create a plan with a start date in the past and enter your history afterwards or import it as a list. Weekly averages and history are then recalculated automatically. Days added later get a small symbol in the calendar and do not count towards the encouragement.
 
-## Die Regeln, nach denen sie rechnet
+## The rules it calculates by
 
-| Situation | Was passiert |
+| Situation | What happens |
 |---|---|
-| Tag ohne Eintrag | Bleibt **?**. Anzeigen pausieren, der Plan verschiebt sich **nicht**. Nachtragen geht bis 7 Tage zurück, ältere Tage bekommen „Weiß ich nicht mehr“. |
-| Mehr genommen als geplant | Wird dokumentiert. Am nächsten Tag gilt einfach wieder die geplante Dosis. Der Plan verschiebt sich nicht. |
-| Dosis halten | Der Plan pausiert und das Ende rückt um die gehaltenen Tage nach hinten. Ohne Enddatum rückt es täglich mit. |
-| Schneller reduzieren | Gilt sofort („Plan anpassen“). |
-| Hochgehen / langsamer | Gilt sofort, nach einem kurzen Innehalten. |
-| Plan ändern | Gilt ab heute. Vergangene Tage behalten die Dosis, die an ihnen galt – auch im Vorrat. |
-| Vorrat | Rest = gezählt − Einnahmen danach − geplante Dosis für jeden Tag ohne Eintrag (Schätzung, bis du nachträgst). Reichweite ab der echten Planposition, mit Stufenwechseln und Halten. |
-| Ziel 0 mg erreicht | Du trägst weiter ein („Heute nichts genommen“), so bleibt auch ein Rückfall dokumentierbar. |
+| Day without an entry | Stays **?**. Displays pause, the plan does **not** shift. You can fill in up to 7 days back; older days get “I don't remember”. |
+| Took more than planned | It is documented. The next day the planned dose simply applies again. The plan does not shift. |
+| Hold dose | The plan pauses and the end moves back by the days held. Without an end date it moves back daily. |
+| Reduce faster | Applies immediately (“Adjust plan”). |
+| Go up / slow down | Applies immediately, after a short pause. |
+| Change the plan | Applies from today. Past days keep the dose that applied on them – in the supply too. |
+| Supply | Remaining = counted − intakes since then − planned dose for every day without an entry (an estimate until you fill it in). The range starts from your real position in the plan, including step changes and holds. |
+| Goal of 0 mg reached | You keep logging (“Nothing taken today”), so a relapse can be documented too. |
 
-Wochen-Durchschnitt und Diagramm rechnen nur mit eingetragenen Tagen. Ein Fragezeichen geht nie als 0 mg in eine Rechnung ein.
+Weekly average and chart only use logged days. A question mark never enters a calculation as 0 mg.
 
-## Daten und Datenschutz
+## Data and privacy
 
-- **Alles bleibt auf dem Handy.** Kein Konto, keine Cloud, keine Werbung, keine Tracker. Die Release-App hat **keine Internet-Berechtigung**.
-- Android-Auto-Backup ist **aus**, damit keine Gesundheitsdaten unbemerkt in einer Cloud landen.
-- Die **Sicherung** ist eine Datei, die du selbst teilst oder speicherst. Sie wird standardmäßig mit einem eigenen Passwort verschlüsselt (Argon2id + AES-256-GCM). **Passwort vergessen = Sicherung weg**, es gibt keine Hintertür. Ohne Passwort entsteht nach einer deutlichen Warnung eine lesbare Datei.
-- Berechtigungen: Benachrichtigungen (Erinnerung, Vorrat-Hinweis) und „nach Neustart starten“, damit Erinnerungen einen Handy-Neustart überleben.
+- **Everything stays on your phone.** No account, no cloud, no ads, no trackers. The release app has **no internet permission**.
+- Android auto backup is **off**, so no health data ends up in a cloud unnoticed.
+- The **backup** is a file you share or save yourself. By default it is encrypted with a password of its own (Argon2id + AES-256-GCM). **Forgotten password = backup lost**, there is no back door. Without a password, a readable file is created after a clear warning.
+- Permissions: notifications (reminder, supply notice) and “run at startup” so reminders survive a phone restart.
 
 ## Installation
 
-BeNzoTaPer gibt es nicht im Play Store. Du brauchst kein Konto.
+BeNzoTaPer is not in the Play Store. You don't need an account.
 
-### Mit automatischen Updates (empfohlen): Obtainium
-[Obtainium](https://github.com/ImranR98/Obtainium) ist eine freie App, die Apps direkt von GitHub installiert und aktuell hält.
+### With automatic updates (recommended): Obtainium
+[Obtainium](https://github.com/ImranR98/Obtainium) is a free app that installs apps straight from GitHub and keeps them up to date.
 
-1. Obtainium installieren (Download über die Obtainium-Seite oder F-Droid).
-2. In Obtainium auf **„Hinzufügen“** tippen und diesen Link einfügen: `https://github.com/BrainLab84/BeNzoTaPer`
-3. **„Hinzufügen“** und dann **„Installieren“** tippen. Fragt Obtainium nach einer Datei, die mit **`arm64-v8a`** im Namen wählen.
+1. Install Obtainium (download from the Obtainium page or F-Droid).
+2. In Obtainium tap **“Add App”** and paste this link: `https://github.com/BrainLab84/BeNzoTaPer`
+3. Tap **“Add”** and then **“Install”**. If Obtainium asks for a file, choose the one with **`arm64-v8a`** in its name.
 
-Neue Versionen meldet Obtainium dann von selbst.
+Obtainium will then notify you about new versions.
 
-### Von Hand
-1. Auf der Seite [Releases](../../releases) unter „Assets“ die passende APK laden:
-   - `…-arm64-v8a.apk` für fast alle Handys (ab etwa 2017)
-   - `…-armeabi-v7a.apk` nur für ältere Handys, falls die erste nicht installiert
-2. APK öffnen. Wenn Android fragt: Installation aus dieser Quelle erlauben.
+### Manually
+1. On the [Releases](../../releases) page, download the matching APK under “Assets”:
+   - `…-arm64-v8a.apk` for almost all phones (about 2017 and newer)
+   - `…-armeabi-v7a.apk` only for older phones, if the first one does not install
+2. Open the APK. If Android asks, allow installation from this source.
 
-Beim ersten Start die Hinweise lesen, das Häkchen setzen und „Weiter“ tippen. Updates installieren sich über die alte Version, die Daten bleiben erhalten (fester Signierschlüssel). Vor größeren Schritten trotzdem eine Sicherung ziehen.
+On first start, read the notes, tick the box and tap “Continue”. Updates install over the old version and your data is kept (fixed signing key). Still, make a backup before bigger steps.
 
 ---
 
-## Für Entwickler
+## For developers
 
-### Aufbau
+### Structure
 
 ```
-core/    Rechenkern in reinem Dart (Paket tapering_core), keine Oberfläche
-app/     Flutter-App (Android), ruft nur den Kern auf
-tools/   Entwicklungswerkzeuge: Screenshots, Gegenproben, Rechtschreibprüfung, lokaler APK-Bau
-docs/    Bilder für diese README
+core/    calculation core in pure Dart (package tapering_core), no UI
+app/     Flutter app (Android), only calls the core
+tools/   development tools: screenshots, mutation checks, spell check, local APK build
+docs/    images for the README
 ```
 
-**Kern (`core/lib/`):** `engine.dart` (`Taper`: Zustand und alle Regeln, die Uhr ist austauschbar), `state.dart` (Datenmodell, JSON-Format `strike-v1`), `plan_math.dart` (Plan berechnen, Tablettenkombination), `plan_parser.dart` (Text → Stufen, deutsch und englisch), `backup.dart` (verschlüsselte Sicherung), `meldung.dart` (Meldungen als Code + Werte, der Text entsteht in der App), `util.dart`. Einzige Abhängigkeit: `cryptography`.
+**Core (`core/lib/`):** `engine.dart` (`Taper`: state and all rules, the clock can be swapped), `state.dart` (data model, JSON format `strike-v1`), `plan_math.dart` (plan calculation, tablet combination), `plan_parser.dart` (text → steps, German and English), `backup.dart` (encrypted backup), `meldung.dart` (messages as code + values, the text is created in the app), `util.dart`. Only dependency: `cryptography`.
 
-**App (`app/lib/`):** `shell.dart` (Reiter, Kopfzeile), `app_state.dart` + `store.dart` (Zustand, atomares Speichern), je eine Datei pro Bereich: `kalender`, `eintragen`, `heute`, `plan_reiter`, `plan_neu`, `plan_lesen`, `vorrat`, `verlauf`, `fortschritt`, `tag`, `notizbuch`, `sos`, `pin`, `erinnerung`, `sicherung`, `bericht` (Arzt-PDF), `lob`. Look: `deko.dart`, `bausteine.dart`. Texte: `texte.dart` (Deutsch) und `i18n/` (Englisch, Sprachumschaltung, Datum und Zahlen je Sprache). Neue Texte immer als Paar `tr('deutsch', 'english')`.
+**App (`app/lib/`):** `shell.dart` (tabs, header), `app_state.dart` + `store.dart` (state, atomic saving), one file per area: `kalender`, `eintragen`, `heute`, `plan_reiter`, `plan_neu`, `plan_lesen`, `vorrat`, `verlauf`, `fortschritt`, `tag`, `notizbuch`, `sos`, `pin`, `erinnerung`, `sicherung`, `bericht` (doctor PDF), `lob`. Look: `deko.dart`, `bausteine.dart`. Texts: `texte.dart` (German) and `i18n/` (English, language switching, date and number formats per language). Always add new texts as a pair `tr('deutsch', 'english')`.
 
-Regeln stehen **nur im Kern**. Die Oberfläche zeigt an und ruft die Methoden von `Taper` auf.
+The rules live **only in the core**. The UI displays and calls the methods of `Taper`. Code comments and file names are in German.
 
-### Abhängigkeiten
-Nur freie Pakete (F-Droid-tauglich): `path_provider`, `share_plus`, `file_picker`, `url_launcher`, `read_pdf_text`, `archive`, `flutter_local_notifications`, `timezone`, `pdf`. `pubspec.lock` ist eingecheckt. Pakete bitte nicht ohne Test auf einem echten Gerät oder im Emulator hochziehen. `path_provider_android` ist absichtlich auf 2.2.23 festgesetzt, weil die neuere JNI-Variante den Start auf echten Geräten hängen ließ.
+### Dependencies
+Free packages only (F-Droid friendly): `path_provider`, `share_plus`, `file_picker`, `url_launcher`, `read_pdf_text`, `archive`, `flutter_local_notifications`, `timezone`, `pdf`. `pubspec.lock` is checked in. Please don't upgrade packages without testing on a real device or emulator. `path_provider_android` is deliberately pinned to 2.2.23 because the newer JNI variant made the app hang on start on real devices.
 
-### Bauen und testen
-Voraussetzung: Flutter stable (getestet mit 3.50.1).
+### Build and test
+Requirement: Flutter stable (tested with 3.50.1).
 
 ```bash
-cd core && dart pub get && dart analyze && dart test        # Kern: 96 Tests
-cd ../app && flutter pub get && flutter analyze && flutter test   # App: 285 Tests
+cd core && dart pub get && dart analyze && dart test        # core: 96 tests
+cd ../app && flutter pub get && flutter analyze && flutter test   # app: 285 tests
 ```
 
-Die Testsuiten decken unter anderem ab:
-- **Rechenkern:** Pläne, Stufen, Halten, Vorrat, Tablettenkombinationen und Import, mit eingefrorenen Referenzdaten
-- **Simulationen:** zufällige Verläufe über Tausende Tage, nach jedem Tag unabhängig nachgerechnet, dazu Klick-Simulationen über die Oberfläche
-- **Oberfläche:** Szenarien inklusive Neustart, Layout auf kleinen Displays mit 200 % Schrift, Deutsch und Englisch
-- **Gegenproben:** `tools/pruefung/mutation.py` baut absichtlich Fehler ein. Alle werden von den Tests erkannt.
+The test suites cover, among other things:
+- **Calculation core:** plans, steps, holding, supply, tablet combinations and import, with frozen reference data
+- **Simulations:** random histories over thousands of days, independently recalculated after every day, plus click simulations through the UI
+- **UI:** scenarios including restart, layout on small screens with 200 % font size, German and English
+- **Mutation checks:** `tools/pruefung/mutation.py` deliberately introduces bugs. All of them are caught by the tests.
 
-Mehr dazu in `core/README.md` und `tools/README.md`.
+More in `core/README.md` and `tools/README.md` (German).
 
 ### APK
-- **Release (fest signiert):** GitHub-Workflow `apk-release.yml`, von Hand gestartet. Der Signierschlüssel liegt nur in den Repository-Secrets (`TB_KEYSTORE_B64`, `TB_KEYSTORE_PASSWORD`, `TB_KEY_ALIAS`). Version und versionCode stehen in `app/pubspec.yaml` (z. B. `0.2.1+121`) und müssen vor jedem Release erhöht werden. Gebaut werden getrennte APKs für arm64-v8a und armeabi-v7a (Flutter setzt versionCode = 1000 × ABI + versionCode). Der Workflow bricht ab, wenn die APK nicht mit dem festen Schlüssel signiert ist. Mit der Eingabe `release_tag` (z. B. `v0.2.1`, muss zur Version passen) legt er zusätzlich einen GitHub-Release mit beiden APKs an.
-- **Test-APK:** `TB_TEST=1 flutter build apk --release` baut „BeNzoTaPer Test“ (`de.tapering.buddy.test`), die neben der echten App läuft.
-- Weitere Workflows: `core.yml` und `flutter.yml` (Analyse + Tests), `apk-flutter.yml` (Test-APK).
+- **Release (signed with the fixed key):** GitHub workflow `apk-release.yml`, started manually. The signing key exists only in the repository secrets (`TB_KEYSTORE_B64`, `TB_KEYSTORE_PASSWORD`, `TB_KEY_ALIAS`). Version and versionCode are in `app/pubspec.yaml` (e.g. `0.2.1+121`) and must be raised before every release. Separate APKs are built for arm64-v8a and armeabi-v7a (Flutter sets versionCode = 1000 × ABI + versionCode). The workflow aborts if the APK is not signed with the fixed key. With the input `release_tag` (e.g. `v0.2.1`, must match the version) it also creates a GitHub release with both APKs.
+- **Test APK:** `TB_TEST=1 flutter build apk --release` builds “BeNzoTaPer Test” (`de.tapering.buddy.test`), which runs next to the real app.
+- Other workflows: `core.yml` and `flutter.yml` (analysis + tests), `apk-flutter.yml` (test APK).
 
-### App-ID
+### App ID
 `de.tapering.buddy` · Version 0.2.3
 
-### Lizenz
-[GPL-3.0](LICENSE). Du darfst den Code nutzen, ändern und weitergeben, solange deine Version ebenfalls unter der GPL-3.0 offen bleibt.
+### License
+[GPL-3.0](LICENSE). You may use, change and share the code as long as your version stays open under the GPL-3.0 as well.
 
 ---
 
