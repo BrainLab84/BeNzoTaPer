@@ -13,9 +13,9 @@ BeNzoTaPer helps you stay on track with your reduction plan: it shows which dose
 <p align="center">
   <img src="docs/images/plan_daily_0.1.png" width="260" alt="Plan with daily steps of 0.1 mg">
   <img src="docs/images/plan_daily_0.01.png" width="260" alt="Plan with daily steps of 0.01 mg">
-  <img src="docs/images/weekly_average.png" width="260" alt="Weekly average">
+  <img src="docs/images/weekly_average.png" width="260" alt="Weekly and monthly average">
 </p>
-<p align="center"><sub>Daily microtapering in 0.1 mg and 0.01 mg steps, and the weekly average. Test data (diazepam, starting at 20 mg).</sub></p>
+<p align="center"><sub>Daily microtapering in 0.1 mg and 0.01 mg steps, and the weekly and monthly average (2 decimals). Test data (diazepam, starting at 20 mg).</sub></p>
 
 ---
 
