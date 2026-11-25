@@ -118,3 +118,6 @@ Future<void> zumStufenende(WidgetTester t, AppState app, {int tage = 14, double 
   app.auffrischen();
   await t.pumpAndSettle();
 }
+
+/// Zurück-Pfeil antippen. `t.pageBack()` sucht den englischen Tooltip „Back“, die App läuft hier auf Deutsch.
+Future<void> zurueck(WidgetTester t) => t.tap(find.byType(BackButton));

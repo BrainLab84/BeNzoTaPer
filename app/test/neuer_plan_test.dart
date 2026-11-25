@@ -43,7 +43,7 @@ Future<void> zuruecksetzenUi(WidgetTester t) async {
   await t.enterText(find.byKey(const Key('planSicherText')), 'Ich bin mir sicher');
   await tippe(t, find.byKey(const Key('planBackupHaken')));
   await tippe(t, find.byKey(const Key('planSicherWeiter')));
-  await t.pageBack();
+  await zurueck(t);
   await t.pumpAndSettle();
   await reiter(t, 'Heute');
 }

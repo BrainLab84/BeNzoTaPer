@@ -11,6 +11,8 @@ import 'package:tapering_buddy/app_state.dart';
 import 'package:tapering_buddy/main.dart';
 import 'package:tapering_buddy/store.dart';
 
+import 'hilfen.dart';
+
 /// Echte Schrift laden (Roboto wie auf Android): Die Testschrift macht jedes Zeichen quadratisch breit
 /// und würde Überläufe vortäuschen, die es auf dem Handy nicht gibt.
 Future<void> schriften() async {
@@ -120,7 +122,7 @@ void main() {
           await zeige('Mehr');
           await t.tap(find.text('Sicherung speichern'));
           await zeige('Sicherung speichern');
-          await t.pageBack();
+          await zurueck(t);
           await t.pumpAndSettle();
           await t.ensureVisible(find.byKey(const Key('jetztSperren')));
           await t.tap(find.byKey(const Key('jetztSperren')));
@@ -155,13 +157,13 @@ void main() {
           }
           await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
           await zeige('$name: Bericht lesen');
-          await t.pageBack();
+          await zurueck(t);
           await zeige('$name: zurück vom Bericht');
           // Verlaufsbericht (Logbuch): Lesen-Seite
           await t.ensureVisible(find.byKey(const Key('logbuchLesen')));
           await t.tap(find.byKey(const Key('logbuchLesen')));
           await zeige('$name: Logbuch lesen');
-          await t.pageBack();
+          await zurueck(t);
           await zeige('$name: zurück vom Logbuch');
           // Vorrat-Karte aufgeklappt (unten in Heute)
           await reiter('Heute');

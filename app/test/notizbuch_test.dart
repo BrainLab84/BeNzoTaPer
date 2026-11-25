@@ -64,7 +64,7 @@ void main() {
     await tippe(t, find.byKey(const Key('notizbuchAendern')));
     expect(find.byKey(const Key('notizbuchText')), findsNothing);
     expect(find.text('Morgens spazieren tut richtig gut'), findsOneWidget);
-    await t.pageBack();
+    await zurueck(t);
     await t.pumpAndSettle();
     expect(find.text('Morgens spazieren tut richtig gut'), findsOneWidget);
 

@@ -123,7 +123,7 @@ void main() {
   testWidgets('Eigener Plan ersetzt das Beispiel; Abbrechen bringt das Beispiel zurück', (t) async {
     final app = await starte(t, einrichten: false, aufReiter: null);
     await tippe(t, find.byKey(const Key('planErstellen')));
-    await t.pageBack();
+    await zurueck(t);
     await t.pumpAndSettle();
     expect(app.beispiel, isTrue, reason: 'nach Abbrechen wieder das Beispiel');
     await tippe(t, find.byKey(const Key('planErstellen')));
