@@ -11,10 +11,11 @@ BeNzoTaPer helps you stay on track with your reduction plan: it shows which dose
 > **Important:** BeNzoTaPer is a tool for organising and documenting. It does not replace medical advice, makes no diagnoses and does not decide on doses or speed. Agree your plan with a medical professional. Never stop benzodiazepines abruptly after long-term use. In case of a seizure, severe confusion or other acute problems call **112 (Europe) or your local emergency number** (US: 911).
 
 <p align="center">
-  <img src="docs/bilder/kalender.png" width="300" alt="Calendar with ticks">
-  <img src="docs/bilder/heute.png" width="300" alt="Today: dose of the current step">
+  <img src="docs/images/plan_daily_0.1.png" width="260" alt="Plan with daily steps of 0.1 mg">
+  <img src="docs/images/plan_daily_0.01.png" width="260" alt="Plan with daily steps of 0.01 mg">
+  <img src="docs/images/weekly_average.png" width="260" alt="Weekly average">
 </p>
-<p align="center"><sub>Screenshots of the German version with test data (name “Alex”, diazepam 10 → 0 mg).</sub></p>
+<p align="center"><sub>Daily microtapering in 0.1 mg and 0.01 mg steps, and the weekly average. Test data (diazepam, starting at 20 mg).</sub></p>
 
 ---
 
