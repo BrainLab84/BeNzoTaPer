@@ -1,0 +1,16 @@
+name: Aufräumen (einmalig)
+on: workflow_dispatch
+permissions:
+  contents: write
+  actions: write
+jobs:
+  aufraeumen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Tags auf bereinigte Commits
+        run: git push --force origin 0ad508f4667096df57e80a80bd19036b98df93bc:refs/tags/v0.2.3 414f0c5dc95da48edc883ef628d93e27913fdb54:refs/tags/v0.2.4
+      - name: Alte Branches löschen
+        run: git push origin --delete fix/datumsdialog-sprache tmp/jc-screenshots sauber
