@@ -1,5 +1,6 @@
 // BeNzoTaPer – native Android-App (Flutter/Dart). Kein WebView, kein HTML, kein JavaScript.
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_state.dart';
 import 'bausteine.dart';
@@ -128,6 +129,11 @@ class _TaperingBuddyState extends State<TaperingBuddy> {
       title: 'BeNzoTaPer',
       debugShowCheckedModeBanner: false,
       theme: _thema(),
+      // Eingebaute Dialoge (Datum, Uhrzeit) folgen der App-Sprache, nicht der Handysprache.
+      // Englisch als en_GB: Woche ab Montag, Datum TT/MM/JJJJ wie im Rest der App.
+      locale: sprache == 'en' ? const Locale('en', 'GB') : const Locale('de'),
+      supportedLocales: const [Locale('de'), Locale('en', 'GB')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       // PIN-Sperre liegt über allem (auch über geöffneten Seiten); darunter bleibt alles erhalten.
       builder: (context, kind) => ListenableBuilder(
         listenable: widget.app,
