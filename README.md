@@ -189,7 +189,7 @@ Mehr dazu in `core/README.md` und `tools/README.md`.
 - Weitere Workflows: `core.yml` und `flutter.yml` (Analyse + Tests), `apk-flutter.yml` (Test-APK).
 
 ### App-ID
-`de.tapering.buddy` · Version 0.2.2
+`de.tapering.buddy` · Version 0.2.3
 
 ### Lizenz
 [GPL-3.0](LICENSE). Du darfst den Code nutzen, ändern und weitergeben, solange deine Version ebenfalls unter der GPL-3.0 offen bleibt.

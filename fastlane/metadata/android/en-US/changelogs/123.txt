@@ -1,0 +1,1 @@
+• Translation fix: date and time pickers follow the app language

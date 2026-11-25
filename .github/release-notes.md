@@ -2,6 +2,10 @@
 
 BeNzoTaPer ist eine Offline-App für Android zur Begleitung und Dokumentation eines ärztlich abgestimmten Abdosierungsplans.
 
+## 🛠 Neu in dieser Version
+
+Translation fix: Datums- und Uhrzeit-Auswahl erscheinen jetzt in der gewählten App-Sprache.
+
 ## 📲 Installation
 
 Unter **Assets** die passende APK herunterladen und auf dem Android-Gerät installieren. Gegebenenfalls muss die Installation aus dieser Quelle erlaubt werden.
